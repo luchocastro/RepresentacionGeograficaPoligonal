@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using static Hexagon.Shared.Enums.EnumDataType;
+
 
 namespace Hexagon.Shared.CommonFunctions
 {
@@ -36,6 +36,6 @@ namespace Hexagon.Shared.CommonFunctions
 
             return DataConverteded;
         }
-        public List<AlowedDataType> 
+
     }
 }
