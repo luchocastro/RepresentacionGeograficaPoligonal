@@ -1,0 +1,11 @@
+[
+  {
+    "FileType": "DelimitedFile",
+    "FileProperties": {
+      "HasTitle": "Boolean",
+      "Delimiter": "String",
+      "DecimalSeparator": "Char",
+      "StringDelimitator": "Char"
+    }
+  }
+]
