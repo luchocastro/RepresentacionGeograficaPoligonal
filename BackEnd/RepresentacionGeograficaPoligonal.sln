@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hexagon.Shared", "Hexagon.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hexagon.Api", "Hexagon.Api\Hexagon.Api.csproj", "{2A5B37C2-DAD7-4D93-AEF4-3DEEC618C513}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hexagon.Core", "Hexagon.Core\Hexagon.Core.csproj", "{0C7E28BD-11E8-4E20-BC15-631B7429A459}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hexagon.Core", "Hexagon.Core\Hexagon.Core.csproj", "{0C7E28BD-11E8-4E20-BC15-631B7429A459}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LectorFormulas", "LectorFormulas\LectorFormulas.csproj", "{6E2AEB20-DD7E-4F29-B95F-CF343F316125}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Average", "Average\Average.csproj", "{78185D44-5AB2-4601-B475-C018EE746410}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +54,18 @@ Global
 		{0C7E28BD-11E8-4E20-BC15-631B7429A459}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C7E28BD-11E8-4E20-BC15-631B7429A459}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C7E28BD-11E8-4E20-BC15-631B7429A459}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6E2AEB20-DD7E-4F29-B95F-CF343F316125}.Checked|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E2AEB20-DD7E-4F29-B95F-CF343F316125}.Checked|Any CPU.Build.0 = Debug|Any CPU
+		{6E2AEB20-DD7E-4F29-B95F-CF343F316125}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6E2AEB20-DD7E-4F29-B95F-CF343F316125}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6E2AEB20-DD7E-4F29-B95F-CF343F316125}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6E2AEB20-DD7E-4F29-B95F-CF343F316125}.Release|Any CPU.Build.0 = Release|Any CPU
+		{78185D44-5AB2-4601-B475-C018EE746410}.Checked|Any CPU.ActiveCfg = Debug|Any CPU
+		{78185D44-5AB2-4601-B475-C018EE746410}.Checked|Any CPU.Build.0 = Debug|Any CPU
+		{78185D44-5AB2-4601-B475-C018EE746410}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78185D44-5AB2-4601-B475-C018EE746410}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78185D44-5AB2-4601-B475-C018EE746410}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78185D44-5AB2-4601-B475-C018EE746410}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

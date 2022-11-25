@@ -1,0 +1,27 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace Hexagon.Model
+{
+    public struct Function
+    {
+
+        public Function(string Path, string FullClassName, string FunctionName, Dictionary<string, Type> Types)
+        {
+            this.Path = Path;
+            this.FullClassName = FullClassName;
+            this.FunctionName = FunctionName;
+            this.Types = Types;
+
+        }
+        public string Path { get; }
+        public string FullClassName { get; }
+        public string FunctionName { get; }
+        public Dictionary<string, Type> Types { get; }
+
+    }
+}
+
+
+

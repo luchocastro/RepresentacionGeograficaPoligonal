@@ -1,0 +1,35 @@
+<form [formGroup]="form" data-cy="app-pagintation">
+
+    <nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+            <li class="mr-2">
+                <div class="float-left mr-2 mt-1">
+                    <small>Ítems por página</small>
+                </div>
+                <div class="float-left">
+                    <select formControlName="{{ INPUT_PAGE_SIZE }}" class="items_page form-control selContact hoursSelect" id="app-pagintation-page-size" aria-invalid="false" (change)="onSubmit()">
+                        <option *ngFor="let option of sizeOptions" [ngValue]="option.value">
+                            {{ option.name }}
+                        </option>
+                    </select>
+                </div>
+
+            </li>
+            <li class="page-item">
+                <button class="page-link" (click)="changePagination(FORWARD)">
+                    &lt;
+                </button>
+            </li>
+            <li class="page-item">
+                <button class="page-link" (click)="changePagination(NEXT)">
+                    &gt;
+                </button>
+            </li>
+            <li class="ml-2 page-item" *ngIf="total">
+                <div class="float-left mr-2 mt-1">
+                    <small>items {{ skip }} a {{ skip + pageSize}} de {{ total }} </small>
+                </div>
+            </li>
+        </ul>
+    </nav>
+</form>

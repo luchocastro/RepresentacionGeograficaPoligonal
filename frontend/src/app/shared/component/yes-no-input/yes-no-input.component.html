@@ -1,0 +1,27 @@
+<ng-container [formGroup]="form">
+    <ng-select 
+    [attr.data-cy]="'yes-no-input-' + controlName" 
+    id="yes-no-input-{{ controlName }}" 
+    appendTo="{{ appendTo }}" 
+    class="form-control"
+    formControlName="{{ controlName }}" 
+    placeholder="{{ placeholder }}" 
+    (change)="onValueChange()" 
+    [class.is-invalid]="form.get(controlName).invalid && form.get(controlName).dirty">
+
+        <ng-option [attr.data-cy]="'yes-no-input-option-' + controlName +'-null'" *ngIf="nullable"></ng-option>
+        
+        <ng-option [value]="true">
+            <span [attr.data-cy]="'yes-no-input-option-' + controlName +'-true'">
+                Sí
+            </span>
+        </ng-option>
+
+        <ng-option [value]="false">
+            <span [attr.data-cy]="'yes-no-input-option-' + controlName +'-false'">
+                No
+            </span>
+        </ng-option>
+
+    </ng-select>
+</ng-container>

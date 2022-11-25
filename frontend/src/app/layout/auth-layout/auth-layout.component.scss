@@ -1,0 +1,21 @@
+.auth-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.auth-box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 100%;
+}
+
+.card {
+  background-color: rgba(42, 42, 42, 0.11);
+  color: #FFF;
+}

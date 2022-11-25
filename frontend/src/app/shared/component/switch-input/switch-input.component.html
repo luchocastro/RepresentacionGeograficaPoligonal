@@ -1,0 +1,18 @@
+<ng-container [formGroup]="form">
+    <label for="{{ controlName }}">
+        {{ label }}
+    </label>
+    <div class="parent">
+        <input
+        [attr.data-cy]="'checkbox-input-'+ controlName" 
+        id="{{ controlName }}" 
+        type="checkbox" 
+        class="switch"
+        formControlName="{{ controlName }}" 
+        placeholder="{{ placeholder }}" 
+        (change)="onValueChange()" 
+        [class.is-invalid]="form.get(controlName).invalid && form.get(controlName).dirty">
+        
+        <div class="overlay" [ngClass]="{'not-checked': !form.value[controlName]}" (click)="overlayClicked()"></div>
+    </div>
+</ng-container>

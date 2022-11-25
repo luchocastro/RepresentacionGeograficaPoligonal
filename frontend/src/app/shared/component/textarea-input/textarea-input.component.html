@@ -1,0 +1,24 @@
+<ng-container [formGroup]="form">
+
+  <textarea 
+    [attr.data-cy]="'text-input-'+ controlName" 
+    id="{{ controlName }}" 
+    rows="{{ rows }}" 
+    *ngIf="!readonly" 
+    class="form-control" 
+    formControlName="{{ controlName }}" 
+    (change)="onValueChange()"
+  ></textarea>
+
+  <textarea 
+    [attr.data-cy]="'text-input-'+ controlName" 
+    id="{{ controlName }}" 
+    rows="{{ rows }}" 
+    *ngIf="readonly" 
+    class="form-control" 
+    [ngModel]="value" 
+    readonly 
+    [ngModelOptions]="{standalone: true}"
+  ></textarea>
+
+</ng-container>
