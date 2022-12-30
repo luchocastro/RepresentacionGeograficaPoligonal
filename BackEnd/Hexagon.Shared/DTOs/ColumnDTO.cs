@@ -8,11 +8,13 @@ namespace Hexagon.Shared.DTOs
 {
     public class ColumnDTO
     {
-        public ColumnDTO(string Name, int OriginalPosition )
+        public ColumnDTO(string Name, int OriginalPosition, EnumActionToDoWithUncastedDTO ActionToDoWithUncasted,
+            EnumAlowedDataTypeDTO DataTypeSelected)
         {
             this.ActionToDoWithUncasted = ActionToDoWithUncasted;
             this.Name = Name;
             this.OriginalPosition = OriginalPosition;
+            this.DataTypeSelected = DataTypeSelected;
         }
 
         public EnumAlowedDataTypeDTO DataTypeSelected { get; set; }

@@ -15,9 +15,9 @@ namespace Hexagon.Model
             this.Origin = origin;
             this.Flat = flat;
         }
-        public Orientation Orientation { get; }
-        public PointF Size { get; }
-        public PointF Origin { get; }
+        public Orientation Orientation { get; set; }
+        public PointF Size { get; set; }
+        public PointF Origin { get; set; }
 
         public bool Flat { get; }
         

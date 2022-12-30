@@ -7,8 +7,8 @@ namespace Hexagon.Services.Interfaces
 {
     public interface IFormulasResumen
     {
-        List<Function> FormulasDisponibles(string ClassName);
-        string[] ClasesDisponibles { get; }
+        List<Shared.DTOs.FunctionDTO> FormulasDisponibles(string ClassName );
+        string[] ClasesDisponibles(string Path);
 
     }
 }

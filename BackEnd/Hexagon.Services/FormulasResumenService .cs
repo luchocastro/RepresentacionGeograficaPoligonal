@@ -7,6 +7,8 @@ using System.Text;
 using System.Reflection;
 using Hexagon.Model;
 using Hexagon.Services.CalcStrategy;
+using Hexagon.Shared.DTOs;
+using System.Linq;
 
 namespace Hexagon.Services
 {
@@ -18,24 +20,32 @@ namespace Hexagon.Services
             _Configuration = Configuration;
         }
 
-        public string[] ClasesDisponibles
+        public string[] ClasesDisponibles (string path)
         {
-            get {
-                string PathFunctions = _Configuration.GetSection("PathFunctions").Value;
+
+                string PathFunctions = path;
                 return  Directory.GetFiles(PathFunctions);
                 
-            }
+            
         }
 
 
-        public List<Function> FormulasDisponibles(string FullClassName)
+        public List<FunctionDTO> FormulasDisponibles(string PathFunction)
         {
-            Assembly Assembly = Assembly.LoadFrom(FullClassName);
-            List<string> Metodos = new List<string>();
-            // Obtain a reference to a method known to exist in assembly.
-            string PathFunctions = _Configuration.GetSection("PathFunctions").Value;
+            var clases = this.ClasesDisponibles(PathFunction );
+            List<FunctionDTO> functions = new List<FunctionDTO>();
+            foreach (var clase in clases)
+            {
 
-            return DoCalc.GetFunctions (PathFunctions,FullClassName);
+                string FullClassName = Path.Combine(PathFunction, clase);
+                Assembly Assembly = Assembly.LoadFrom(FullClassName);
+                List<string> Metodos = new List<string>();
+                // Obtain a reference to a method known to exist in assembly.
+
+                functions.AddRange(DoCalc.GetFunctions(FullClassName).Select(x => new FunctionDTO(x.Path, x.FullClassName, x.FunctionName, x.Types)).ToList())
+                        ;
+            }
+            return functions;
             // Obtain a reference to the parameters collection of the MethodInfo instance.
         }
     }

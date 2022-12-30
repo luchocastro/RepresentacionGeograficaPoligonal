@@ -16,6 +16,9 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using Hexagon.Services.Interfaces;
 using Hexagon.Api.Config;
 using Hexagon.API.Boostrap;
+using AutoMapper;
+using Hexagon.Model.Mappings;
+
 namespace Hexagon.Api
 {
     public class Startup
@@ -35,6 +38,13 @@ namespace Hexagon.Api
             services.AddDependencies(Configuration);
             services.AddControllers();
 
+            // Auto Mapper Configurations
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingModelProfile());
+            });
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
             services.AddSwaggerOptions();
         }
 

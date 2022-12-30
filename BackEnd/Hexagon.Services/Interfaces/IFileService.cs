@@ -7,9 +7,11 @@ namespace Hexagon.Services.Interfaces
 {
     public interface IFileService
     {
-        public NativeJsonFileDTO ConvertFile(string Base64File, DataFileConfigurationDTO FileData);
-        public List<DataFileConfigurationDTO> GetDataFileConfiguration();
-
+        public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData);
+        public NativeFileDTO ConvertFile(string AbsolutePathFile, DataFileConfigurationDTO FileData, LayoutDto Layout);
+        public List<DataFileConfigurationDTO> GetDataFileConfiguration(string Path);
+        List<ColumnDTO> GetFileColumsFromFile(string PathDef);
+        List<ProyectDataDTO> GetProyects(string User, string Project = "");
 
     }
 }

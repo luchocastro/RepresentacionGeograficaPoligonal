@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Hexagon.Model;
 using Shared;
@@ -173,7 +174,23 @@ namespace Hexagon.Services.Helpers
                 var y = (M.F2 * h.Q + M.F3 * h.R) * size.Y;
                 return new Point(x + origin.X, y + origin.Y);
             }
-
+        public static float scaleLinear(float unscaledNum, float minAllowed, float maxAllowed, float min, float max)
+            {
+            return (maxAllowed - minAllowed) * (unscaledNum - min) / (max - min) + minAllowed; ;
+        } 
+        public static Point Scale ( Point PointToScale, float MaxX, float MaxY, float MinX, float MinY, float Width, float Heigth, float Orwi, float Orhe)
+        {
+            
+            
+            
+            var prop = (MaxY - MinY) / (MaxX - MinX);
+            //console.log('width:' + width);
+            var height = Width * prop; //canvas.attr('height');
+            //console.log("prop " + prop);
+            var scaleX =  HexagonFunction.scaleLinear(PointToScale.X , 0, Orhe, MinX, MinY) ;
+             
+            return new Point (0f,0f) ;
+        }
             public static Hex PixelToHexagon(Layout layout, Point p)
             {
                 var M = layout.Orientation;
@@ -205,20 +222,21 @@ namespace Hexagon.Services.Helpers
                 }
                 return corners;
             }
-        public static System.Drawing.Point[] GetPoints(Hex Hexagono , Layout layout)
+        public static System.Drawing.PointF[] GetPoints(Hex Hexagono , Layout layout )
         {
-            {
-                 System.Drawing.Point[] CornersToDraw = new System.Drawing.Point[6];
-                Point[] PolygonCorners = HexagonFunction.PolygonCorners(layout, Hexagono);
-                //PointsToPaint.Add(Hexagono.)
-                for (int i = 0; i < 6; i++)
-                {
-                    CornersToDraw[i]= new System.Drawing.Point ((int)PolygonCorners [i].X, (int)PolygonCorners[i].Y);
-                }
-                return CornersToDraw;
-            
-            }
-            
+            //{
+            //     System.Drawing.Point[] CornersToDraw = new System.Drawing.Point[6];
+            //    Point[] PolygonCorners = HexagonFunction.PolygonCorners(layout, Hexagono);
+            //    //PointsToPaint.Add(Hexagono.)
+            //    for (int i = 0; i < 6; i++)
+            //    {
+            //        CornersToDraw[i]= new System.Drawing.Point ( (int)PolygonCorners [i].X, (int)PolygonCorners[i].Y);
+            //    }
+            //    return CornersToDraw;
+
+            //}
+            var ret = HexagonFunction.PolygonCorners(layout, Hexagono).Select(x => new System.Drawing.PointF(x.X, x.Y));
+            return ret.ToArray();
         }
         public static Point[] Draw(Point center, Layout layout)
         {

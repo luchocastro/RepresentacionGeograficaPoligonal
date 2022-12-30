@@ -17,24 +17,31 @@ namespace Hexagon.Services.CalcStrategy
             return (float)ret;
 
         }
-        public static List<Function> GetFunctions(string Path, string FullClassName)
+        public static List<Function> GetFunctions(string FullClassName)
         {
 
             var ret = new List<Function>();
-            Assembly assembly = Assembly.LoadFile(Path);
-            Type objtype = assembly.GetType(FullClassName);
-            var methods = objtype.GetMethods();
-            foreach (var method in methods)
+            Assembly assembly = Assembly.LoadFile(FullClassName);
+            Type [] objtypes = assembly.GetTypes ();
+            foreach (var objtype in objtypes)
             {
-                var parameters = method.GetParameters();
-                Dictionary<string, Type> Params = new Dictionary<string, Type>();
-                foreach (var parameter in parameters)
-                {
 
-                    Params.Add(parameter.Name, parameter.GetType());
+            var methods = objtype.GetMethods();
+                foreach (var method in methods)
+                {
+                    if(method.IsStatic && method.IsPublic)
+                    { 
+                    var parameters = method.GetParameters();
+                    Dictionary<string, Type> Params = new Dictionary<string, Type>();
+                    foreach (var parameter in parameters)
+                    {
+
+                        Params.Add(parameter.Name, parameter.GetType());
+                    }
+                    Function function = new Function( FullClassName, objtype.FullName, method.Name, Params);
+                    ret.Add(function);
+                    }
                 }
-                Function function = new Function(Path, FullClassName, method.Name, Params);
-                ret.Add(function);
             }
 
 

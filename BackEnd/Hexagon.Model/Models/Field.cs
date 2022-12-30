@@ -8,6 +8,7 @@ namespace Hexagon.Model
     {
         public Field(object Value, List<EnumAlowedDataType> DataTypeFinded, int Line)
         {
+
             this.Value = Value;
             this.DataTypeFinded = DataTypeFinded;
             this.Index = Line;

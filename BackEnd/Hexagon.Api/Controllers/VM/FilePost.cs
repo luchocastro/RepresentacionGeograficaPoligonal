@@ -8,7 +8,11 @@ namespace Hexagon.Api.Controllers
 {
     public class FilePost
     {
-        public string Base64File { get; set; }
-        public DataFileConfigurationDTO FileData { get; set; }
+
+        public string PathFile { get; set; }
+        public string ProjectName { get; set; }
+        public string UserName { get; set; }
+        public List<Microsoft.AspNetCore.Http.IFormFile> files { get; set; }
+
     }
 }

@@ -11,6 +11,7 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
 using Hexagon.Core.Configuration;
+using Hexagon.Api.Controllers.VM;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -22,38 +23,40 @@ namespace Hexagon.Api.Controllers
     {
         private readonly IConfiguration Configuration;
         private IFileService FileService;
-        public FileController(IFileService IFileService, IConfiguration Configuration)
+        private IFormulasResumen FormulasResumen;
+        public FileController(IFileService IFileService, IConfiguration Configuration, IFormulasResumen FormulasResumen)
         {
             this.FileService = IFileService;
             this.Configuration = Configuration;
+            this.FormulasResumen = FormulasResumen;
         }
         [HttpPost("[action]"), DisableRequestSizeLimit]
-        public async Task<IActionResult> UploadFile()
+        public async Task<IActionResult> UploadFile(List<IFormFile> files, string ProjectName, string UserName)
         {
 
             try
             {
-                var formCollection = await Request.ReadFormAsync();
-                var file = formCollection.Files.First();
+
+                var formCollection =  files ;
+                var file = formCollection.First();
                 var settings = Configuration.Get<Settings>();
-                var folderName = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), settings.PathTempFiles );
-
-                //var pathToSave = Path.Combine(Directory.GetCurrentDirectory(), folderName);
-                if (!Directory.Exists(folderName))
-                {
-                    Directory.CreateDirectory(folderName);
-
-                }
+                
                 if (file.Length > 0)
                 {
                     var fileName = Guid.NewGuid().ToString();
-                    var fullPath = Path.Combine(folderName, fileName + ".FILE");
-                    
-                    using (var stream = new FileStream(folderName, FileMode.Create))
+                    var PojectFolder = Path.Combine(Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, UserName);
+                    var ProyectDataDTO = FileService.GetProyects(PojectFolder,ProjectName).Where(x =>x.Name == ProjectName).First() ;
+                    var fullPath = Path.Combine(ProyectDataDTO.Location.ProyectFolder, ProyectDataDTO.Location.FileFolder, fileName + ".FILE");
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
                     {
-                        file.CopyTo(stream);
+                        await file.CopyToAsync (stream);
                     }
-                    return Ok(new { fullPath });
+                    //FileService.ConvertFile(fullPath, FilePost.FileData);
+                       
+                    //
+                    ;
+                    
+                    return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(ProyectDataDTO));
                 }
                 else
                 {
@@ -65,6 +68,17 @@ namespace Hexagon.Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
+
+        [HttpPost("[action]")]
+        public IActionResult ParseFile(ProjectDataPost ProjectDataPost)
+        {
+            DataFileConfigurationDTO DataFileConfiguration = new DataFileConfigurationDTO();
+            DataFileConfiguration.FileType = ProjectDataPost.FileType;
+            DataFileConfiguration.FileProperties = ProjectDataPost.FileProperties;
+            var ret = FileService.ConvertFile(ProjectDataPost.FileToParse, DataFileConfiguration, new LayoutDto(true, new System.Drawing.PointF(1f, 1f), new System.Drawing.PointF(0f, 1f)));
+
+            return Ok(ret);
+        }
         [HttpGet]
         public IActionResult Get()
         {
@@ -75,16 +89,28 @@ namespace Hexagon.Api.Controllers
         [Route("GetDataFileConfigurations")]
         public IActionResult GetDataFileConfigurations()
         {
-            return Ok(FileService.GetDataFileConfiguration());
-        }
-        
-        [HttpPost("[action]")]
-        public async Task<ActionResult> Upload([FromBody] FilePost FilePost)
-        {
-            if (FilePost.Base64File == null || FilePost.Base64File == "") return BadRequest();
-            NativeJsonFileDTO NativeJsonFileDTO = FileService.ConvertFile(FilePost.Base64File, FilePost.FileData);
 
-            return Ok(NativeJsonFileDTO);
+                var settings = Configuration.Get<Settings>();
+            return Ok( FileService.GetDataFileConfiguration(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, settings.ConfigurationFilesName)));
+        }
+        [HttpGet]
+        [Route("Projects")]
+        public IActionResult GetProjects(string user)
+        {
+            return Ok(FileService.GetProyects (Path.Combine (Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, user)));
+        }
+        [HttpGet]
+        [Route("GetColumns")]
+        public IActionResult GetColumns(string path)
+        {
+            return Ok(FileService.GetFileColumsFromFile(path));
+        }
+        [HttpGet]
+        [Route("Formulas")]
+        public IActionResult GetFormulas()
+        {
+            var settings = Configuration.Get<Settings>();
+            return Ok( FormulasResumen.FormulasDisponibles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, settings.PathFunctions)));
         }
 
 
