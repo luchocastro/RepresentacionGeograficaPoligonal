@@ -1,0 +1,14 @@
+<div id="content">
+  <div>
+    <button style="float: right" class="btn btn-primary" (click)="openMyModal()">
+      Open Modal
+    </button>
+
+    <h1>Projects</h1>
+  </div>
+
+  <mat-card *ngFor="let project of projects$ | async" class="course-card mat-elevation-z10">
+    <app-project-item [project]="project"></app-project-item>
+  </mat-card>
+
+</div>

@@ -1,0 +1,19 @@
+<mat-card class="custom-card front">
+  <mat-card-header>
+    <div mat-card-avatar class="example-header-image"></div>
+    <mat-card-title>{{ (project$ | async)?.title }}</mat-card-title>
+    <mat-card-subtitle>subtitle</mat-card-subtitle>
+  </mat-card-header>
+  <img mat-card-image [src]="(project$ | async)?.thumbnail" alt="Photo of a Shiba Inu">
+  <mat-card-content>
+    <p>
+      Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's
+      standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a
+      type specimen book.
+    </p>
+  </mat-card-content>
+  <mat-card-actions>
+    <button class="active" mat-button>READ MORE</button>
+    <button class="active" mat-button>{{ (project$ | async)?.id }}</button>
+  </mat-card-actions>
+</mat-card>

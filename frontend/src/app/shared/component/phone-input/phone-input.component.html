@@ -1,0 +1,11 @@
+<ng-container [formGroup]="form">
+    <input 
+        [attr.data-cy]="'text-input-'+ controlName" 
+        id="{{ controlName }}" 
+        type="text" 
+        class="form-control" 
+        formControlName="{{ controlName }}" 
+        placeholder="{{ placeholder }}" 
+        (change)="onValueChange()" 
+        [class.is-invalid]="form.get(controlName).invalid && form.get(controlName).dirty">
+</ng-container>

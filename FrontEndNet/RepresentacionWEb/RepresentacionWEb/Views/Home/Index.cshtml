@@ -1,0 +1,34 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+    List<SelectListItem> ListaTiposArchivos = (List<SelectListItem>)ViewData["DataFileConfigurations"] ;
+}
+
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+
+</div>
+<table><tr>
+    <td> Tipos de Archivos</td>
+    <td>
+        @Html.DropDownList("TiposArchivos", ListaTiposArchivos)
+    </td>
+
+</tr>
+    <tr>
+        <td>
+            @using (Html.BeginForm("Index",
+                      "Home",
+                      FormMethod.Post,
+                      new { enctype = "multipart/form-data" }))
+            {
+                <label for="file">Archivo de datos:</label>
+                <input type="file" name="file" id="file" /><br><br>
+                
+                <br><br>
+
+            }
+        </td>
+    </tr>
+    </table>

@@ -1,0 +1,16 @@
+<ng-container [formGroup]="form">
+    <div class="custom-control custom-checkbox">
+        <input
+        [attr.data-cy]="'checkbox-input-'+ controlName" 
+        id="{{ controlName }}" 
+        type="checkbox" 
+        class="custom-control-input" 
+        formControlName="{{ controlName }}" 
+        placeholder="{{ placeholder }}" 
+        (change)="onValueChange()" 
+        [class.is-invalid]="form.get(controlName).invalid && form.get(controlName).dirty">              
+        <label class="custom-control-label" for="{{ controlName }}"> 
+            {{ label }}
+        </label>
+    </div>
+</ng-container>

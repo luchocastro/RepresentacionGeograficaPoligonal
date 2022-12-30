@@ -1,0 +1,21 @@
+<ng-container [formGroup]="form">
+  <ng-select 
+    id="{{ controlName }}" 
+    appendTo="{{ appendTo }}" 
+    class="form-control"
+    formControlName="{{ controlName }}" 
+    [bindLabel]="'name'"
+    [compareWith]="compareWith"
+    placeholder="{{ placeholder }}" 
+    
+    (change)="onValueChange()" 
+    [class.is-invalid]="form.get(controlName).invalid && form.get(controlName).dirty">
+
+      <ng-option  *ngFor="let item of options$ | async" [value]="item">
+          <span [attr.data-cy]="dataCy(item)" id="{{ controlName }}-{{ item }}" >    
+              {{ item.name }}
+          </span>
+      </ng-option>
+      
+  </ng-select>
+</ng-container>
