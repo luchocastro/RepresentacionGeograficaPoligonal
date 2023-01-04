@@ -14,8 +14,8 @@ namespace Hexagon.Services.Helpers
             public static readonly Hex[] HexagonDiagonals = new Hex[] { new Hex(2, -1, -1), new Hex(1, -2, 1), new Hex(-1, -1, 2), new Hex(-2, 1, 1), new Hex(-1, 2, -1), new Hex(1, 1, -2) };
             public static readonly int EVEN = 1;
             public static readonly int ODD = -1;
-            public static readonly Orientation LayoutPointy = new Orientation((float)Math.Sqrt(3.0), (float)(Math.Sqrt(3.0) / 2.0), 0.0f, 3.0f/ 2.0f, (float)Math.Sqrt(3.0) / 3.0f, -1.0f / 3.0f, 0.0f, 2.0f / 3.0f, 0.5f);
-            public static readonly Orientation LayoutFlat = new Orientation(3.0f/ 2.0f, 0.0f, (float)(Math.Sqrt(3.0) / 2.0), (float)Math.Sqrt(3.0), 2.0f / 3.0f, 0.0f, -1.0f / 3.0f, (float)(Math.Sqrt(3.0) / 3.0), 0.0f);
+            public static readonly Orientation LayoutPointy = new Orientation( MathF.Sqrt(3.0f),  (MathF.Sqrt(3.0f) / 2.0f), 0.0f, 3.0f/ 2.0f, (float)MathF.Sqrt(3.0f) / 3.0f, -1.0f / 3.0f, 0.0f, 2.0f / 3.0f, 0.5f);
+            public static readonly Orientation LayoutFlat = new Orientation(3.0f/ 2.0f, 0.0f,  (MathF.Sqrt(3.0f) / 2.0f), (float)MathF.Sqrt(3.0f), 2.0f / 3.0f, 0.0f, -1.0f / 3.0f, (float)(MathF.Sqrt(3.0f) / 3.0), 0.0f);
 
 
             public static Hex HexagonAdd(Hex A, Hex B)
@@ -57,7 +57,7 @@ namespace Hexagon.Services.Helpers
             }
             public static float HexagonLength(Hex hex)
             {
-                return (Math.Abs(hex.Q) + Math.Abs(hex.R) + Math.Abs(hex.S)) / 2f;
+                return (MathF.Abs(hex.Q) + MathF.Abs(hex.R) + MathF.Abs(hex.S)) / 2f;
             }
             public static float HexagonDistance(Hex a, Hex b)
             {
@@ -66,12 +66,12 @@ namespace Hexagon.Services.Helpers
 
             public static Hex HexagonRound(Hex h)
             {
-                var qi = Math.Round(h.Q);
-                var ri = Math.Round(h.R);
-                var si = Math.Round(h.S);
-                var q_diff = Math.Abs(qi - h.Q);
-                var r_diff = Math.Abs(ri - h.R);
-                var s_diff = Math.Abs(si - h.S);
+                var qi = MathF.Round(h.Q);
+                var ri = MathF.Round(h.R);
+                var si = MathF.Round(h.S);
+                var q_diff = MathF.Abs(qi - h.Q);
+                var r_diff = MathF.Abs(ri - h.R);
+                var s_diff = MathF.Abs(si - h.S);
                 if (q_diff > r_diff && q_diff > s_diff)
                 {
                     qi = -ri - si;
@@ -98,7 +98,7 @@ namespace Hexagon.Services.Helpers
                 var a_nudge = new Hex(a.Q + 0.000001f, a.R + 0.000001f, a.S - 0.000002f);
                 var b_nudge = new Hex(b.Q + 0.000001f, b.R + 0.000001f, b.S - 0.000002f);
                 var results = new List<Hex>();
-                var step = 1.0f / Math.Max(N, 1);
+                var step = 1.0f / MathF.Max(N, 1);
                 for (var i = 0; i <= N; i++)
                 {
                     results.Add(HexagonRound(HexagonLerp(a_nudge, b_nudge, step * i)));
@@ -206,8 +206,8 @@ namespace Hexagon.Services.Helpers
             {
                 var M = layout.Orientation;
                 var size = layout.Size;
-                var angle = 2.0 * Math.PI * (M.StartAngle - corner) / 6.0;
-                return new Point(size.X * (float)Math.Cos(angle), size.Y * (float)Math.Sin(angle));
+                var angle = 2.0f * MathF.PI * (M.StartAngle - corner) / 6.0f;
+                return new Point(size.X * (float)MathF.Cos(angle), size.Y * (float)MathF.Sin(angle));
             }
 
             public static Point[] PolygonCorners(Layout layout, Hex h)

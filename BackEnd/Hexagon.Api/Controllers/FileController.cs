@@ -75,7 +75,16 @@ namespace Hexagon.Api.Controllers
             DataFileConfigurationDTO DataFileConfiguration = new DataFileConfigurationDTO();
             DataFileConfiguration.FileType = ProjectDataPost.FileType;
             DataFileConfiguration.FileProperties = ProjectDataPost.FileProperties;
-            var ret = FileService.ConvertFile(ProjectDataPost.FileToParse, DataFileConfiguration, new LayoutDto(true, new System.Drawing.PointF(1f, 1f), new System.Drawing.PointF(0f, 1f)));
+            var ret = FileService.ConvertFile(ProjectDataPost.FileToParse, DataFileConfiguration, new LayoutDto(true, new System.Drawing.PointF(1f, 1f), new System.Drawing.PointF(0f, 1f), 1000));
+
+            return Ok(ret);
+        }
+        [HttpPost("[action]")]
+        public IActionResult GetImageFile(DatosMapaPost DatosMapaPost)
+        {
+
+            var ret = FileService.GenerateImge(DatosMapaPost.LayoutDto, DatosMapaPost.PathWithData);
+                ;
 
             return Ok(ret);
         }
