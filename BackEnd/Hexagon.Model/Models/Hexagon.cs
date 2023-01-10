@@ -36,7 +36,7 @@ namespace Hexagon.Model
         public List <EventPoint> Values { get; set; }
          
         public List<Hex> Hexagonos { get; }
-        public override string ToString() => $"({Q}, {R} , {R}, {Value})";
+        public override string ToString() => $"({Q}, {R} , {S}, {Value})";
         public float Length()
         {
             return (Math.Abs(this.Q) + Math.Abs(this.R) + Math.Abs(this.S)) / 2;

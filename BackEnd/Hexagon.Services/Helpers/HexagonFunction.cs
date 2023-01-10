@@ -178,19 +178,7 @@ namespace Hexagon.Services.Helpers
             {
             return (maxAllowed - minAllowed) * (unscaledNum - min) / (max - min) + minAllowed; ;
         } 
-        public static Point Scale ( Point PointToScale, float MaxX, float MaxY, float MinX, float MinY, float Width, float Heigth, float Orwi, float Orhe)
-        {
-            
-            
-            
-            var prop = (MaxY - MinY) / (MaxX - MinX);
-            //console.log('width:' + width);
-            var height = Width * prop; //canvas.attr('height');
-            //console.log("prop " + prop);
-            var scaleX =  HexagonFunction.scaleLinear(PointToScale.X , 0, Orhe, MinX, MinY) ;
-             
-            return new Point (0f,0f) ;
-        }
+        
             public static Hex PixelToHexagon(Layout layout, Point p)
             {
                 var M = layout.Orientation;
