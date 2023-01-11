@@ -44,7 +44,7 @@ namespace Hexagon.Services
             NativeFileDTO NativeFile = new NativeFileDTO();
 
 
-            NativeFile = GetJsonSerializedFileFromFile(PathFile, FileData, new Model.Layout(Layout.Flat, Layout.Size,Layout.Origin ));
+            NativeFile = GetJsonSerializedFileFromFile(PathFile, FileData, new Model.Layout(Layout.Flat, Layout.Size,Layout.Origin,1000 ));
 
             //return new NativeJsonFileDTO { Content = NativeJsonFile.Content, Columns = NativeJsonFile.Columns };
 
@@ -113,14 +113,8 @@ namespace Hexagon.Services
                         streamReader.Close();
                     }
                     string FileDestinationPrue = Path.GetDirectoryName(PathFile) + @"\Pru" + Path.GetFileNameWithoutExtension(PathFile) + ".json";
+                    Layout layout = new Layout(true, new System.Drawing.PointF(50f, 50f), new System.Drawing.PointF(0, 0),1000);
 
-                    var hexs = MapHelper.HexMap("C:\\Users\\Usuario\\AppData\\Hexagon.Api\\GeneralMaps\\SudAmerica.json");
-                    CreadorMapaService.CreadorMapa(hexs, PathFile);
-                    using (StreamWriter StreamWriter = new StreamWriter(FileDestinationPrue))
-                    {
-                        StreamWriter.Write(JsonConvert.SerializeObject(hexs));
-                        StreamWriter.Close();
-                    }
 
                 }
 
@@ -155,6 +149,20 @@ namespace Hexagon.Services
             {
                 throw Exception;
             }
+        }
+        public string GenerateImge(LayoutDto Layout, string PathFile)
+        {
+            var layout = new Layout (Layout.Flat, Layout.Size, Layout.Origin,Layout.HexPerLine,Layout.MaxPictureSizeX, Layout.MaxPictureSizeY)  ;
+            var hexs = MapHelper.HexMapGeoJSon(PathFile, ref layout);
+
+
+            using (StreamWriter StreamWriter = new StreamWriter(Path.Combine(Path.GetDirectoryName (PathFile), Path.GetFileNameWithoutExtension(PathFile) + ".jsonHex")))
+            {
+                StreamWriter.Write(JsonConvert.SerializeObject(hexs));
+                StreamWriter.Close();
+            }
+            return CreadorMapaService.CreadorMapa(hexs, PathFile, layout);
+            
         }
         public List<ProyectDataDTO> GetProyects(string Path, string Name )
         {

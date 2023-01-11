@@ -16,6 +16,9 @@ namespace Hexagon.Services
         public const string NativesDirectory = "Natives";
         public const string NicFolder = "HexaProject";
         public const string NicProjectData = "HexaProjectData.json";
+        public const float  MaxDim = 3200f;
+        public const float HexagonsPerLine = 1000f;
+        
 
     }
 }

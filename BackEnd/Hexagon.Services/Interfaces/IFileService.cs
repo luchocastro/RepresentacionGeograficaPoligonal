@@ -12,6 +12,6 @@ namespace Hexagon.Services.Interfaces
         public List<DataFileConfigurationDTO> GetDataFileConfiguration(string Path);
         List<ColumnDTO> GetFileColumsFromFile(string PathDef);
         List<ProyectDataDTO> GetProyects(string User, string Project = "");
-
+        public string GenerateImge(LayoutDto layout, string PathFile);
     }
 }

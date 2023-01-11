@@ -10,39 +10,111 @@ using GeoJSON.Net.Converters;
 using GeoJSON.Net;
 using Newtonsoft.Json;
 using System.Linq;
+using CliWrap;
+using CliWrap.Buffered;
+using System.Drawing;
 
 namespace Hexagon.Services.Helpers
 {
     public class MapHelper
     {
+        public static void PaintHexInsidePolygon(List<PointF> Points, ref List <Hex> Hexs,  Layout Layout)
+        {
+            if (Points.Count == 0) return;
+            var PolyX = Points.Select(X => (float)X.X).ToArray();
+            var PolyY = Points.Select(X => (float)X.Y).ToArray();
+            var polyCorners = Points.Count ;
+            var IMAGE_TOP = Points.Min(x => x.Y);
+            var IMAGE_BOT = Points.Max(x => x.Y);
+            var IMAGE_RIGHT = Points.Max(x => x.X);
+            var IMAGE_LEFT = Points.Min(x => x.X);
 
-        public static List<Hex> HexMap (string PathJsonMap)
+            for (float x = IMAGE_LEFT; x <= IMAGE_RIGHT; x = x + MathF.Sqrt(3) * Layout.Size.X)
+                for (float y = IMAGE_TOP; y <= IMAGE_BOT; y = y + MathF.Sqrt (3) * (Layout.Size.Y / 2) )
+            {
+                    if (pointInPolygon(polyCorners, PolyX, PolyY, new PointF(x, y)))
+                        Hexs.Add(HexagonFunction.PixelToHexagon(Layout,new Hexagon.Model.Point(x,y)));
+            }
+        }
+        public static void PaintHexInsidePolygon2(List<PointF> Points, List<Hex> Poligon, ref List <Hex> Hexs,  Layout Layout)
+        {
+            if (Points.Count == 0) return;
+            var PolyX = Points.Select(X => (float)X.X).ToArray();
+            var PolyY = Points.Select(X => (float)X.Y).ToArray();
+            var polyCorners = Points.Count ;
+            var IMAGE_TOP = Points.Min(x => x.Y);
+            var IMAGE_BOT = Points.Max(x => x.Y);
+            var IMAGE_RIGHT = Points.Max(x => x.X);
+            var IMAGE_LEFT = Points.Min(x => x.X);
+ 
+            for (float y = IMAGE_TOP; y <= IMAGE_BOT; y = y + MathF.Sqrt (3) * Layout.Size.Y )
+            {
+                for (float x = IMAGE_LEFT; x <= IMAGE_RIGHT; x = x + MathF.Sqrt(3) * Layout.Size.X)
+                {
+                    var hexToTest = HexagonFunction.PixelToHexagon(Layout, new Model.Point(x, y));
+                    var countToLeft = Poligon.Where(X=> X.R==hexToTest.R && X.S > hexToTest.S).Count();
+                    var countToRight = Poligon.Where(X => X.R == hexToTest.R && X.S < hexToTest.S).Count();
+                    if (countToRight%2f==1f && countToLeft % 2f==1)
+                        Hexs.Add(HexagonFunction.PixelToHexagon(Layout, new Hexagon.Model.Point(x, y)));
+                }
+            }
+        }static bool pointInPolygon(int polyCorners, float[] polyX, float[] polyY, PointF ToBeTested)
+        {
+            float x = ToBeTested.X, y = ToBeTested.Y;
+            int i, j = polyCorners - 1;
+            bool oddNodes = false;
+
+            for (i = 0; i < polyCorners; i++)
+            {
+                if (polyY[i] < y && polyY[j] >= y
+                || polyY[j] < y && polyY[i] >= y)
+                {
+                    if (polyX[i] + (y - polyY[i]) / (polyY[j] - polyY[i]) * (polyX[j] - polyX[i]) < x)
+                    {
+                        oddNodes = !oddNodes;
+                    }
+                }
+                j = i;
+            }
+
+            return oddNodes;
+
+        }
+
+    
+public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
         {
             List<Hex> ret = new List<Hex>();
-            
+
             var PolygonToTake = new List<Polygon>();
             var PoitsToTake = new List<GeoJSON.Net.Geometry.Point>();
             var Positions = new List<IPosition>();
-
+            var PoliygonList = new List<List<Model.Point>> ();
             using (StreamReader file = File.OpenText(PathJsonMap))
             {
                 var mapa = file.ReadToEnd();
                 var feature = JsonConvert.DeserializeObject<FeatureCollection>(mapa);
+
                 foreach (var featureItem in feature.Features)
                 {
                     if (typeof(MultiPolygon) == featureItem.Geometry.GetType())
                     {
                         MultiPolygon multiPolygon = featureItem.Geometry as MultiPolygon;
+                        
                         foreach (var Polygon in multiPolygon.Coordinates)
                         {
+
+                            var Figure = new List<Model.Point>();
                             foreach (var corPol in Polygon.Coordinates)
                             {
+
                                 foreach (var Point in corPol.Coordinates)
-                                {
+                                { 
+                                    Figure.Add(new Model.Point((float)Point.Longitude, (float)Point.Latitude));
                                     Positions.Add(Point);
                                 }
                             }
-
+                            PoliygonList.Add(Figure);
                         }
                     }
                     if (typeof(Polygon) == featureItem.Geometry.GetType())
@@ -52,11 +124,14 @@ namespace Hexagon.Services.Helpers
                         foreach (var CordPolygon in Polygon.Coordinates
                             )
                         {
-
+                            var Figure = new List<Model.Point>();
                             foreach (var Point in CordPolygon.Coordinates)
                             {
-                                Positions.Add(Point);
+                                Figure.Add(new Model.Point((float)Point.Longitude, (float)Point.Latitude));
+
+                                Positions.Add(Point );
                             }
+                            PoliygonList.Add(Figure);
                         }
 
 
@@ -78,17 +153,102 @@ namespace Hexagon.Services.Helpers
                     //    }
                     //}
                 }
-                foreach (var item in Positions)
-                {
-                    var hexPosition = HexagonFunction.PixelToHexagon(new Layout(true, new System.Drawing.PointF (10f, 10f), new System.Drawing.PointF(0, 0)),
-                                         new Model.Point(((float)item.Longitude ) , ((float)item.Latitude ) ));
+                var minX = (float) Positions.Min(x => x.Longitude);
+                var maxX = (float)Positions.Max(x => x.Longitude);
+                var QPositions = (float)Positions.Count();
+                var minY = (float)Positions.Min(x => x.Latitude);
+                var maxY = (float)Positions.Max(x => x.Latitude);
+                var rangeX = (maxX - minX);
+                var rangeY = maxY - minY;
+                var prop = 0f;
+                
+                var width = 0f; //Convert.ToInt32 ( HexagonFunction.scaleLinear (1600f, 0,1600f, 0f , minX,maxY));
+                var heigth = 0f; // Convert.ToInt32(HexagonFunction.scaleLinear(maxY, maxY - minY, 0, 0, 1600)); ;
+                var mayor = 0f;
 
-                    if (!ret.Any(x => x == hexPosition))
-                        ret.Add(hexPosition);
+                ///HAY QUE VER CÒMO HACERLO PERO LA DISTANCIA PROMEDIO ENTRE LOS HEXA TIENE QUE SER EL TAMAÑO DE LOS LADOS HEXAGAONOS   
+                var Max = (rangeX > rangeY ? rangeX : rangeY);
+
+                if (maxX - minX > maxY - minY)
+                {
+                    width = layout.MaxPictureSizeX;
+                    prop = width / (maxX - minX);
+                    heigth = ((maxY - minY)) * prop;
+                    mayor = width;
+
+                }
+                else
+                {
+                    heigth = layout.MaxPictureSizeY;
+                    prop = heigth / (maxY - minY);
+                    width = (maxX - maxX) * prop;
+                    mayor = heigth;
+                }
+
+                var Unidad = MathF.Round(mayor / layout.HexPerLine);
+                layout = new Layout(layout.Flat , new System.Drawing.PointF(Unidad, Unidad), new PointF (width/2f, heigth/2f),layout.HexPerLine,width,heigth);
+                //layout = new Layout(layout.Flat , new System.Drawing.PointF(Max/(float)layout.HexPerLine , Max / (float)layout.HexPerLine), layout.Origin,layout.HexPerLine);
+                //foreach (var item in Positions)
+                //{
+                //    var hexPosition = HexagonFunction.PixelToHexagon(layout ,
+                //                         new Model.Point(((float)item.Longitude ) , ((float)item.Latitude ) ));
+
+
+                //    //if (!ret.Any(x => x == HexagonFunction.HexagonRound( hexPosition)))
+                //        ret.Add((hexPosition));
+                //}
+                foreach (var item in PoliygonList)
+                {
+                    Hex HexAnterior = new Hex();
+
+                    var poligon = new List<Hex> ();
+                    var linea = new List<Hex>();
+                    var PointsHexCornes = new List<PointF>();
+                    for (int i = 0; i < item.Count ; i++)
+                    {
+                        var X =  (item[i].X - minX) * prop ;
+                        var Y = (maxY - minY - (item[i].Y - minY)) * prop ;
+                        var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
+                                                 new Model.Point(X,Y));
+                        ret.Add(hexPosition1);
+                        PointsHexCornes.Add(new PointF(HexagonFunction.HexagonToPixel(layout, hexPosition1).X, HexagonFunction.HexagonToPixel(layout, hexPosition1).Y));  
+                        if (i != 0 && hexPosition1 != HexAnterior)
+                        {
+                            linea = HexagonFunction.HexagonLinedraw(hexPosition1, HexAnterior);
+                            poligon.AddRange(linea);
+                            ret.AddRange(linea);
+
+                        }
+                        HexAnterior = HexagonFunction.PixelToHexagon(layout,
+                                                 new Model.Point(X,Y));
+                    }
+                    PaintHexInsidePolygon(PointsHexCornes, ref ret, layout);
+                    //PaintHexInsidePolygon2(PointsHexCornes, poligon, ref ret, layout);
                 }
             }
-                
-            return ret;
+    //        var pathToPy =  Cli.Wrap("which").WithArguments(new[] { "python3" }).ExecuteBufferedAsync();
+    //        var resOutput = pathToPy.GetAwaiter();
+    //        var result =  Cli.Wrap("/python/bin/python")
+    //.WithArguments(new[] { "my_python_script.py", "arg1", "arg2" })
+    //.WithWorkingDirectory("/app/python_scripts")
+    //.ExecuteBufferedAsync();
+
+    //        var output = result.ConfigureAwait(false);
+    //        var res = output.GetAwaiter();
+                return ret;
+        }
+        static float standardDeviation(IEnumerable<float> sequence)
+        {
+            float result = 0;
+
+            if (sequence.Any())
+            {
+                float average = sequence.Average();
+                float sum = sequence.Sum(d => MathF.Pow(d - average, 2));
+                result = MathF.Sqrt((sum) / sequence.Count());
+            }
+            return result;
         }
     }
+
 }

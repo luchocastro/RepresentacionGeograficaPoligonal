@@ -8,6 +8,7 @@
     <PackageReference Include="Aspose.Imaging" Version="22.12.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
     <PackageReference Include="BitMiracle.Jpeg2000.Net" Version="2.2.1178" />
+    <PackageReference Include="CliWrap" Version="3.6.0" />
     <PackageReference Include="CSJ2K" Version="3.0.0" />
     <PackageReference Include="GeoJSON.Net" Version="1.2.19" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0" />
