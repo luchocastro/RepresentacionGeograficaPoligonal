@@ -106,7 +106,17 @@ namespace Hexagon.Services.Helpers
                 return results;
             }
 
-            public static Coordinate QOffsetFromCube(float offset, Hex h)
+        public static List <Hex>  cube_linedraw(Hex  a, Hex b)
+        {
+            var N = HexagonDistance(a, b);
+    var results = new List<Hex>();
+            for (int i = 0; i <= N; i++) 
+                {
+                results.Add(HexagonRound(HexagonLerp (a, b, 1.0f / N * (float)i)));
+            }
+            return results;
+                    }
+        public static Coordinate QOffsetFromCube(float offset, Hex h)
             {
                 var col = h.Q;
                 var row = h.R + (h.Q + offset * ((int)h.Q & 1)) / 2;

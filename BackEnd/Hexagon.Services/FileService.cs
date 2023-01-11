@@ -152,7 +152,7 @@ namespace Hexagon.Services
         }
         public string GenerateImge(LayoutDto Layout, string PathFile)
         {
-            var layout = new Layout (Layout.Flat, Layout.Size, Layout.Origin,Layout.HexPerLine)  ;
+            var layout = new Layout (Layout.Flat, Layout.Size, Layout.Origin,Layout.HexPerLine,Layout.MaxPictureSizeX, Layout.MaxPictureSizeY)  ;
             var hexs = MapHelper.HexMapGeoJSon(PathFile, ref layout);
 
 

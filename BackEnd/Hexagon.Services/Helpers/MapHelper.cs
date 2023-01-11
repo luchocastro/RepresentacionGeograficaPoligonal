@@ -23,19 +23,42 @@ namespace Hexagon.Services.Helpers
             if (Points.Count == 0) return;
             var PolyX = Points.Select(X => (float)X.X).ToArray();
             var PolyY = Points.Select(X => (float)X.Y).ToArray();
-            var polyCorners = Points.Count - 1;
+            var polyCorners = Points.Count ;
             var IMAGE_TOP = Points.Min(x => x.Y);
             var IMAGE_BOT = Points.Max(x => x.Y);
             var IMAGE_RIGHT = Points.Max(x => x.X);
             var IMAGE_LEFT = Points.Min(x => x.X);
-            for (float y = IMAGE_TOP; y < IMAGE_BOT; y = y + MathF.Sqrt (3) * Layout.Size.Y )
+
+            for (float x = IMAGE_LEFT; x <= IMAGE_RIGHT; x = x + MathF.Sqrt(3) * Layout.Size.X)
+                for (float y = IMAGE_TOP; y <= IMAGE_BOT; y = y + MathF.Sqrt (3) * (Layout.Size.Y / 2) )
             {
-                for (float x = IMAGE_LEFT; x < IMAGE_RIGHT; x= x + MathF.Sqrt(3) * Layout.Size.X)
                     if (pointInPolygon(polyCorners, PolyX, PolyY, new PointF(x, y)))
                         Hexs.Add(HexagonFunction.PixelToHexagon(Layout,new Hexagon.Model.Point(x,y)));
             }
         }
-        static bool pointInPolygon(int polyCorners, float[] polyX, float[] polyY, PointF ToBeTested)
+        public static void PaintHexInsidePolygon2(List<PointF> Points, List<Hex> Poligon, ref List <Hex> Hexs,  Layout Layout)
+        {
+            if (Points.Count == 0) return;
+            var PolyX = Points.Select(X => (float)X.X).ToArray();
+            var PolyY = Points.Select(X => (float)X.Y).ToArray();
+            var polyCorners = Points.Count ;
+            var IMAGE_TOP = Points.Min(x => x.Y);
+            var IMAGE_BOT = Points.Max(x => x.Y);
+            var IMAGE_RIGHT = Points.Max(x => x.X);
+            var IMAGE_LEFT = Points.Min(x => x.X);
+ 
+            for (float y = IMAGE_TOP; y <= IMAGE_BOT; y = y + MathF.Sqrt (3) * Layout.Size.Y )
+            {
+                for (float x = IMAGE_LEFT; x <= IMAGE_RIGHT; x = x + MathF.Sqrt(3) * Layout.Size.X)
+                {
+                    var hexToTest = HexagonFunction.PixelToHexagon(Layout, new Model.Point(x, y));
+                    var countToLeft = Poligon.Where(X=> X.R==hexToTest.R && X.S > hexToTest.S).Count();
+                    var countToRight = Poligon.Where(X => X.R == hexToTest.R && X.S < hexToTest.S).Count();
+                    if (countToRight%2f==1f && countToLeft % 2f==1)
+                        Hexs.Add(HexagonFunction.PixelToHexagon(Layout, new Hexagon.Model.Point(x, y)));
+                }
+            }
+        }static bool pointInPolygon(int polyCorners, float[] polyX, float[] polyY, PointF ToBeTested)
         {
             float x = ToBeTested.X, y = ToBeTested.Y;
             int i, j = polyCorners - 1;
@@ -138,16 +161,17 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
                 var rangeX = (maxX - minX);
                 var rangeY = maxY - minY;
                 var prop = 0f;
-                var width = 3200f; //Convert.ToInt32 ( HexagonFunction.scaleLinear (1600f, 0,1600f, 0f , minX,maxY));
-                var heigth = 3200f; // Convert.ToInt32(HexagonFunction.scaleLinear(maxY, maxY - minY, 0, 0, 1600)); ;
+                
+                var width = 0f; //Convert.ToInt32 ( HexagonFunction.scaleLinear (1600f, 0,1600f, 0f , minX,maxY));
+                var heigth = 0f; // Convert.ToInt32(HexagonFunction.scaleLinear(maxY, maxY - minY, 0, 0, 1600)); ;
                 var mayor = 0f;
 
                 ///HAY QUE VER CÒMO HACERLO PERO LA DISTANCIA PROMEDIO ENTRE LOS HEXA TIENE QUE SER EL TAMAÑO DE LOS LADOS HEXAGAONOS   
                 var Max = (rangeX > rangeY ? rangeX : rangeY);
-                var Unidad = 3200f / layout.HexPerLine;
+
                 if (maxX - minX > maxY - minY)
                 {
-
+                    width = layout.MaxPictureSizeX;
                     prop = width / (maxX - minX);
                     heigth = ((maxY - minY)) * prop;
                     mayor = width;
@@ -155,13 +179,14 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
                 }
                 else
                 {
-
+                    heigth = layout.MaxPictureSizeY;
                     prop = heigth / (maxY - minY);
                     width = (maxX - maxX) * prop;
                     mayor = heigth;
                 }
 
-                layout = new Layout(layout.Flat , new System.Drawing.PointF(Unidad, Unidad), new PointF (width/2f, heigth/2f),layout.HexPerLine);
+                var Unidad = MathF.Round(mayor / layout.HexPerLine);
+                layout = new Layout(layout.Flat , new System.Drawing.PointF(Unidad, Unidad), new PointF (width/2f, heigth/2f),layout.HexPerLine,width,heigth);
                 //layout = new Layout(layout.Flat , new System.Drawing.PointF(Max/(float)layout.HexPerLine , Max / (float)layout.HexPerLine), layout.Origin,layout.HexPerLine);
                 //foreach (var item in Positions)
                 //{
@@ -176,21 +201,21 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
                 {
                     Hex HexAnterior = new Hex();
 
-                    var poligon = new List<List<Hex>>();
+                    var poligon = new List<Hex> ();
                     var linea = new List<Hex>();
                     var PointsHexCornes = new List<PointF>();
                     for (int i = 0; i < item.Count ; i++)
                     {
-                        var X = (item[i].X - minX) * prop;
-                        var Y = (maxY - minY - (item[i].Y - minY)) * prop;
+                        var X =  (item[i].X - minX) * prop ;
+                        var Y = (maxY - minY - (item[i].Y - minY)) * prop ;
                         var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
                                                  new Model.Point(X,Y));
                         ret.Add(hexPosition1);
+                        PointsHexCornes.Add(new PointF(HexagonFunction.HexagonToPixel(layout, hexPosition1).X, HexagonFunction.HexagonToPixel(layout, hexPosition1).Y));  
                         if (i != 0 && hexPosition1 != HexAnterior)
                         {
-                            PointsHexCornes.Add  (new PointF(X,Y));
                             linea = HexagonFunction.HexagonLinedraw(hexPosition1, HexAnterior);
-                            poligon.Add(linea);
+                            poligon.AddRange(linea);
                             ret.AddRange(linea);
 
                         }
@@ -198,7 +223,7 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
                                                  new Model.Point(X,Y));
                     }
                     PaintHexInsidePolygon(PointsHexCornes, ref ret, layout);
-                   
+                    //PaintHexInsidePolygon2(PointsHexCornes, poligon, ref ret, layout);
                 }
             }
     //        var pathToPy =  Cli.Wrap("which").WithArguments(new[] { "python3" }).ExecuteBufferedAsync();
