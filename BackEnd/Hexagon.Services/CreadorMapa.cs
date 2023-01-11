@@ -20,7 +20,7 @@ namespace Hexagon.Services
             ;
             foreach (var hexagon in Hexs )
             {
-                Color color = Color.FromArgb( 135,  254, hexagon.RGBColor[2]);
+                Color color = Color.FromArgb(hexagon.RGBColor[0], hexagon.RGBColor[1], hexagon.RGBColor[2]);
                 Pen Pen = new Pen(color);
                 
                 var Points = Hexagon.Services.Helpers.HexagonFunction.GetPoints(hexagon, layout);

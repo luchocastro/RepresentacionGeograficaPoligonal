@@ -33,32 +33,14 @@ namespace Hexagon.Services.Helpers
                 for (float y = IMAGE_TOP; y <= IMAGE_BOT; y = y + MathF.Sqrt (3) * (Layout.Size.Y / 2) )
             {
                     if (pointInPolygon(polyCorners, PolyX, PolyY, new PointF(x, y)))
-                        Hexs.Add(HexagonFunction.PixelToHexagon(Layout,new Hexagon.Model.Point(x,y)));
-            }
-        }
-        public static void PaintHexInsidePolygon2(List<PointF> Points, List<Hex> Poligon, ref List <Hex> Hexs,  Layout Layout)
-        {
-            if (Points.Count == 0) return;
-            var PolyX = Points.Select(X => (float)X.X).ToArray();
-            var PolyY = Points.Select(X => (float)X.Y).ToArray();
-            var polyCorners = Points.Count ;
-            var IMAGE_TOP = Points.Min(x => x.Y);
-            var IMAGE_BOT = Points.Max(x => x.Y);
-            var IMAGE_RIGHT = Points.Max(x => x.X);
-            var IMAGE_LEFT = Points.Min(x => x.X);
- 
-            for (float y = IMAGE_TOP; y <= IMAGE_BOT; y = y + MathF.Sqrt (3) * Layout.Size.Y )
-            {
-                for (float x = IMAGE_LEFT; x <= IMAGE_RIGHT; x = x + MathF.Sqrt(3) * Layout.Size.X)
-                {
-                    var hexToTest = HexagonFunction.PixelToHexagon(Layout, new Model.Point(x, y));
-                    var countToLeft = Poligon.Where(X=> X.R==hexToTest.R && X.S > hexToTest.S).Count();
-                    var countToRight = Poligon.Where(X => X.R == hexToTest.R && X.S < hexToTest.S).Count();
-                    if (countToRight%2f==1f && countToLeft % 2f==1)
-                        Hexs.Add(HexagonFunction.PixelToHexagon(Layout, new Hexagon.Model.Point(x, y)));
+                        {
+                        var hex = HexagonFunction.PixelToHexagon(Layout, new Hexagon.Model.Point(x, y));
+                        hex.RGBColor = new int[] { Color.Pink.R, Color.Pink.R, Color.Pink.B };
+                        Hexs.Add(hex);
+                    }
                 }
-            }
-        }static bool pointInPolygon(int polyCorners, float[] polyX, float[] polyY, PointF ToBeTested)
+        }
+        static bool pointInPolygon(int polyCorners, float[] polyX, float[] polyY, PointF ToBeTested)
         {
             float x = ToBeTested.X, y = ToBeTested.Y;
             int i, j = polyCorners - 1;
@@ -181,7 +163,7 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
                 {
                     heigth = layout.MaxPictureSizeY;
                     prop = heigth / (maxY - minY);
-                    width = (maxX - maxX) * prop;
+                    width = (maxX - minX) * prop;
                     mayor = heigth;
                 }
 
@@ -210,20 +192,26 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
                         var Y = (maxY - minY - (item[i].Y - minY)) * prop ;
                         var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
                                                  new Model.Point(X,Y));
+                        hexPosition1.RGBColor =  new int[] { Color.Blue.R, Color.Blue.R, Color.Blue.B };
                         ret.Add(hexPosition1);
-                        PointsHexCornes.Add(new PointF(HexagonFunction.HexagonToPixel(layout, hexPosition1).X, HexagonFunction.HexagonToPixel(layout, hexPosition1).Y));  
+                        PointsHexCornes.Add(new PointF(X, Y));  
                         if (i != 0 && hexPosition1 != HexAnterior)
                         {
                             linea = HexagonFunction.HexagonLinedraw(hexPosition1, HexAnterior);
                             poligon.AddRange(linea);
+                            for (int x=0;x<linea.Count();x++)
+                            {
+                                var hex = linea[x];
+                                hex.RGBColor = new int[] { Color.Blue.R, Color.Blue.R, Color.Blue.B };
+
+                            }
                             ret.AddRange(linea);
 
                         }
                         HexAnterior = HexagonFunction.PixelToHexagon(layout,
                                                  new Model.Point(X,Y));
                     }
-                    PaintHexInsidePolygon(PointsHexCornes, ref ret, layout);
-                    //PaintHexInsidePolygon2(PointsHexCornes, poligon, ref ret, layout);
+                    //PaintHexInsidePolygon(PointsHexCornes, ref ret, layout); 
                 }
             }
     //        var pathToPy =  Cli.Wrap("which").WithArguments(new[] { "python3" }).ExecuteBufferedAsync();
