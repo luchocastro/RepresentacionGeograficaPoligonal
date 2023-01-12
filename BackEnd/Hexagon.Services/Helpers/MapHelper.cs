@@ -136,22 +136,7 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
 
 
                     }
-                    //foreach (int i = 0; if++ featureItem. .  )
-                    //{
-                    //    MultiPolygon multiPolygon = featureItem.Geometry as MultiPolygon;
-                    //    foreach (var multiPolygonCoordinates in multiPolygon.Coordinates)
-                    //    {
-                    //        foreach (var item1 in  multiPolygonCoordinates.Coordinates)
-                    //        {
-                    //            foreach (var item2 in item1.Coordinates)
-                    //            {
-                    //                GeoJSON.Net.Converters.PositionConverter PositionConverter = new PositionConverter();
-                    //                //Here I want to add value 0 altitude coordinate
-                    //                Positions.Add(item2);
-                    //             }
-                    //        }
-                    //    }
-                    //}
+
                 }
                 var minX = (float) Positions.Min(x => x.Longitude);
                 var maxX = (float)Positions.Max(x => x.Longitude);
@@ -162,41 +147,43 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
                 var rangeY = maxY - minY;
                 var prop = 0f;
                 
-                var width = 0f; //Convert.ToInt32 ( HexagonFunction.scaleLinear (1600f, 0,1600f, 0f , minX,maxY));
-                var heigth = 0f; // Convert.ToInt32(HexagonFunction.scaleLinear(maxY, maxY - minY, 0, 0, 1600)); ;
+                var width = 0f; 
+                var heigth = 0f;
                 var mayor = 0f;
-
+                var Unidad = 2f;
                 ///HAY QUE VER CÒMO HACERLO PERO LA DISTANCIA PROMEDIO ENTRE LOS HEXA TIENE QUE SER EL TAMAÑO DE LOS LADOS HEXAGAONOS   
                 var Max = (rangeX > rangeY ? rangeX : rangeY);
 
                 if (maxX - minX > maxY - minY)
                 {
+                    if(MathF.Floor(layout.MaxPictureSizeX / layout.HexPerLine) > Unidad  )
+                    {
+                        Unidad = MathF.Floor(layout.MaxPictureSizeX / layout.HexPerLine);
+                    }
+                    layout.MaxPictureSizeX = layout.HexPerLine * Unidad;
                     width = layout.MaxPictureSizeX;
-                    prop = width / (maxX - minX);
-                    heigth = ((maxY - minY)) * prop;
+                    prop = MathF.Floor( width / (maxX - minX));
+                    heigth = MathF.Ceiling( ((maxY - minY)) * prop);
                     mayor = width;
+                    layout.MaxPictureSizeY = heigth;
 
                 }
                 else
                 {
+                    if (MathF.Floor(layout.MaxPictureSizeY / layout.HexPerLine) > Unidad)
+                    {
+                        Unidad = MathF.Floor(layout.MaxPictureSizeY / layout.HexPerLine);
+                    }
+                    layout.MaxPictureSizeY = layout.HexPerLine * Unidad ;
                     heigth = layout.MaxPictureSizeY;
-                    prop = heigth / (maxY - minY);
-                    width = (maxX - maxX) * prop;
+                    prop = MathF.Floor( heigth / (maxY - minY));
+                    width = MathF.Ceiling((maxX - minX) * prop);
                     mayor = heigth;
+                    layout.MaxPictureSizeX = width ;
                 }
 
-                var Unidad = MathF.Round(mayor / layout.HexPerLine);
-                layout = new Layout(layout.Flat , new System.Drawing.PointF(Unidad, Unidad), new PointF (width/2f, heigth/2f),layout.HexPerLine,width,heigth);
-                //layout = new Layout(layout.Flat , new System.Drawing.PointF(Max/(float)layout.HexPerLine , Max / (float)layout.HexPerLine), layout.Origin,layout.HexPerLine);
-                //foreach (var item in Positions)
-                //{
-                //    var hexPosition = HexagonFunction.PixelToHexagon(layout ,
-                //                         new Model.Point(((float)item.Longitude ) , ((float)item.Latitude ) ));
+                layout = new Layout(layout.Flat , new System.Drawing.PointF(Unidad, Unidad), new PointF (width/2f, heigth/2f),layout.HexPerLine,width,heigth, layout.FillPolygon);
 
-
-                //    //if (!ret.Any(x => x == HexagonFunction.HexagonRound( hexPosition)))
-                //        ret.Add((hexPosition));
-                //}
                 foreach (var item in PoliygonList)
                 {
                     Hex HexAnterior = new Hex();
@@ -222,20 +209,101 @@ public static List<Hex> HexMapGeoJSon (string PathJsonMap, ref Layout layout)
                         HexAnterior = HexagonFunction.PixelToHexagon(layout,
                                                  new Model.Point(X,Y));
                     }
-                    PaintHexInsidePolygon(PointsHexCornes, ref ret, layout);
-                    //PaintHexInsidePolygon2(PointsHexCornes, poligon, ref ret, layout);
+                    if(layout.FillPolygon)
+                        PaintHexInsidePolygon(PointsHexCornes, ref ret, layout);
+                    
                 }
             }
-    //        var pathToPy =  Cli.Wrap("which").WithArguments(new[] { "python3" }).ExecuteBufferedAsync();
-    //        var resOutput = pathToPy.GetAwaiter();
-    //        var result =  Cli.Wrap("/python/bin/python")
-    //.WithArguments(new[] { "my_python_script.py", "arg1", "arg2" })
-    //.WithWorkingDirectory("/app/python_scripts")
-    //.ExecuteBufferedAsync();
+    
+                return ret.Distinct().ToList();
+        }
+        public HexagonGrid HexGridFomPolygon( List<List<Model.Point>> PointsToTransformToHex, ref Layout Layout )
+        {
+            HexagonGrid ret = new HexagonGrid();
+            var PoligonList = PointsToTransformToHex.SelectMany(list => list)
+  .Distinct()
+  .ToList(); 
+            var minX = PoligonList.Min(x => x.X);
+            var maxX = PoligonList.Max(x => x.X);
 
-    //        var output = result.ConfigureAwait(false);
-    //        var res = output.GetAwaiter();
-                return ret;
+            var minY = PoligonList.Min(x => x.Y); ;
+            var maxY = PoligonList.Max(x => x.Y) ;
+            var rangeX = (maxX - minX);
+            var rangeY = maxY - minY;
+            var prop = 0f;
+
+            var width = 0f;
+            var heigth = 0f;
+            var mayor = 0f;
+            var Unidad = 2f;
+            ///HAY QUE VER CÒMO HACERLO PERO LA DISTANCIA PROMEDIO ENTRE LOS HEXA TIENE QUE SER EL TAMAÑO DE LOS LADOS HEXAGAONOS   
+            var Max = (rangeX > rangeY ? rangeX : rangeY);
+
+            if (maxX - minX > maxY - minY)
+            {
+                if (MathF.Floor(Layout.MaxPictureSizeX / Layout.HexPerLine) > Unidad)
+                {
+                    Unidad = MathF.Floor(Layout.MaxPictureSizeX / Layout.HexPerLine);
+                }
+                Layout.MaxPictureSizeX = Layout.HexPerLine * Unidad;
+                width = Layout.MaxPictureSizeX;
+                prop = MathF.Floor(width / (maxX - minX));
+                heigth = MathF.Ceiling(((maxY - minY)) * prop);
+                mayor = width;
+                Layout.MaxPictureSizeY = heigth;
+            }
+            else
+            {
+                if (MathF.Floor(Layout.MaxPictureSizeY / Layout.HexPerLine) > Unidad)
+                {
+                    Unidad = MathF.Floor(Layout.MaxPictureSizeY / Layout.HexPerLine);
+                }
+                Layout.MaxPictureSizeY = Layout.HexPerLine * Unidad;
+                heigth = Layout.MaxPictureSizeY;
+                prop = MathF.Floor(heigth / (maxY - minY));
+                width = MathF.Ceiling((maxX - minX) * prop);
+                mayor = heigth;
+                Layout.MaxPictureSizeX = width;
+            }
+
+            Layout = new Layout(Layout.Flat, new System.Drawing.PointF(Unidad, Unidad), new PointF(width / 2f, heigth / 2f), Layout.HexPerLine, width, heigth, Layout.FillPolygon);
+
+            foreach (var item in PointsToTransformToHex)
+            {
+                Hex HexAnterior = new Hex();
+
+                var poligon = new List<Hex>();
+                var linea = new List<Hex>();
+                var PointsHexCornes = new List<PointF>();
+                for (int i = 0; i < item.Count; i++)
+                {
+                    var X = (item[i].X - minX) * prop;
+                    var Y = (maxY - minY - (item[i].Y - minY)) * prop;
+                    var hexPosition1 = HexagonFunction.PixelToHexagon(Layout,
+                                             new Model.Point(X, Y));
+                    ret.Add(hexPosition1);
+                    PointsHexCornes.Add(new PointF(HexagonFunction.HexagonToPixel(Layout, hexPosition1).X, HexagonFunction.HexagonToPixel(Layout, hexPosition1).Y));
+                    if (i != 0 && hexPosition1 != HexAnterior)
+                    {
+                        linea = HexagonFunction.HexagonLinedraw(hexPosition1, HexAnterior);
+                        poligon.AddRange(linea);
+                        ret..AddRange(linea);
+
+                    }
+                    HexAnterior = HexagonFunction.PixelToHexagon(Layout,
+                                             new Model.Point(X, Y));
+                }
+                if (Layout.FillPolygon)
+                    PaintHexInsidePolygon(PointsHexCornes, ref ret, Layout);
+
+            }
+        }
+    
+                return ret.Distinct().ToList();
+
+            return ret;
+
+
         }
         static float standardDeviation(IEnumerable<float> sequence)
         {
