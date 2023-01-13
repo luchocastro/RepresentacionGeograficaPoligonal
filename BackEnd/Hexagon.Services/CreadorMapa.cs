@@ -24,9 +24,11 @@ namespace Hexagon.Services
                 Pen Pen = new Pen(color);
                 
                 var Points = Hexagon.Services.Helpers.HexagonFunction.GetPoints(hexagon, layout);
-                
-                Pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Solid; 
-                Graphics.DrawPolygon ( Pen, Points.Select(x => new System.Drawing.PointF(MathF.Round(x.X,0), MathF.Round(x.Y))).ToArray());
+                if (Points.Where(x => x.X < 0).Count() > 0 || Points.Where(x => x.Y < 0).Count() > 0)
+                    throw new ArgumentOutOfRangeException();
+                Pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Solid;
+                Graphics.DrawPolygon ( Pen, Points.Select(x => new System.Drawing.PointF(MathF.Round(x.X , 0) , MathF.Round(x.Y))).ToArray());
+
             }
             Bitmap.Save(new FileStream (Path.GetDirectoryName(PathFile) + @"\image" + Path.GetFileNameWithoutExtension(PathFile) + ".bmp", FileMode.Create )
 , ImageFormat.Bmp);
