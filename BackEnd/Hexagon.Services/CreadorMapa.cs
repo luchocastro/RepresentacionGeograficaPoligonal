@@ -11,11 +11,13 @@ namespace Hexagon.Services
     public class CreadorMapaService
     {
         public HexagonGrid HexagonGrid = new HexagonGrid();
-        public static string CreadorMapa(List<Hex> Hexs, string PathFile, Layout layout)
+        public static string CreadorMapa(ref HexagonGrid HexagonGrid, string PathFile)
         {
-            HexagonGrid HexagonGrid = new HexagonGrid();
+            Layout layout = HexagonGrid.Layout;
+            List<Hex> Hexs = HexagonGrid.HexagonMap;
+            var margen = (int) layout.Size.X; 
              MemoryStream MemoryStream = new MemoryStream();
-             Bitmap Bitmap = new Bitmap((int)layout.MaxPictureSizeX, (int)layout.MaxPictureSizeY);
+             Bitmap Bitmap = new Bitmap((int)layout.MaxPictureSizeX  + margen * 4 , (int)(layout.MaxPictureSizeY + MathF.Sqrt(3)* margen * 2));;
             Graphics Graphics = Graphics.FromImage(Bitmap);
             ;
             foreach (var hexagon in Hexs )
@@ -25,9 +27,10 @@ namespace Hexagon.Services
                 
                 var Points = Hexagon.Services.Helpers.HexagonFunction.GetPoints(hexagon, layout);
                 if (Points.Where(x => x.X < 0).Count() > 0 || Points.Where(x => x.Y < 0).Count() > 0)
-                    throw new ArgumentOutOfRangeException();
+                    Console.WriteLine(Points.Select(x=> x.X.ToString() +":"+x.Y.ToString()).Aggregate(( pointsAcu, next)=> pointsAcu + next + "/"  ));
                 Pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Solid;
-                Graphics.DrawPolygon ( Pen, Points.Select(x => new System.Drawing.PointF(MathF.Round(x.X , 0) , MathF.Round(x.Y))).ToArray());
+                 
+                Graphics.DrawPolygon ( Pen, Points.Select(x => new System.Drawing.PointF( x.X  ,  x.Y )).ToArray());
 
             }
             Bitmap.Save(new FileStream (Path.GetDirectoryName(PathFile) + @"\image" + Path.GetFileNameWithoutExtension(PathFile) + ".bmp", FileMode.Create )

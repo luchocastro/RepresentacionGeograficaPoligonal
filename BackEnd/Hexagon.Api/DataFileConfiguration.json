@@ -7,5 +7,16 @@
       "DecimalSeparator": "Char",
       "StringDelimitator": "Char"
     }
+  },
+  {
+    "FileType": "GeoJson",
+    "FileProperties": {
+      "DecimalSeparator": "Char"
+    }
   }
+]
+    
+  
+  
+
 ]

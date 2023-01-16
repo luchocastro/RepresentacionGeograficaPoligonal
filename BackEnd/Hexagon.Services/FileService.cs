@@ -152,16 +152,35 @@ namespace Hexagon.Services
         }
         public string GenerateImge(LayoutDto Layout, string PathFile)
         {
-            var layout = new Layout (Layout.Flat, Layout.Size, Layout.Origin,Layout.HexPerLine,Layout.MaxPictureSizeX, Layout.MaxPictureSizeY, Layout.FillPolygon  )  ;
-            var hexs = MapHelper.HexMapGeoJSon(PathFile, ref layout);
+            HexagonGrid HexagonGrid = new HexagonGrid();
+            var layout = new Layout(Layout.Flat, Layout.Size, Layout.Origin, Layout.HexPerLine,
+                Layout.MaxPictureSizeX, Layout.MaxPictureSizeY, Layout.FillPolygon);
+            if (Layout.MapDefinition!=null)
+                layout.MapDefinition = new MapDefinition {
+                ColumnForMapGroup = Layout.MapDefinition.ColumnForMapGroup, ColumnNameForX = Layout.MapDefinition.ColumnNameForX,
+                ColumnNameForY = Layout.MapDefinition.ColumnNameForY, ColumnsNameForFuntion = Layout.MapDefinition.ColumnsNameForFuntion,
+                FunctionName = Layout.MapDefinition.FunctionName,
+                 ActionToDoWithUncasted = ( EnumActionToDoWithUncasted)Enum.Parse(typeof(EnumAlowedDataType), Layout.MapDefinition.ActionToDoWithUncasted.ToString())
+            };
+            HexagonGrid.Layout = layout;
+            var hexs = MapHelper.HexMapGeoJSon(PathFile,  ref HexagonGrid);
 
 
             using (StreamWriter StreamWriter = new StreamWriter(Path.Combine(Path.GetDirectoryName (PathFile), Path.GetFileNameWithoutExtension(PathFile) + ".jsonHex")))
             {
-                StreamWriter.Write(JsonConvert.SerializeObject(hexs));
+                //var hexText = JsonConvert.SerializeObject(hexs.Select(hex => new object[] { hex.BorderColor, hex.BorderType, hex.Color, hex.Opacity, hex.RGBColor, hex.Q, hex.R, hex.S, hex.Value, hex.Values }));
+                foreach (var hex in hexs)
+                {
+                    
+                    StreamWriter.WriteLine( hex.ListValues);
+                    
+                    //StreamWriter.Write(JsonConvert.SerializeObject( hexs.Select(hex => new object[] { hex.BorderColor, hex.BorderType, hex.Color, hex.Opacity, hex.RGBColor, hex.Q, hex.R, hex.S, hex.Value, hex.Values })));
+                    StreamWriter.Flush();
+                }
+
                 StreamWriter.Close();
             }
-            return CreadorMapaService.CreadorMapa(hexs, PathFile, layout);
+            return CreadorMapaService.CreadorMapa(ref HexagonGrid, PathFile );
             
         }
         public List<ProyectDataDTO> GetProyects(string Path, string Name )

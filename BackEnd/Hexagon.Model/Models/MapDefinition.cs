@@ -4,17 +4,28 @@ using System.Text;
 
 namespace Hexagon.Model.Models
 {
-    public struct MapDefinition
-    {
-        public Layout Layout { get; set; }
+    public class MapDefinition
+    { 
         public string ColumnNameForX { get; set; }
         public string ColumnNameForY { get; set; }
         public string ColumnForMapGroup { get; set; }
         public List<string> ColumnsNameForFuntion { get; set; }
         public string FunctionName { get; set; }
         public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
+        public MapDefinition( )
+             
+        {
+
+            this.ColumnNameForX = "No Set";
+            this.ColumnNameForY = "No Set";
+            this.ColumnsNameForFuntion = null;  
+            this.ColumnForMapGroup = "No Set";
+            this.FunctionName = "No Set";
+
+            ActionToDoWithUncasted = EnumActionToDoWithUncasted.DeleteData;
+        }
         public MapDefinition(
-        Layout _Layout,
+         
         string _ColumnNameForX,
         string _ColumnNameForY,
         string _ColumnForMapGroup,
@@ -22,7 +33,7 @@ namespace Hexagon.Model.Models
         string _FunctionName,
         EnumActionToDoWithUncasted _ActionToDoWithUncasted)
         {
-            this.Layout = _Layout;
+            
             this.ColumnNameForX = _ColumnNameForX;
             this.ColumnNameForY = _ColumnNameForY;
             this.ColumnsNameForFuntion = _ColumnsNameForFuntion;

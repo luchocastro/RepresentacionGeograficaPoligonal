@@ -35,9 +35,9 @@ namespace Hexagon.Model
 
         
         public List<Hex> HexagonMap { get; set; }
-        public Layout Layout { get; }
-        public List<EventPoint> PuntosACalcular { get; }
-        public Function Function { get; }
+        public Layout Layout { get;  set; }
+        public List<EventPoint> PuntosACalcular { get; set; }
+        public Function Function { get; set; }
         
         public IEnumerator GetEnumerator()
         {

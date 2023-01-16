@@ -8,8 +8,10 @@ namespace Hexagon.Model.Models
 {
     public struct ImageDefinition
     {
+
         public ImageDefinition(List<Model.Point> PointsToTransform, Layout Layout)
         {
+
             this.OriginalMinX = PointsToTransform.Min(x => x.X);
             this.OriginalMaxX = PointsToTransform.Max(x => x.X);
             this.OriginalMinY = PointsToTransform.Min(x => x.Y);
@@ -17,6 +19,7 @@ namespace Hexagon.Model.Models
             this.OriginalRangeX = this.OriginalMaxX - this.OriginalMinX;
             this.OriginalRangeY = this.OriginalMaxY - this.OriginalMinY ;
             this.HexagonSize = 2f;
+
             if (this.OriginalRangeX > this.OriginalRangeY)
             {
                 if (MathF.Floor(Layout.MaxPictureSizeX / Layout.HexPerLine) > this.HexagonSize)
@@ -40,8 +43,7 @@ namespace Hexagon.Model.Models
                 TransformedWidth = MathF.Ceiling( OriginalRangeX * ProportationToScale);
                 
             }
-            TransformedWidth = TransformedWidth + HexagonSize * 2;
-            TransformedHeigth  = TransformedHeigth + MathF.Ceiling( HexagonSize * MathF.Sqrt(3));
+
             MaxProportion = OriginalRangeX > OriginalRangeY ? OriginalRangeX : OriginalRangeY;
         }
         public float OriginalMinX { get;  }
