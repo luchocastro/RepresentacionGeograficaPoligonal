@@ -32,11 +32,11 @@ namespace Hexagon.Services.CalcStrategy
                     if(method.IsStatic && method.IsPublic)
                     { 
                     var parameters = method.GetParameters();
-                    Dictionary<string, Type> Params = new Dictionary<string, Type>();
+                    Dictionary<string, string> Params = new Dictionary<string, string>();
                     foreach (var parameter in parameters)
                     {
 
-                        Params.Add(parameter.Name, parameter.GetType());
+                        Params.Add(parameter.Name, parameter.ParameterType.FullName  );
                     }
                     Function function = new Function( FullClassName, objtype.FullName, method.Name, Params);
                     ret.Add(function);

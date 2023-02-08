@@ -1,12 +1,16 @@
-﻿using System;
+﻿using Hexagon.Model.Models;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Hexagon.Model
 {
 
     public struct Hex : IEquatable<Hex>
     {
-        public Hex(float q, float r, float s)
+        
+
+        public Hex(float q =0, float r = 0, float s = 0)
             {
             if (Math.Round(q + r + s) != 0) throw new Exception("q + r + s must be 0");
 
@@ -30,13 +34,26 @@ namespace Hexagon.Model
         }
         
 
-        public float Q { get; }
-        public float R { get; }
-        public float S { get; }
+        public float Q { get; set; }
+        public float R { get; set; }
+        public float S { get; set; }
         public List <EventPoint> Values { get; set; }
-         
+        public string ListValues
+        { get {
+                string ret = "Hexagon:{";
+                ret += "Q:" + Q.ToString() + ",";
+                ret += "R:" + R.ToString() + ",";
+                ret += "S:" + S.ToString() + ",";
+                ret += "Value:" +Value.ToString() + ",Values:[";
+                foreach (var item in Values)
+                {
+                    ret += item.ListValues + ",";
+                }
+                ret += "]}";
+                return ret; } }
+
         public List<Hex> Hexagonos { get; }
-        public override string ToString() => $"({Q}, {R} , {S}, {Value})";
+        public override string ToString() => $"({Q}, {R} , {S}  )";
         public float Length()
         {
             return (Math.Abs(this.Q) + Math.Abs(this.R) + Math.Abs(this.S)) / 2;
@@ -78,6 +95,6 @@ namespace Hexagon.Model
         public float Opacity { get; set; }
         public string BorderColor { get; set; }
         public string BorderType { get; set; }
-
+        
     }
 }

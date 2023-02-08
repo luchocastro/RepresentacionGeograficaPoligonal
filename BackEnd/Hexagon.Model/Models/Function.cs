@@ -7,7 +7,7 @@ namespace Hexagon.Model
     public struct Function
     {
 
-        public Function(string Path, string FullClassName, string FunctionName, Dictionary<string, Type> Types)
+        public Function(string Path, string FullClassName, string FunctionName, Dictionary<string, string> Types)
         {
             this.Path = Path;
             this.FullClassName = FullClassName;
@@ -18,7 +18,7 @@ namespace Hexagon.Model
         public string Path { get; }
         public string FullClassName { get; }
         public string FunctionName { get; }
-        public Dictionary<string, Type> Types { get; }
+        public Dictionary<string, string> Types { get; }
 
     }
 }

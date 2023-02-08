@@ -1,10 +1,11 @@
-﻿using System.Drawing;
+﻿using Hexagon.Model.Models;
+using System.Drawing;
 using Math = System.MathF;
 namespace Hexagon.Model
 {
     public struct Layout
     {
-        public Layout(bool flat, PointF size, PointF origin,int HexPerLine, float MaxPictureSizeX = 3200f, float MaxPictureSizeY = 3200f, bool FillPolygon = false)
+        public Layout(bool flat, PointF size, PointF origin,int HexPerLine, float MaxPictureSizeX = 3200f, float MaxPictureSizeY = 3200f, bool FillPolygon = false,   MapDefinition MapDefinition = null)
         {
             if (flat)
                 this.Orientation = new Orientation(3.0f / 2.0f, 0.0f, Math.Sqrt(3.0f) / 2.0f, Math.Sqrt(3.0f), 2.0f / 3.0f, 0.0f, -1.0f / 3.0f, Math.Sqrt(3.0f) / 3.0f, 0.0f);
@@ -18,6 +19,8 @@ namespace Hexagon.Model
             this.MaxPictureSizeX = MaxPictureSizeX;
             this.MaxPictureSizeY = MaxPictureSizeY;
             this.FillPolygon = FillPolygon;
+            this.MapDefinition = MapDefinition;
+            this.PaintLines = true;
         }
         public Orientation Orientation { get; set; }
         public PointF Size { get; set; }
@@ -25,8 +28,9 @@ namespace Hexagon.Model
         public int HexPerLine { get; set; }
         public bool Flat { get; set; }
         public float MaxPictureSizeX { get; set; }
-
+        public MapDefinition MapDefinition { get; set; }
         public float MaxPictureSizeY { get; set; }
         public bool FillPolygon { get; set; }
+        public bool PaintLines { get; set; }
     }
 }
