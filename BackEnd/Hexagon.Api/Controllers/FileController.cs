@@ -25,7 +25,7 @@ namespace Hexagon.Api.Controllers
     [ApiController]
     [Authorize(AuthenticationSchemes
             = "BasicAuthentication")]
-    public class FileController : ControllerBase
+    public class FileController :  HexBaseControler
     {
         string UserName;
         private readonly IConfiguration Configuration;
@@ -40,7 +40,7 @@ namespace Hexagon.Api.Controllers
             this.Configuration = Configuration;
             this.FormulasResumen = FormulasResumen;
             this.Mapper = Mapper;
-
+            if (HttpContext.Request.Headers. )
         }
         [HttpPost("[action]"), DisableRequestSizeLimit]
         public async Task<IActionResult> UploadFile(List<IFormFile> files, string ProjectName, string DataSetName ="")
@@ -149,6 +149,9 @@ namespace Hexagon.Api.Controllers
             return Ok( FormulasResumen.FormulasDisponibles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, settings.PathFunctions)));
         }
 
-
+        public string HexBaseControler(string Name, string Pass)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
