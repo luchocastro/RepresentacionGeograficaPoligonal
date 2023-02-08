@@ -4,10 +4,11 @@ using System.Text;
 
 namespace Hexagon.Model.Models
 {
-    public class User
+    public class User : IModelPersistible
     {
         public string Name { get; set; }
         public string Password { get; set; }
         public UserSelectedOpctions UserSelectedOpctions { get; set; }
+        public string ID { get ; set ; }
     }
 }

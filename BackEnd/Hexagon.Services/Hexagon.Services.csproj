@@ -11,6 +11,8 @@
     <PackageReference Include="CliWrap" Version="3.6.0" />
     <PackageReference Include="CSJ2K" Version="3.0.0" />
     <PackageReference Include="GeoJSON.Net" Version="1.2.19" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

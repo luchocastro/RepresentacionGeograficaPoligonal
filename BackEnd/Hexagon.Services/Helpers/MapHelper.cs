@@ -221,6 +221,52 @@ namespace Hexagon.Services.Helpers
         //    return ret.Distinct().ToList();
         //}
 
+        public static void   HexMap (ProyectData ProyectData, string DataName, ref HexagonGrid HexagonGrid)
+        {
+            List<Hex> ret = new List<Hex>();
+            Layout Layout = HexagonGrid.Layout;
+            string NativeToUse = ProyectData.AnalizedFiles.Where(x => x.FileName == DataName).FirstOrDefault ().FileName;
+            if (NativeToUse == "")
+                return  ;
+            NativeFile NativeFile = new NativeFile();
+            var PoliygonList = new List<List<Model.Point>>();
+            using (StreamReader file = File.OpenText(Path.Combine(ProyectData.Location.ProyectFolder,ProyectData.Location.FileFolder,"Data"+NativeToUse)))
+            {
+                var mapa = file.ReadToEnd();
+                NativeFile = JsonConvert.DeserializeObject<NativeFile>(mapa);
+
+            }
+            if (NativeFile.Content.Count() == 0)
+                return ;
+
+            var NameOfGroup = Layout.MapDefinition.ColumnForMapGroup;
+            var ColumnX = Layout.MapDefinition.ColumnNameForX;
+            var ColumnY = Layout.MapDefinition.ColumnNameForY;
+            if (NameOfGroup != "")
+            {
+                var col = NativeFile.Columns.Where(x => x.Name == NameOfGroup).FirstOrDefault();
+
+                var pols = NativeFile.Content.Select(x => x.Fieds[col.OriginalPosition]);
+                PoliygonList = pols.Select(X => X.Split(",").Select(y => new Model.Point((float)Convert.ToDouble(y[0]), (float)Convert.ToDouble(y[1]))).ToList()).ToList();
+                Layout.PaintLines = true;
+            }
+            else
+            {
+                var colX = NativeFile.Columns.Where(x => x.Name == ColumnX).FirstOrDefault();
+                var colY = NativeFile.Columns.Where(x => x.Name == ColumnY).FirstOrDefault();
+                Layout.PaintLines = false;
+                PoliygonList = NativeFile.Content.Select(y => new Model.Point[] { new Model.Point((float)Convert.ToDouble(y.Fieds[colX.OriginalPosition]), (float)Convert.ToDouble(y.Fieds[colY.OriginalPosition]))}.ToList()).ToList();
+            }
+
+            var EventPoints = new List<EventPoint>();
+            HexagonGrid.PuntosACalcular = new List<EventPoint>();
+
+            HexagonGrid.Layout = Layout;
+            ret = HexListFomPolygon(PoliygonList, ref HexagonGrid);
+            HexagonGrid.HexagonMap = ret;
+
+           // return ret.Distinct().ToList();
+        }
         public static List<Hex> HexMapGeoJSon(string PathJsonMap, ref HexagonGrid HexagonGrid)
         {
             List<Hex> ret = new List<Hex>();
@@ -431,7 +477,8 @@ namespace Hexagon.Services.Helpers
                     var Y = MathF.Sqrt(3) * Layout.Size.Y + (ImageDefinition.OriginalMaxY - item.GroupPoints[i].Y) * ImageDefinition.ProportationToScale;
                     var hexPosition1 = HexagonFunction.PixelToHexagon(Layout,
                                              new Model.Point(X, Y));
-                    if (hexPosition1.Values == null) hexPosition1.Values = new List<EventPoint>();
+                    if (hexPosition1.Values == null) 
+                        hexPosition1.Values = new List<EventPoint>();
                     hexPosition1.Values.Add(item);
                     ret.Add(hexPosition1);
                     PointsHexCornes.Add(new PointF(HexagonFunction.HexagonToPixel(Layout, hexPosition1).X, HexagonFunction.HexagonToPixel(Layout, hexPosition1).Y));

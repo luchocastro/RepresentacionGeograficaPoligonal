@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Hexagon.Model.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -94,6 +95,6 @@ namespace Hexagon.Model
         public float Opacity { get; set; }
         public string BorderColor { get; set; }
         public string BorderType { get; set; }
-
+        
     }
 }

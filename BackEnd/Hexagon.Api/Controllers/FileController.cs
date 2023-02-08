@@ -13,25 +13,37 @@ using System.Reflection;
 using Hexagon.Core.Configuration;
 using Hexagon.Api.Controllers.VM;
 
+using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication;
+
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Hexagon.Api.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes
+            = "BasicAuthentication")]
     public class FileController : ControllerBase
     {
+        string UserName;
         private readonly IConfiguration Configuration;
         private IFileService FileService;
         private IFormulasResumen FormulasResumen;
-        public FileController(IFileService IFileService, IConfiguration Configuration, IFormulasResumen FormulasResumen)
+        private readonly IMapper Mapper;
+        private IAuthenticated IAuthenticated;
+        public FileController(IFileService IFileService, IConfiguration Configuration, IFormulasResumen FormulasResumen, IMapper Mapper,IAuthenticated IAuthenticated)
         {
+            UserName= "";
             this.FileService = IFileService;
             this.Configuration = Configuration;
             this.FormulasResumen = FormulasResumen;
+            this.Mapper = Mapper;
+
         }
         [HttpPost("[action]"), DisableRequestSizeLimit]
-        public async Task<IActionResult> UploadFile(List<IFormFile> files, string ProjectName, string UserName)
+        public async Task<IActionResult> UploadFile(List<IFormFile> files, string ProjectName, string DataSetName ="")
         {
 
             try
@@ -40,14 +52,19 @@ namespace Hexagon.Api.Controllers
                 var formCollection =  files ;
                 var file = formCollection.First();
                 var settings = Configuration.Get<Settings>();
-                
+                UserName = User.Identity.Name;
                 if (file.Length > 0)
                 {
-                    var fileName = Guid.NewGuid().ToString();
+                    var fileName = Guid.NewGuid().ToString() + ".FILE";
+                    var originaName = file.FileName;
+                    var Nic =DataSetName==""? originaName:DataSetName ;// Path.GetFileNameWithoutExtension(file.FileName);
+                    var AnilizedFile = new AnalizedFileDTO { FileName = fileName, OriginalFileName = originaName, NicName = Nic };
                     var PojectFolder = Path.Combine(Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, UserName);
-                    var ProyectDataDTO = FileService.GetProyects(PojectFolder,ProjectName).Where(x =>x.Name == ProjectName).First() ;
-                    var fullPath = Path.Combine(ProyectDataDTO.Location.ProyectFolder, ProyectDataDTO.Location.FileFolder, fileName + ".FILE");
-                    using (var stream = new FileStream(fullPath, FileMode.Create))
+                    var ProyectDataDTO = FileService.GetProyects(PojectFolder,ProjectName, AnilizedFile).Where(x =>x.Name == ProjectName) ;
+                    var Project = ProyectDataDTO.FirstOrDefault(x => x.Name == ProjectName);
+                    var fullPath = Path.Combine(Project.Location.ProyectFolder, Nic, Project.Location.FileFolder,
+                        fileName);
+                     using (var stream = new FileStream(fullPath, FileMode.Create))
                     {
                         await file.CopyToAsync (stream);
                     }
@@ -75,9 +92,17 @@ namespace Hexagon.Api.Controllers
             DataFileConfigurationDTO DataFileConfiguration = new DataFileConfigurationDTO();
             DataFileConfiguration.FileType = ProjectDataPost.FileType;
             DataFileConfiguration.FileProperties = ProjectDataPost.FileProperties;
-            var ret = FileService.ConvertFile(ProjectDataPost.FileToParse, DataFileConfiguration, new LayoutDto(true, new System.Drawing.PointF(1f, 1f), new System.Drawing.PointF(0f, 1f), 1000));
+
+            if (ProjectDataPost.ProyectDataDTO.AnalizedFiles !=null && ProjectDataPost.ProyectDataDTO.AnalizedFiles.Count (x => x.NicName == ProjectDataPost.FileToParse)>0)
+            {
+                var AnalizedFile = ProjectDataPost.ProyectDataDTO.AnalizedFiles.FirstOrDefault(x => x.NicName == ProjectDataPost.FileToParse);
+                var FileToParse = Path.Combine(ProjectDataPost.ProyectDataDTO.Location.ProyectFolder, AnalizedFile.NicName, ProjectDataPost.ProyectDataDTO.Location.FileFolder, AnalizedFile.FileName);
+                
+                var ret = FileService.ConvertFile(DataFileConfiguration, new LayoutDto(true, new System.Drawing.PointF(1f, 1f), new System.Drawing.PointF(0f, 1f), 1000), ProjectDataPost.ProyectDataDTO, ProjectDataPost.FileToParse);
 
             return Ok(ret);
+          }
+            throw new FileNotFoundException();
         }
         [HttpPost("[action]")]
         public IActionResult GetImageFile(DatosMapaPost DatosMapaPost)
@@ -96,6 +121,7 @@ namespace Hexagon.Api.Controllers
             //DataFileConfigurationDTO
             [HttpGet]
         [Route("GetDataFileConfigurations")]
+        
         public IActionResult GetDataFileConfigurations()
         {
 
@@ -104,8 +130,9 @@ namespace Hexagon.Api.Controllers
         }
         [HttpGet]
         [Route("Projects")]
-        public IActionResult GetProjects(string user)
+        public IActionResult GetProjects()
         {
+            string user = UserName;
             return Ok(FileService.GetProyects (Path.Combine (Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, user)));
         }
         [HttpGet]

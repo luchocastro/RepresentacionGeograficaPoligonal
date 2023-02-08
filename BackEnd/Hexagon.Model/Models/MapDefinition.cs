@@ -4,14 +4,18 @@ using System.Text;
 
 namespace Hexagon.Model.Models
 {
-    public class MapDefinition
+    public class MapDefinition : IModelPersistible
     { 
         public string ColumnNameForX { get; set; }
         public string ColumnNameForY { get; set; }
         public string ColumnForMapGroup { get; set; }
         public List<string> ColumnsNameForFuntion { get; set; }
+        public PaletteClass PaletteClass { get; set; }
         public string FunctionName { get; set; }
+        
         public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
+        public string ID { get  ; set  ; }
+
         public MapDefinition( )
              
         {

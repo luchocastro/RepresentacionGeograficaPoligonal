@@ -4,15 +4,16 @@ using System.Text;
 
 namespace Hexagon.Shared.DTOs
 {
-    public struct AnalizedFileDTO
+    public class AnalizedFileDTO
     {
-        public List<List<string>> Lines { get; set; }
-        public List<ColumnDTO> Columns { get; set; }
-        public AnalizedFileDTO(List<List<string>> Lines, List<ColumnDTO> Columns)
-        {
-            this.Columns = Columns;
-            this.Lines = Lines;
-        }
+        
 
+            public string FileName { get; set; }
+            public string OriginalFileName { get; set; }
+            public string NicName { get; set; }
+
+
+
+        
     }
 }

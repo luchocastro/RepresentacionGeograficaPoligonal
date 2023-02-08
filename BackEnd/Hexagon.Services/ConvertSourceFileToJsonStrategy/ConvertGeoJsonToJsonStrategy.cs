@@ -121,8 +121,11 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     var Values = new List<string>();
                     foreach (var ValueNames in featureItem.Properties.Keys)
                     {
-
-                        Values.Add(featureItem.Properties.FirstOrDefault(value => value.Key == ValueNames).Value.ToString());
+                        object value = new object();
+                        featureItem.Properties.TryGetValue(ValueNames, out value) ;
+                        if (value == null)
+                            value = "";
+                        Values.Add(value.ToString());
 
                     }
 

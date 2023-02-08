@@ -8,27 +8,74 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq;
 using Hexagon.Services.Helpers;
+using Hexagon.Model.Repository;
+using Hexagon.Shared.DTOs;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
+using System.Net;
+using System.Security.Principal; 
+
 
 namespace Hexagon.Services
 {
-    public class AuthenticationService : IAuthenticationService
+    public class HexAuthenticationService : IHexAuthenticationService   , IAuthenticated
     {
-        private readonly DataContext _context;
-        public AuthenticationService () { }
-
-        public async Task<AuthenticationModel> Authenticate(AuthenticationDto authenticationDto, UserAgentModel userAgentData)
+        private readonly IDataRepository<UserDTO, User> IDataRepository;
+        private UserDTO user = null;
+        public HexAuthenticationService(IDataRepository<UserDTO, User> IDataRepository)
         {
-
-            return  new AuthenticationModel
-            {
-                Name = authenticationDto.Username
-            };
+            this.IDataRepository = IDataRepository;
+            
+        }
+        public IEnumerable<Claim> GetUserClaims(UserDTO user)
+        {
+            List<Claim> claims = new List<Claim>();
+              
+            claims.Add(new Claim(ClaimTypes.Name, user.Name  ));
+            claims.Add(new Claim(ClaimTypes.NameIdentifier, user.ID));
+             
+            return claims;
+        }
+        public async Task<UserDTO> Authenticate(string Name, string Password)
+        {
+            
+            var user = await Task.Run(() =>  IDataRepository.Get(Name));
+            return user;
+            
         }
 
-
-        public async Task<User> Get(string Name, string Pwd)
+        public Task<AuthenticationModel> Authenticate(AuthenticationDto authenticationDto, UserAgentModel userAgentData)
         {
-            return UserHelper.GetUser(Name, Pwd);
+            throw new NotImplementedException();
+        }
+
+        public  UserDTO   Get(string Name, string Pwd)
+        {
+            IDataRepository.Open(Name); 
+            UserDTO User = IDataRepository.Get( Name);
+            if (User == null)
+            {
+                User = IDataRepository.Add( new User() { Name = Name, ID= Name, Password= Pwd });
+            }
+            else
+            {
+                if (User.Password != Pwd)
+                {
+                    return null;
+                }
+            }
+            this.user =  new UserDTO
+            {
+                ID = User.ID ,
+                Name = User.Name
+            };
+            return this.GetUser();
+        }
+
+        public UserDTO GetUser( )
+        {
+            return user;
         }
     }
 }

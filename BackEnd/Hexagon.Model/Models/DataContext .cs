@@ -8,9 +8,13 @@ namespace Hexagon.Model.Models
 
     public class DataContext : DbContext
     {
+        DbContextOptions<DataContext> _options;
         public DataContext(DbContextOptions<DataContext> options) : base(options)
-        { }
-            public DbSet<User> User { get; set; }
+        { 
+            _options = options;
+        }
+            public DbSet<User> User { get ; set; }
+
     
     }
 }

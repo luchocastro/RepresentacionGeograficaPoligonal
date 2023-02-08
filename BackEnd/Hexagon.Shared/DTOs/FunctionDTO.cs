@@ -7,7 +7,7 @@ namespace Hexagon.Shared.DTOs
     public struct FunctionDTO
     {
 
-        public FunctionDTO(string Path, string FullClassName, string FunctionName, Dictionary<string, Type> Types)
+        public FunctionDTO(string Path, string FullClassName, string FunctionName, Dictionary<string, string> Types)
         {
             this.Path = Path;
             this.FullClassName = FullClassName;
@@ -18,7 +18,7 @@ namespace Hexagon.Shared.DTOs
         public string Path { get; }
         public string FullClassName { get; }
         public string FunctionName { get; }
-        public Dictionary<string, Type> Types { get; }
+        public Dictionary<string, string> Types { get; }
 
     }
 }

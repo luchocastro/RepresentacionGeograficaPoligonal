@@ -28,7 +28,7 @@ namespace Hexagon.Model
         public int HexPerLine { get; set; }
         public bool Flat { get; set; }
         public float MaxPictureSizeX { get; set; }
-        public Model.Models.MapDefinition MapDefinition { get; set; }
+        public MapDefinition MapDefinition { get; set; }
         public float MaxPictureSizeY { get; set; }
         public bool FillPolygon { get; set; }
         public bool PaintLines { get; set; }

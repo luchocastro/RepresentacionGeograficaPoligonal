@@ -18,6 +18,9 @@ using Hexagon.Api.Config;
 using Hexagon.API.Boostrap;
 using AutoMapper;
 using Hexagon.Model.Mappings;
+using Hexagon.Model.Models;
+using Hexagon.Shared.DTOs;
+using Hexagon.Model;
 
 namespace Hexagon.Api
 {
@@ -35,26 +38,21 @@ namespace Hexagon.Api
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCorsOptions(Configuration);
-            services.AddDependencies(Configuration);
             services.AddControllers();
-
-            // Auto Mapper Configurations
-            var mappingConfig = new MapperConfiguration(mc =>
-            {
-                mc.AddProfile(new MappingModelProfile());
-            });
-            IMapper mapper = mappingConfig.CreateMapper();
+            
+            var config = new MapperConfiguration(cfg => { cfg.AddProfile(new MappingModelProfile()); ;
+            }); ;
+            
+            IMapper mapper = config.CreateMapper();
             services.AddSingleton(mapper);
+            services.AddDependencies(Configuration);
             services.AddSwaggerOptions();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
+            
 
             //app.UseHttpsRedirection();
 
@@ -63,7 +61,8 @@ namespace Hexagon.Api
             app.UseCorsConfiguration();
 
             app.UseAuthorization();
-            
+            app.UseAuthentication();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
