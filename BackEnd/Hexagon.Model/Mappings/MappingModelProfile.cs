@@ -16,7 +16,7 @@ namespace Hexagon.Model.Mappings
             CreateMap<Hexagon.Model.Models.NativeJsonFile, Hexagon.Shared.DTOs.NativeJsonFileDTO>();
             CreateMap<Hexagon.Model.Models.User, Hexagon.Shared.DTOs.UserDTO>();
             CreateMap <Orientation, Shared.DTOs.OrientationDto>();
-            CreateMap<Layout, LayoutDto>(); 
+            
             CreateMap<AnalizedFile, AnalizedFileDTO>();
             CreateMap<AnalizedFileDTO, AnalizedFile>();
             CreateMap<DataFileConfiguration, DataFileConfigurationDTO>();
@@ -25,8 +25,16 @@ namespace Hexagon.Model.Mappings
             CreateMap<LayoutDto, Layout>();
             CreateMap<ProyectData, ProyectDataDTO>();
             CreateMap<ProyectDataDTO, ProyectData>();
-
-
+            CreateMap<Location, LocationDTO>();
+            CreateMap<LocationDTO,Location>();
+            CreateMap<MapDefinitionDTO, MapDefinition>();
+            CreateMap<MapDefinition, MapDefinitionDTO>();
+            CreateMap<FunctionDTO, Function>();
+            CreateMap<Function, FunctionDTO>();
+            CreateMap<HexFileDTO , HexFile>();
+            CreateMap<HexFile, HexFileDTO>();
+            CreateMap<UserDTO, User>();
+            CreateMap<User, UserDTO>();
         }
     }
 }

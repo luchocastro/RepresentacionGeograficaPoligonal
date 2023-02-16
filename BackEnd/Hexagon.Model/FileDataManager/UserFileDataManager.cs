@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Hexagon.Model.Models;
 using Hexagon.Shared.DTOs;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,7 +12,7 @@ namespace Hexagon.Model.FileDataManager
     public class UserFileDataManager<G, T> : FileDataManager<G, T>, IForFile<T> where T : User where G : UserDTO
     {
 
-        public UserFileDataManager(IMapper Mapper) : base(Mapper)
+        public UserFileDataManager(IMapper Mapper, IConfiguration IConfiguration, IFileDataManagerOptions IFileDataManagerOptions) : base(Mapper, IConfiguration, IFileDataManagerOptions)
         {
              
         }
@@ -21,7 +22,8 @@ namespace Hexagon.Model.FileDataManager
             try
             {
 
-                User = base.Get(Path.Combine(UserName ));
+                User = base.Get(Path.Combine(UserName, UserName  ));
+                
             }
             catch (Exception ex)
             {
@@ -40,6 +42,7 @@ namespace Hexagon.Model.FileDataManager
         public override G Add(T User)
         {
             User.ID = Path.Combine(User.Name );
+            User.ParentID = Path.Combine(User.Name );
             return base.Add(User);
 
         }

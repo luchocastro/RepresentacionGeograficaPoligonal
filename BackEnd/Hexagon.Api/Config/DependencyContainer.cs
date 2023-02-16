@@ -38,6 +38,9 @@ namespace Hexagon.Api.Config
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
             services.AddAuthorization();
             services.AddScoped<IDataRepository<UserDTO, User>, UserFileDataManager<UserDTO, User>>();
+            services.AddScoped<IDataRepository<ProyectDataDTO, ProyectData>, ProyectDataFileDataManager<ProyectDataDTO, ProyectData>>();
+            services.AddScoped<IDataRepository<HexFileDTO, HexFile>, FileDataManager<HexFileDTO, HexFile>>();
+            services.AddScoped<IDataRepository<AnalizedFileDTO, AnalizedFile>, FileDataManager<AnalizedFileDTO, AnalizedFile>>();
             services.AddHttpContextAccessor();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<Hexagon.Services.Interfaces.IHexAuthenticationService, HexAuthenticationService>();
@@ -45,6 +48,10 @@ namespace Hexagon.Api.Config
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped < IAuthenticated, HexAuthenticationService>();
             //services.AddScoped< IAuthenticationService , HexAuthentication > ();
+            services.Configure<FileDataManagerOptions>(configuration.GetSection(IFileDataManagerOptions.Position));
+            services.AddOptions();
+            services.AddSingleton<IFileDataManagerOptions, PseudoServiceFileDataManagerOption>();
         }
     }
+    
 }

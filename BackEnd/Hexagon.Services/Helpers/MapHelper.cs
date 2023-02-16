@@ -225,7 +225,7 @@ namespace Hexagon.Services.Helpers
         {
             List<Hex> ret = new List<Hex>();
             Layout Layout = HexagonGrid.Layout;
-            string NativeToUse = ProyectData.AnalizedFiles.Where(x => x.FileName == DataName).FirstOrDefault ().FileName;
+            string NativeToUse = ProyectData.AnalizedFiles.SelectMany(x => x.Files).Where(x=>x.FileName==DataName).Last().FileName  ;
             if (NativeToUse == "")
                 return  ;
             NativeFile NativeFile = new NativeFile();

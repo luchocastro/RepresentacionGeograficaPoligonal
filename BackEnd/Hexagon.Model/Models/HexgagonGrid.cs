@@ -10,6 +10,7 @@ namespace Hexagon.Model
 {
     public class HexagonGrid: System.Collections.IEnumerable, IModelPersistible
     {
+        private List<EventPoint> _PuntosACalcular = new List<EventPoint>();
         public HexagonGrid(List<EventPoint> PuntosACalcular, Layout  Layout, Function Function)
         {
             this.Layout = Layout;
@@ -26,13 +27,13 @@ namespace Hexagon.Model
             this.Layout = Layout;
             
             this.Function = Function;
-            this.PuntosACalcular = GrillaAnterior.PuntosACalcular;
+            this.PuntosACalcular = GrillaAnterior.HexagonMap.SelectMany(x=>x.Values).ToList();
         }
 
         
         public List<Hex> HexagonMap { get; set; }
         public Layout Layout { get;  set; }
-        public List<EventPoint> PuntosACalcular { get; set; }
+        public List<EventPoint> PuntosACalcular { get { return _PuntosACalcular; } set { _PuntosACalcular = value; } }
         public Function Function { get; set; }
         public string ID { get ; set ; }
 

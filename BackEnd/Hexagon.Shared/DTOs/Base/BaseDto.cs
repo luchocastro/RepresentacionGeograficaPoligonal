@@ -6,6 +6,8 @@ namespace Hexagon.Shared.DTOs.Base
 {
     public class BaseDto
     {
-        public long Id { get; set; }
+        public string ID { get; set; }
+        public string ParentID { get; set; }
+
     }
 }

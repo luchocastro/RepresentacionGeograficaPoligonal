@@ -42,8 +42,9 @@ namespace Hexagon.Services.Helpers
             }
             return ret;
         }
-        public static List<ProyectDataDTO> ReadProject(string PathProjects, string ProjectName = ServicesConstants.NicFolder + "_1", AnalizedFileDTO AnalizedFileDTO = null)
+        public static List<ProyectDataDTO> ReadProject(UserDTO UserDTO, string ProjectName = ServicesConstants.NicFolder + "_1", AnalizedFileDTO AnalizedFileDTO = null)
         {
+             string PathProjects = "erroror da";
             string name = Path.Combine(PathProjects);
             ;
             List<ProyectDataDTO> ret = new List<ProyectDataDTO>();

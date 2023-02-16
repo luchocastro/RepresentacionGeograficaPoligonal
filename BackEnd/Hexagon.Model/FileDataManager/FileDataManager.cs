@@ -18,33 +18,51 @@ namespace Hexagon.Model.FileDataManager
 {
     public class contextFactoryFile  
     { }
-    public class FileDataManager<G, TEntity>  : IForFile<TEntity>, IDataRepository<G, TEntity> where TEntity : IModelPersistible
+    public class FileDataManager<G, TEntity>: IForFile<TEntity>, IDataRepository<G, TEntity> where TEntity : Base
     {
         private readonly IMapper Mapper;
-        private readonly IConfiguration IConfiguration;
-        private readonly string User; 
-        
-        public FileDataManager(IMapper Mapper )
-        {    User = IConfiguration.GetConnectionString("File") ;
+        private readonly IConfiguration  IConfiguration;
+        private readonly IFileDataManagerOptions FileDataManagerOptions;
+        private readonly string User;
+        public string DefaultExtension { get { return ".Hex.Json"; } }
+        public FileDataManager(IMapper Mapper, IConfiguration Configuration, IFileDataManagerOptions IFileDataManagerOptions )
+        {
             this.Mapper = Mapper;
-             
-        }
-        private string Head { get; set; }
-        public bool  Open(string Head)
+            this.IConfiguration = Configuration;
+            this.FileDataManagerOptions = IFileDataManagerOptions;
+    }
+        public string Head { get; set; }
+        public bool Open(string Head)
         {
             if (Head != null && Head != "")
                 this.Head = Head;
             return true;
-                
+
         }
+        public virtual string DefaultMaskID { get { 
+                return 
+                    "ID/PropName"; 
+            } }
+        public virtual IFileDataManagerOptions IFileDataManagerOptions
+        {
+            get
+            {
+                return
+                    this.FileDataManagerOptions   ;
+            }
+        }
+    
+     
+
         public string ParentDirectory()
         {
-
-            return Path.Combine(Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, AppDomain.CurrentDomain.FriendlyName , Head );
+            return Path.Combine(Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, AppDomain.CurrentDomain.FriendlyName  );
         }
         public virtual G Add(TEntity entity)
         {
-            var FileToWrite = Path.Combine(this.ParentDirectory(), entity.ID + ".json");
+            var ID = GenerateFullID(entity);
+            entity.ID = ID;
+            var FileToWrite = Path.Combine(this.ParentDirectory(), entity.ID + DefaultExtension);
             if (!Directory.Exists(Path.GetDirectoryName  (FileToWrite)))
                 Directory.CreateDirectory(Path.GetDirectoryName(FileToWrite));
             var ToWrite = JsonConvert.SerializeObject (entity);
@@ -66,15 +84,44 @@ namespace Hexagon.Model.FileDataManager
         {
             throw new NotImplementedException();
         }
-
-        public virtual G Get(string id)
-
-        {   
-            var PathToRead = Path.Combine(this.ParentDirectory(), id + ".json");
-            if (!File.Exists(PathToRead))
-                throw new FileNotFoundException(PathToRead);
+        public virtual string GetID(string Name, string PararentID, Type EntityType)
+        {
             
-                return Mapper.Map<G>( Read (PathToRead));
+            string Mask = "";
+            FileDataManagerOptions.Get().Settings.TryGetValue("Mask" + EntityType.Name, out Mask);
+            string[] MaskSplited = (Mask != "" ? Mask : this.DefaultMaskID).Split("/");
+
+            var ret = "";
+            foreach (var item in MaskSplited)
+            {
+                var toDo = "";
+                switch (item )
+                {
+                    case "ID":
+                        toDo = "";
+                        break;
+                    case "Type":
+                        toDo = EntityType.Name;
+                        break;
+                    case "ParentID":
+                        toDo = PararentID;
+                        break;
+                    default:
+
+                        break;
+                }
+                ret = Path.Combine(ret, toDo);
+            }
+            return Path.Combine(ret, Name);
+        }
+        public virtual G Get(string id)
+        {   
+            
+            var PathToRead = Path.Combine(this.ParentDirectory(), id + DefaultExtension);
+            if (!File.Exists(PathToRead))
+                return default(G);
+            
+            return Mapper.Map<G>( Read (PathToRead));
             
 
         }
@@ -88,9 +135,45 @@ namespace Hexagon.Model.FileDataManager
         {
             throw new NotImplementedException();
         }
-        public string GetPath(TEntity Entity)
-        { 
-            return  Path.Combine(ParentDirectory(), Entity.ID + ".json");
+        public string GenerateFullID (TEntity Entity)
+        {
+            string Mask = "";
+            FileDataManagerOptions.Get().Settings.TryGetValue("Mask" + Entity.GetType().Name , out Mask);
+            string [] MaskSplited = (Mask != "" ? Mask : this.DefaultMaskID ).Split("/");
+
+            var ret = "";
+            foreach (var item in MaskSplited)
+            {
+                var toDo = "";
+                switch (item )
+                {
+                    case "ID":
+                        toDo = Entity.ID;
+                        break;
+                    case "Type":
+                        toDo = Entity.GetType().Name;
+                        break;
+                    default:
+                        Type objtype = Entity.GetType();
+
+                        PropertyInfo prop = objtype.GetProperty(item);
+                        if (prop != null)
+                        {
+                            object list = prop.GetValue(Entity);
+                            toDo = list.ToString();
+                        }
+                        break;
+                }
+                ret = Path.Combine(ret, toDo);
+            }
+                return ret;
+
+        }
+
+        public string GetPath(TEntity Entity )
+        {
+
+            return  Path.GetFullPath( Path.Combine(ParentDirectory(), Entity.ID + DefaultExtension));
 
         }
         public void SaveChanges(TEntity entity)
@@ -139,6 +222,39 @@ namespace Hexagon.Model.FileDataManager
         public virtual string  SetToFile(TEntity TEntity)
         {
             throw new NotImplementedException();
+        }
+
+        public IEnumerable<Base> GetChild(TEntity Parent, Type ChildType)
+        {
+            var ret = new List<Base>();
+            var Mask = TypeMaskID(ChildType );
+            
+            string PathParent = Path.GetFullPath( Path.GetDirectoryName( Path.Combine(ParentDirectory(), Parent.ID + DefaultExtension) ) );
+            var dirs = Directory.GetDirectories(PathParent, ChildType.Name);
+            foreach (var item in dirs)
+            {
+                if (Directory.GetFiles(item, "*" + DefaultExtension ).Count() > 0)
+                {
+                    var Files = Directory.GetFiles(item, "*" + DefaultExtension);
+                    foreach (var FilePath in Files)
+                    {
+                        var ToRead = File.ReadAllText(FilePath);
+                        var Child = JsonConvert.DeserializeObject<Base> (ToRead);
+                        ret.Add( Child) ;
+                    }
+                }
+            }
+            return ret;
+        }
+
+        public IConfiguration Configuration { get {return this.IConfiguration; } }
+       public IMapper IMapper { get { return this.Mapper; } }
+        public string TypeMaskID(Type Type)
+        {
+            string Mask = "";
+            FileDataManagerOptions.Get().Settings.TryGetValue("Mask" + Type.Name, out Mask);
+            return Mask;
+
         }
     }
 }

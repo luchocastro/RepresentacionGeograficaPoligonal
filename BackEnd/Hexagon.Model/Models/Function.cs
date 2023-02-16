@@ -4,10 +4,11 @@ using System.Text;
 
 namespace Hexagon.Model
 {
-    public struct Function
+    public class Function
     {
-
-        public Function(string Path, string FullClassName, string FunctionName, Dictionary<string, string> Types)
+        public Function() { }
+        
+            public Function(string Path, string FullClassName, string FunctionName, Dictionary<string, string> Types)
         {
             this.Path = Path;
             this.FullClassName = FullClassName;
