@@ -21,6 +21,7 @@ using Hexagon.Model.Mappings;
 using Hexagon.Model.Models;
 using Hexagon.Shared.DTOs;
 using Hexagon.Model;
+using Hexagon.Model.FileDataManager;
 
 namespace Hexagon.Api
 {
@@ -33,13 +34,13 @@ namespace Hexagon.Api
 
         public IConfiguration Configuration { get; }
         readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
+ 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCorsOptions(Configuration);
             services.AddControllers();
-            
+ 
             var config = new MapperConfiguration(cfg => { cfg.AddProfile(new MappingModelProfile()); ;
             }); ;
             
@@ -47,13 +48,13 @@ namespace Hexagon.Api
             services.AddSingleton(mapper);
             services.AddDependencies(Configuration);
             services.AddSwaggerOptions();
+             
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            
-
+ 
             //app.UseHttpsRedirection();
 
             app.UseRouting();
@@ -62,12 +63,13 @@ namespace Hexagon.Api
 
             app.UseAuthorization();
             app.UseAuthentication();
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
             app.UseSwaggerGen(env);
+
         }
     }
 }

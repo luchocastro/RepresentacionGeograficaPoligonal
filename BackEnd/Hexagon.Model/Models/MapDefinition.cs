@@ -1,20 +1,21 @@
-﻿using System;
+﻿using Hexagon.Model.Repository;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Hexagon.Model.Models
 {
-    public class MapDefinition : IModelPersistible
+    public class MapDefinition : Equatable<MapDefinition>
     { 
         public string ColumnNameForX { get; set; }
         public string ColumnNameForY { get; set; }
         public string ColumnForMapGroup { get; set; }
         public List<string> ColumnsNameForFuntion { get; set; }
         public PaletteClass PaletteClass { get; set; }
-        public string FunctionName { get; set; }
-        
+        public string FunctionName { get { return Function != null ? Function.FunctionName : ""; } }
+        public Function Function { get; set; }
         public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
-        public string ID { get  ; set  ; }
+        
 
         public MapDefinition( )
              
@@ -24,8 +25,7 @@ namespace Hexagon.Model.Models
             this.ColumnNameForY = "No Set";
             this.ColumnsNameForFuntion = null;  
             this.ColumnForMapGroup = "No Set";
-            this.FunctionName = "No Set";
-
+             
             ActionToDoWithUncasted = EnumActionToDoWithUncasted.DeleteData;
         }
         public MapDefinition(
@@ -42,8 +42,7 @@ namespace Hexagon.Model.Models
             this.ColumnNameForY = _ColumnNameForY;
             this.ColumnsNameForFuntion = _ColumnsNameForFuntion;
             this.ColumnForMapGroup = _ColumnForMapGroup;
-            this.FunctionName = _FunctionName;
-            ActionToDoWithUncasted = _ActionToDoWithUncasted;
+             ActionToDoWithUncasted = _ActionToDoWithUncasted;
         }
 
     }
