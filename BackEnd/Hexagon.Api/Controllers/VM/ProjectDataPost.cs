@@ -11,7 +11,6 @@ namespace Hexagon.Api.Controllers.VM
 
         public string FileType { get; set; }
         public Dictionary<string, object> FileProperties { get; set; }
-        public string FileToParse { get; set; }
-        public ProyectDataDTO ProyectDataDTO { get; set; }
+        public String  HexFileID { get; set; }
     }
 }

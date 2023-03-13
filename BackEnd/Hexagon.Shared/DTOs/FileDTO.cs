@@ -12,5 +12,6 @@ namespace Hexagon.Shared.DTOs
         public string OriginalFileName { get; set; }
         public string Path { get; set; }
 
+        public string TypeFile { get; set; }
     }
 }

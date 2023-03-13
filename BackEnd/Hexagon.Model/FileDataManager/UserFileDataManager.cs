@@ -21,8 +21,10 @@ namespace Hexagon.Model.FileDataManager
             G User;
             try
             {
-
-                User = base.Get(Path.Combine(UserName, UserName  ));
+                T UserToGet = (T) new User() ;
+                UserToGet.Name = UserName;
+                UserToGet.ParentID = Path.Combine(UserToGet.GetType().Name, UserToGet.Name);
+                User = base.Get(GenerateFullID(UserToGet));
                 
             }
             catch (Exception ex)
@@ -42,7 +44,7 @@ namespace Hexagon.Model.FileDataManager
         public override G Add(T User)
         {
             User.ID = Path.Combine(User.Name );
-            User.ParentID = Path.Combine(User.Name );
+            User.ParentID = Path.Combine(User.GetType().Name, User.Name);
             return base.Add(User);
 
         }

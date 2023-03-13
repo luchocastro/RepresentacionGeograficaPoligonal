@@ -51,9 +51,14 @@ namespace Hexagon.Model.FileDataManager
                     this.FileDataManagerOptions   ;
             }
         }
-    
-     
 
+
+        public string GetClassLocation(G G)
+        {   TEntity TEntity = Mapper.Map<TEntity>(G);
+            var ID =  GenerateFullID(TEntity);
+            return Path.Combine(ParentDirectory(), ID.Substring(0, ID.LastIndexOf("\\")));
+
+        }
         public string ParentDirectory()
         {
             return Path.Combine(Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, AppDomain.CurrentDomain.FriendlyName  );
@@ -84,12 +89,16 @@ namespace Hexagon.Model.FileDataManager
         {
             throw new NotImplementedException();
         }
+
         public virtual string GetID(string Name, string PararentID, Type EntityType)
         {
-            
             string Mask = "";
             FileDataManagerOptions.Get().Settings.TryGetValue("Mask" + EntityType.Name, out Mask);
-            string[] MaskSplited = (Mask != "" ? Mask : this.DefaultMaskID).Split("/");
+            return GetID(Name, PararentID, EntityType, Mask);
+        }
+        private string GetID(string Name, string PararentID, Type EntityType, string Mask)
+        { 
+          string[] MaskSplited = (Mask != "" ? Mask : this.DefaultMaskID).Split("/");
 
             var ret = "";
             foreach (var item in MaskSplited)
@@ -131,9 +140,22 @@ namespace Hexagon.Model.FileDataManager
             throw new NotImplementedException();
         }
 
+        public string ClassLocation (G DTOEntity)
+        {
+            var  ID = GenerateFullID(Mapper.Map<TEntity>(DTOEntity));
+
+            return Path.Combine( ID.Substring(0, ID.LastIndexOf("\\")));
+
+        }
         public virtual IEnumerable<G> GetAllDTO()
         {
             throw new NotImplementedException();
+        }
+        public TEntity Get (G EntityDTO)
+        {
+            var id = GenerateFullID(Mapper.Map<TEntity>(EntityDTO));
+            return Mapper.Map<TEntity>(Get(id));
+
         }
         public string GenerateFullID (TEntity Entity)
         {
@@ -164,6 +186,7 @@ namespace Hexagon.Model.FileDataManager
                         }
                         break;
                 }
+                if(toDo!="")
                 ret = Path.Combine(ret, toDo);
             }
                 return ret;
@@ -174,6 +197,23 @@ namespace Hexagon.Model.FileDataManager
         {
 
             return  Path.GetFullPath( Path.Combine(ParentDirectory(), Entity.ID + DefaultExtension));
+
+        }
+        public IEnumerable<G> GetColectionFromParent(string ParentID)
+        {
+             string Mask = "";
+            FileDataManagerOptions.Get().Settings.TryGetValue("Mask" + typeof(TEntity).Name, out Mask);
+
+             Mask= Mask.Substring(0,  Mask.LastIndexOf("/"));
+            
+            string PathToRead = Path.Combine(ParentDirectory(), GetID("",ParentID, typeof(TEntity ),Mask));
+            var ret = new List<G>();
+            foreach (var File in Directory.GetFiles(PathToRead, "*"+ DefaultExtension))
+            {
+                var Entity= Read(File);
+                ret.Add(Mapper.Map<G>( Entity));
+            }
+            return ret;
 
         }
         public void SaveChanges(TEntity entity)

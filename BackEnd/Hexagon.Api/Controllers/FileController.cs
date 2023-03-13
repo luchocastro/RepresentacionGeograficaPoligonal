@@ -52,7 +52,6 @@ namespace Hexagon.Api.Controllers
             this.FileService = IFileService;
             this.Configuration = Configuration;
             this.FormulasResumen = FormulasResumen;
-            this.Mapper = Mapper;
             IFileDataManagerOptions = FileDataManagerOptions;
 
         }
@@ -81,7 +80,7 @@ namespace Hexagon.Api.Controllers
                     var originaName = file.FileName;
                     var Nic =DataSetName==""? originaName:DataSetName ;// Path.GetFileNameWithoutExtension(file.FileName);
                      
-                    var fileDTO = FileService.GetProyect (UserName,ProjectName,Nic, file) ;
+                    var fileDTO = FileService.PutFile(UserName,ProjectName,Nic, file) ;
 
                     
 
@@ -114,17 +113,11 @@ namespace Hexagon.Api.Controllers
             DataFileConfiguration.FileType = ProjectDataPost.FileType;
             DataFileConfiguration.FileProperties = ProjectDataPost.FileProperties;
 
-            if (ProjectDataPost.ProyectDataDTO.AnalizedFiles !=null && ProjectDataPost.ProyectDataDTO.AnalizedFiles.Count (x => x.NicName == ProjectDataPost.FileToParse)>0)
-            {
-                var AnalizedFile = ProjectDataPost.ProyectDataDTO.AnalizedFiles.FirstOrDefault(x => x.NicName == ProjectDataPost.FileToParse);
-                var FileToParse = Path.Combine(ProjectDataPost.ProyectDataDTO.Location.ProyectFolder, AnalizedFile.NicName, ProjectDataPost.ProyectDataDTO.Location.FileFolder, AnalizedFile.FileName);
                 
-                var ret = FileService.ConvertFile(DataFileConfiguration, new LayoutDto(true, new System.Drawing.PointF(1f, 1f), new System.Drawing.PointF(0f, 1f), 1000), ProjectDataPost.ProyectDataDTO, ProjectDataPost.FileToParse);
+                var ret = FileService.ConvertFile(DataFileConfiguration , ProjectDataPost.HexFileID);
 
             return Ok(ret);
           }
-            throw new FileNotFoundException();
-        }
         /// <summary>
         /// Esta es magia pura, aunque eso de los vectores me tiene loco
         /// </summary>
@@ -169,7 +162,19 @@ namespace Hexagon.Api.Controllers
             string user = User.Identity.Name;
             return Ok(FileService.GetProyects (user));
         }
-
+        [HttpGet]
+        [Route("DataToAnalize")]
+        public IActionResult GetAnalizedFiles(string ProyectID)
+        {
+            /// ProyectDataDTO ProyectDataDTO = new ProyectDataDTO();
+            return Ok(FileService.GetAnalizedFiles (ProyectID));
+        }
+        [HttpGet]
+        [Route("FilesToGet")]
+        public IActionResult GetFiles(string AnalizedFileID)
+        {
+            return Ok(FileService.GetHexFiles(AnalizedFileID));
+        }
         /// <summary>
         /// devuelve las columnas de un archivo con su Tipo
         /// </summary>
