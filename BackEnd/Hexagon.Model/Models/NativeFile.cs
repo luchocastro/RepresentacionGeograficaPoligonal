@@ -11,6 +11,7 @@ namespace Hexagon.Model.Models
         public List<Line> Content { get; set; }
         public List<Column> Columns { get; set; }
         public string PathFile { get; set; }
+        public DataFileConfiguration DataFileConfiguration { get; set; }
 
 
     }

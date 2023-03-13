@@ -9,7 +9,7 @@ namespace Hexagon.Shared.DTOs
         public List<LineDTO> Content { get; set; }
         public List<ColumnDTO> Columns { get; set; }
         public string PathFile { get; set; }
+        public DataFileConfigurationDTO DataFileConfigurationDTO { get; set; }
 
-
-    }
+}
 }
