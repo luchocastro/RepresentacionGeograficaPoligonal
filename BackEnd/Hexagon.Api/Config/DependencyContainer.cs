@@ -41,6 +41,7 @@ namespace Hexagon.Api.Config
             services.AddScoped<IDataRepository<ProyectDataDTO, ProyectData>, ProyectDataFileDataManager<ProyectDataDTO, ProyectData>>();
             services.AddScoped<IDataRepository<HexFileDTO, HexFile>, FileDataManager<HexFileDTO, HexFile>>();
             services.AddScoped<IDataRepository<AnalizedFileDTO, AnalizedFile>, FileDataManager<AnalizedFileDTO, AnalizedFile>>();
+            services.AddScoped<IDataRepository<NativeFileDTO, NativeFile>, FileDataManager<NativeFileDTO, NativeFile>>(); 
             services.AddHttpContextAccessor();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<Hexagon.Services.Interfaces.IHexAuthenticationService, HexAuthenticationService>();

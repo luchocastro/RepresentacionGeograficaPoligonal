@@ -35,6 +35,7 @@ namespace Hexagon.Services
         private readonly IFileDataManagerOptions FileDataManagerOptions;
         private readonly IDataRepository<UserDTO, User> DataUser;
         private IDataRepository<AnalizedFileDTO, AnalizedFile> AnalizedFileDataManager;
+        private IDataRepository<NativeFileDTO , NativeFile> NativeFileDataManager;
 
         private readonly IDataRepository<HexFileDTO , HexFile> FileRepository;
         private readonly User User = null;
@@ -43,7 +44,8 @@ namespace Hexagon.Services
             IDataRepository<HexFileDTO, HexFile> FileRepository,
             IDataRepository<AnalizedFileDTO, AnalizedFile> AnalizedFileDataManager,
             IDataRepository<UserDTO, User>  DataUser,
-            IFileDataManagerOptions IFileDataManagerOptions 
+            IFileDataManagerOptions IFileDataManagerOptions ,
+            IDataRepository<NativeFileDTO, NativeFile> NativeFileDataManager
             )
         {
             this.DataUser = DataUser;
@@ -53,6 +55,7 @@ namespace Hexagon.Services
             _Configuration = Configuration;
             FileDataManagerOptions = IFileDataManagerOptions;
             _Mapper = Mapper;
+            this.NativeFileDataManager = NativeFileDataManager;
          }
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData )
         {
@@ -73,10 +76,7 @@ namespace Hexagon.Services
         {
             NativeFileDTO NativeFile = new NativeFileDTO();
 
-             NativeFile = GetJsonSerializedFileFromFile(PathFile, FileData);
-
-            //return new NativeJsonFileDTO { Content = NativeJsonFile.Content, Columns = NativeJsonFile.Columns };
-
+         
 
 
 
@@ -85,19 +85,33 @@ namespace Hexagon.Services
         } 
         public NativeFileDTO ConvertFile (  DataFileConfigurationDTO FileData,  string  HexFileID )
         {
-            NativeFileDTO NativeFile = new NativeFileDTO();
-            var File = FileRepository.Get(HexFileID); 
-             //var PathFile = Path.Combine(ProyectDataDTO.Location.ProyectFolder, NicData, ProyectDataDTO.Location.FileFolder, ProyectDataDTO.AnalizedFiles.FirstOrDefault(x => x.NicName == NicData).FileName);
-            var Name = Path.GetFileNameWithoutExtension(File.OriginalFileName) + ".json";
-            var PathFileDestino = Path.Combine(File.Path,Name) ;
-            NativeFile = GetJsonSerializedFileFromFile( File.Path, FileData, PathFileDestino);
-
+            NativeFileDTO NativeFileDto = new NativeFileDTO();
+            var File = FileRepository.Get(HexFileID);
+            
+            
+            NativeFileDto.FileName = FileData.FileType + "_" + File.FileName;
+            NativeFileDto.ParentID = File.ID;
+            var NativeFile = NativeFileDataManager.Get(NativeFileDto);
+            //var PathFile = Path.Combine(ProyectDataDTO.Location.ProyectFolder, NicData, ProyectDataDTO.Location.FileFolder, ProyectDataDTO.AnalizedFiles.FirstOrDefault(x => x.NicName == NicData).FileName);
+            if (NativeFile == null)
+            {
+                NativeFile = GetJsonSerializedFileFromFile(File, FileData);
+                NativeFile.ParentID = HexFileID;
+                NativeFile.FileName = FileData.FileType + "_" + File.FileName;
+                NativeFile.PathFile = File.Path;
+                NativeFileDto = NativeFileDataManager.Add(NativeFile);
+            }
+            else
+            {
+                NativeFileDto = _Mapper.Map<NativeFileDTO>(NativeFile);
+            }
+                        
             //return new NativeJsonFileDTO { Content = NativeJsonFile.Content, Columns = NativeJsonFile.Columns };
 
-            
 
 
-            return NativeFile;
+
+            return NativeFileDto;
 
         }
         public List<DataFileConfigurationDTO> GetDataFileConfiguration(string Path)
@@ -149,48 +163,19 @@ namespace Hexagon.Services
             FilesHelper.SaveFile<HexagonGridForFile>(Path.Combine(Path.GetFullPath(NativeToUse), "HexGrid" + Path.GetFileNameWithoutExtension(NativeToUse) + ".Json"),ToFile);
             return AnalizedFileDTO;
         }
-        public NativeFileDTO GetJsonSerializedFileFromFile(string PathFile, DataFileConfigurationDTO DataFileConfigurationDTO, string Destination ="")
+        public NativeFile GetJsonSerializedFileFromFile(HexFileDTO HexFile, DataFileConfigurationDTO DataFileConfigurationDTO)
         {
             try
             {
                 object FileType = new object();
                 object FileProperties = new object();
                 NativeFile NativeFile = new NativeFile();
-                if(Destination=="")
-                 Destination = Path.GetDirectoryName(PathFile) + @"\Data" + Path.GetFileNameWithoutExtension(PathFile) + ".json";
-                if (!File.Exists(Destination))
-                {
+                
                     var clazz = Type.GetType("Hexagon.Services.ConvertSourceFileToJsonStrategy.Convert" + DataFileConfigurationDTO.FileType + "ToJsonStrategy");
                     var Strategy = (IConvertSourceFileToJsonStrategy)Activator.CreateInstance(clazz);
                     var FileData = new DataFileConfiguration() { FileType = DataFileConfigurationDTO.FileType, FileProperties = DataFileConfigurationDTO.FileProperties };
-
-                    var resultado = Strategy.DoFromFile(PathFile, Destination, FileData);
-                    NativeFile = resultado;
-                }
-                else
-                {
-                    using (StreamReader StreamReader = new StreamReader(Destination))
-                    {
-                        NativeFile.Content  =  JsonConvert.DeserializeObject<Line[]>(StreamReader.ReadToEnd()).ToList();
-                        StreamReader.Close();
-
-                    }
-                    string FileDestinationDef = Path.GetDirectoryName(PathFile) + @"\Def" + Path.GetFileNameWithoutExtension(PathFile) + ".json";
-
-                    using (StreamReader streamReader = new StreamReader(FileDestinationDef))
-                    {
-                        NativeFile.Columns = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Column>>(streamReader.ReadToEnd());
-                        streamReader.Close();
-                    } 
-
-                } 
-                return new NativeFileDTO
-                    {
-                        Content = NativeFile.Content.Select(x => new LineDTO(x.Number, x.Fieds )).Take(10).ToList(),
-                        Columns = NativeFile.Columns.Select(x => new ColumnDTO(x.Name, x.OriginalPosition,
-    (EnumActionToDoWithUncastedDTO)Enum.Parse(typeof(EnumActionToDoWithUncasted), x.ActionToDoWithUncasted.ToString()),
-    (EnumAlowedDataTypeDTO)Enum.Parse(typeof(EnumAlowedDataType), x.DataTypeSelected.ToString()))).ToList()
-                    };
+                    return Strategy.DoFromFile(Path.Combine(HexFile.Path, HexFile.FileName), FileData);
+                
                 
 
             }

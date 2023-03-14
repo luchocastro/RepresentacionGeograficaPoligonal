@@ -8,7 +8,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
     public interface IConvertSourceFileToJsonStrategy
     {
         NativeJsonFile Do(string Base64File, DataFileConfiguration FileData);
-        NativeFile DoFromFile(string PathOrigen, string PathDestino, DataFileConfiguration FileData);
+        NativeFile DoFromFile(string PathOrigen, DataFileConfiguration FileData);
         
     }
 }
