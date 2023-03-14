@@ -35,6 +35,8 @@ namespace Hexagon.Model.Mappings
             CreateMap<HexFile, HexFileDTO>();
             CreateMap<UserDTO, User>();
             CreateMap<User, UserDTO>();
+            CreateMap<NativeFileDTO, NativeFile>();
+            CreateMap<NativeFile, NativeFileDTO>();
         }
     }
 }

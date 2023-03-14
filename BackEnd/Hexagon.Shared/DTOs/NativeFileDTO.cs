@@ -10,6 +10,8 @@ namespace Hexagon.Shared.DTOs
         public List<ColumnDTO> Columns { get; set; }
         public string PathFile { get; set; }
         public DataFileConfigurationDTO DataFileConfigurationDTO { get; set; }
-
-}
+        public string ID { get; set; }
+        public string ParentID { get; set; }
+        public string FileName { get; set; }
+    }
 }

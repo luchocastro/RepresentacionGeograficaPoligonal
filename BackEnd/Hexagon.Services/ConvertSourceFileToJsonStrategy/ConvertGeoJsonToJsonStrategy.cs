@@ -83,12 +83,8 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
            NativeJsonFile.Columns = ColumnsForModel;
             return NativeJsonFile;
         }
-        public NativeFile DoFromFile(string PathFileOrigen, string PathFileDestination, DataFileConfiguration FileData)
+        public NativeFile DoFromFile(string PathFileOrigen, DataFileConfiguration FileData)
         {
-
-
-
-            
             var PolygonToTake = new List<Polygon>();
             var PoitsToTake = new List<GeoJSON.Net.Geometry.Point>();
             var Positions = new List<IPosition>();
@@ -204,27 +200,6 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             }
 
             NativeFile.Columns = ColumnsForModel;
-            string FileDestination = PathFileDestination;
-
-            var jsonfile = JsonConvert.SerializeObject(NativeFile.Content);
-
-            using (StreamWriter StreamWriter = new StreamWriter(FileDestination))
-            {
-                StreamWriter.Write(jsonfile);
-                StreamWriter.Close();
-            }
-            string FileDestinationDef = Path.GetDirectoryName(PathFileOrigen) + @"\Def" + Path.GetFileNameWithoutExtension(PathFileOrigen) + ".json";
-            var jsonfileDef = JsonConvert.SerializeObject(NativeFile.Columns);
-
-            using (StreamWriter StreamWriter = new StreamWriter(FileDestinationDef))
-            {
-
-                StreamWriter.Write(jsonfileDef);
-                StreamWriter.Close();
-            }
-            NativeFile.PathFile = FileDestination;
-
-
             return NativeFile;
 
 

@@ -14,7 +14,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             throw new NotImplementedException();
         }
 
-        NativeFile IConvertSourceFileToJsonStrategy.DoFromFile(string PathOrigen, string PathDestino, DataFileConfiguration FileData)
+        NativeFile IConvertSourceFileToJsonStrategy.DoFromFile(string PathOrigen, DataFileConfiguration FileData)
         {
             Vintasoft.Imaging.VintasoftImage vsImage = new Vintasoft.Imaging.VintasoftImage(PathOrigen);
             throw new NotImplementedException();
