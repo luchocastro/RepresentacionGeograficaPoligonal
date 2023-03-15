@@ -5,6 +5,7 @@ using System.Text;
 using Hexagon.Model;
 using Hexagon.Model.Models;
 using Hexagon.Shared.DTOs;
+using Hexagon.Shared.Enums;
 
 namespace Hexagon.Model.Mappings
 {
@@ -35,6 +36,12 @@ namespace Hexagon.Model.Mappings
             CreateMap<HexFile, HexFileDTO>();
             CreateMap<UserDTO, User>();
             CreateMap<User, UserDTO>();
+            CreateMap<EnumActionToDoWithUncasted, EnumActionToDoWithUncastedDTO>();
+            CreateMap<EnumAlowedDataType , EnumAlowedDataTypeDTO >();
+            CreateMap<Line, LineDTO>();
+            CreateMap<LineDTO,Line>();
+            CreateMap<Column, ColumnDTO>();
+            CreateMap<ColumnDTO, Column>();
             CreateMap<NativeFileDTO, NativeFile>();
             CreateMap<NativeFile, NativeFileDTO>();
         }

@@ -98,7 +98,7 @@ namespace Hexagon.Services
                 NativeFile = GetJsonSerializedFileFromFile(File, FileData);
                 NativeFile.ParentID = HexFileID;
                 NativeFile.FileName = FileData.FileType + "_" + File.FileName;
-                NativeFile.PathFile = File.Path;
+                NativeFile.PathFile = Path.Combine (Path.GetFullPath( File.Path), NativeFile.FileName );
                 NativeFileDto = NativeFileDataManager.Add(NativeFile);
             }
             else
@@ -174,7 +174,7 @@ namespace Hexagon.Services
                     var clazz = Type.GetType("Hexagon.Services.ConvertSourceFileToJsonStrategy.Convert" + DataFileConfigurationDTO.FileType + "ToJsonStrategy");
                     var Strategy = (IConvertSourceFileToJsonStrategy)Activator.CreateInstance(clazz);
                     var FileData = new DataFileConfiguration() { FileType = DataFileConfigurationDTO.FileType, FileProperties = DataFileConfigurationDTO.FileProperties };
-                    return Strategy.DoFromFile(Path.Combine(HexFile.Path, HexFile.FileName), FileData);
+                    return Strategy.DoFromFile(Path.Combine(HexFile.Path ), FileData);
                 
                 
 
