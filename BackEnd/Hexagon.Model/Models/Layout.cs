@@ -3,8 +3,10 @@ using System.Drawing;
 using Math = System.MathF;
 namespace Hexagon.Model
 {
-    public struct Layout
+    public class Layout :Base
     {
+        public Layout()
+        { }
         public Layout(bool flat, PointF size, PointF origin,int HexPerLine, float MaxPictureSizeX = 3200f, float MaxPictureSizeY = 3200f, bool FillPolygon = false,   MapDefinition MapDefinition = null)
         {
             if (flat)

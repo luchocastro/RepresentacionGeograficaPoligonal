@@ -89,7 +89,7 @@ namespace Hexagon.Services
             var File = FileRepository.Get(HexFileID);
             
             
-            NativeFileDto.FileName = FileData.FileType + "_" + File.FileName;
+            NativeFileDto.FileName = FileData.FileType +"_"+  File.FileName + ".HexJson";
             NativeFileDto.ParentID = File.ID;
             var NativeFile = NativeFileDataManager.Get(NativeFileDto);
             //var PathFile = Path.Combine(ProyectDataDTO.Location.ProyectFolder, NicData, ProyectDataDTO.Location.FileFolder, ProyectDataDTO.AnalizedFiles.FirstOrDefault(x => x.NicName == NicData).FileName);
@@ -97,9 +97,11 @@ namespace Hexagon.Services
             {
                 NativeFile = GetJsonSerializedFileFromFile(File, FileData);
                 NativeFile.ParentID = HexFileID;
-                NativeFile.FileName = FileData.FileType + "_" + File.FileName;
-                NativeFile.PathFile = Path.Combine (Path.GetFullPath( File.Path), NativeFile.FileName );
-                NativeFileDto = NativeFileDataManager.Add(NativeFile);
+                NativeFile.FileName = FileData.FileType + "_" +  File.FileName  + ".HexJson";
+                NativeFile.DataFileConfiguration = _Mapper.Map<DataFileConfiguration>(FileData);
+                var Natid = NativeFileDataManager.GenerateFullID(NativeFile);
+                NativeFile.PathFile = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), NativeFile.FileName);
+                    NativeFileDto = NativeFileDataManager.Add(NativeFile);
             }
             else
             {
@@ -111,7 +113,10 @@ namespace Hexagon.Services
 
 
 
-            return NativeFileDto;
+            return new NativeFileDTO ()  {FileName=NativeFileDto.FileName, Columns=NativeFileDto.Columns, 
+                ParentID = NativeFileDto.ParentID, PathFile= NativeFileDto.PathFile, 
+                DataFileConfigurationDTO= NativeFileDto.DataFileConfigurationDTO, Content=NativeFileDto.Content.GetRange(0,100),
+                ID = NativeFileDto.ID};
 
         }
         public List<DataFileConfigurationDTO> GetDataFileConfiguration(string Path)
@@ -141,27 +146,24 @@ namespace Hexagon.Services
             return new AnalizedFileDTO( ) ;
         }
 
-        public AnalizedFileDTO ConvertFileToHexList(ProyectDataDTO ProyectDataDTO, AnalizedFileDTO AnalizedFileDTO, LayoutDto LayoutDto)
+        public LayoutDto  ConvertFileToHexList(NativeFileDTO NativeToUse, LayoutDto LayoutDto)
         {
 
             var Layout = _Mapper.Map<Layout>(LayoutDto);
+            var HexagonDetails = new HexagonDetails();
              var HexagonGrid = new HexagonGrid() ;
             HexagonGrid.Layout = Layout;
-            string NativeToUse = "";
-            if (NativeToUse == "" || ! File.Exists(NativeToUse))
-                throw new FileNotFoundException("El archivo no encontrado " +NativeToUse );
-            var ProyectData = _Mapper.Map<ProyectData>(ProyectDataDTO); 
-            MapHelper.HexMap(ProyectData, NativeToUse, ref HexagonGrid);
+            MapHelper.HexMap(NativeToUse, ref HexagonGrid, ref HexagonDetails);
 
             var ToFile = new HexagonGridForFile
             {
-                HexagonsHexagonMap = JsonConvert.SerializeObject(HexagonGrid.HexagonMap.Select(x => x.ListValues)),
-                FullClassName = JsonConvert.SerializeObject(HexagonGrid.Function),
-                Layout = JsonConvert.SerializeObject(HexagonGrid.Layout)
-            };
 
-            FilesHelper.SaveFile<HexagonGridForFile>(Path.Combine(Path.GetFullPath(NativeToUse), "HexGrid" + Path.GetFileNameWithoutExtension(NativeToUse) + ".Json"),ToFile);
-            return AnalizedFileDTO;
+                HexagonsHexagonMap = JsonConvert.SerializeObject(HexagonGrid.HexagonMap.Select(x => x.ListValues)),
+                FullClassName = JsonConvert.SerializeObject(HexagonGrid.Layout.MapDefinition.Function),
+                Layout = JsonConvert.SerializeObject(HexagonGrid.Layout)
+            }; 
+
+            return _Mapper.Map<LayoutDto>(HexagonGrid.Layout);
         }
         public NativeFile GetJsonSerializedFileFromFile(HexFileDTO HexFile, DataFileConfigurationDTO DataFileConfigurationDTO)
         {
@@ -201,23 +203,50 @@ namespace Hexagon.Services
                 throw Exception;
             }
         }
-        public string GenerateImge(LayoutDto Layout, ProyectDataDTO ProyectDataDTO, AnalizedFileDTO AnalizedFileDTO)
+        public string GenerateImge(LayoutDto Layout, string NativeFileID )
         {
             HexagonGrid HexagonGrid = new HexagonGrid();
-             
-            var layout = _Mapper.Map<Layout>(Layout);
+            NativeFileDTO NativeFile = NativeFileDataManager.Get(NativeFileID);
+           var layout = _Mapper.Map<Layout>(Layout);
             HexagonGrid.Layout = layout;
-            var ProyectData = _Mapper.Map<ProyectData>(ProyectDataDTO);
-            MapHelper.HexMap(ProyectData, AnalizedFileDTO.PathFiles, ref HexagonGrid);
+            var HexagonDetails = new HexagonDetails();
+            MapHelper.HexMap(NativeFile ,ref HexagonGrid, ref HexagonDetails);
             var hexs = HexagonGrid.HexagonMap;
-            string DestineFile = Path.Combine(ProyectData.Location.ProyectFolder, ProyectData.Location.MapsFolder) + AnalizedFileDTO.NicName + Guid.NewGuid();
-            using (StreamWriter StreamWriter = new StreamWriter( DestineFile + ".jsonHex"))
+            string DestineFile = Path.Combine(Path.GetDirectoryName(NativeFile.PathFile), Enum.GetName(typeof(EnumFileType), EnumFileType.HexaDetails), NativeFile.FileName);
+
+            if (!Directory.Exists(Path.GetDirectoryName(DestineFile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(DestineFile));
+
+            using (StreamWriter StreamWriter = new StreamWriter(DestineFile + ".Hex.json"))
             {
-                //var hexText = JsonConvert.SerializeObject(hexs.Select(hex => new object[] { hex.BorderColor, hex.BorderType, hex.Color, hex.Opacity, hex.RGBColor, hex.Q, hex.R, hex.S, hex.Value, hex.Values }));
+
+                StreamWriter.Write(JsonConvert.SerializeObject(HexagonDetails));
+            }
+            DestineFile = Path.Combine(Path.GetDirectoryName(NativeFile.PathFile), Enum.GetName(typeof(EnumFileType), EnumFileType.MapFile), NativeFile.FileName);
+            
+            if (!Directory.Exists(Path.GetDirectoryName(DestineFile)))
+                Directory.CreateDirectory(Path.GetDirectoryName(DestineFile));
+
+            using (StreamWriter StreamWriter = new StreamWriter( DestineFile + ".Hex.json"))
+            {
+
                 foreach (var hex in hexs)
                 {
+ 
+                    var HexToFile = new
+                    {
+                        Q = hex.Q,
+                        R = hex.R,
+                        S = hex.S,
+                        RGBColor = hex.RGBColor,
+                        Value = hex.Value,
+                        BorderColor = hex.BorderColor,
+                        BorderType = hex.BorderType,
+                        Points= HexagonFunction.GetPoints(hex,layout) ,
+                        ListValues=hex.ListValues
+                    };
 
-                    StreamWriter.WriteLine(hex.ListValues);
+                    StreamWriter.WriteLine(JsonConvert.SerializeObject(HexToFile));
 
                     //StreamWriter.Write(JsonConvert.SerializeObject( hexs.Select(hex => new object[] { hex.BorderColor, hex.BorderType, hex.Color, hex.Opacity, hex.RGBColor, hex.Q, hex.R, hex.S, hex.Value, hex.Values })));
                     StreamWriter.Flush();
@@ -225,10 +254,9 @@ namespace Hexagon.Services
 
                 StreamWriter.Close();
             }
-            return CreadorMapaService.CreadorMapa(ref HexagonGrid, DestineFile);
-
+           return DestineFile + ".Hex.json";
         }
-        public string GenerateImge(LayoutDto Layout, string PathFile)
+        public string GenerateImge2(LayoutDto Layout, string PathFile)
         {
             HexagonGrid HexagonGrid = new HexagonGrid();
  
@@ -357,6 +385,9 @@ namespace Hexagon.Services
             return null;
         }
 
-     
+        public AnalizedFileDTO ConvertFileToHexList(ProyectDataDTO ProyectDataDTO, AnalizedFileDTO AnalizedFileDTO, LayoutDto LayoutDto)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

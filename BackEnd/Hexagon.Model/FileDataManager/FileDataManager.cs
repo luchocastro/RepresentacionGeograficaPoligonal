@@ -71,6 +71,7 @@ namespace Hexagon.Model.FileDataManager
             if (!Directory.Exists(Path.GetDirectoryName  (FileToWrite)))
                 Directory.CreateDirectory(Path.GetDirectoryName(FileToWrite));
             var ToWrite = JsonConvert.SerializeObject (entity);
+            entity.Path = FileToWrite;
             Write(FileToWrite, ToWrite);
             return Mapper.Map<G>(entity);
         }

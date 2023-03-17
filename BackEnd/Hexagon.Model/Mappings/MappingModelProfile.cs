@@ -43,7 +43,11 @@ namespace Hexagon.Model.Mappings
             CreateMap<Column, ColumnDTO>();
             CreateMap<ColumnDTO, Column>();
             CreateMap<NativeFileDTO, NativeFile>();
-            CreateMap<NativeFile, NativeFileDTO>();
+            CreateMap<NativeFile, NativeFileDTO>(); ;
+            CreateMap<Function, FunctionDTO>();
+            CreateMap<FunctionDTO, Function>();
+            CreateMap<Orientation, OrientationDto>();
+            CreateMap<OrientationDto, Orientation>();
         }
     }
 }
