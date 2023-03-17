@@ -16,7 +16,8 @@ namespace Hexagon.Model
         public String Description { get; set; }
         public float Value { get; set; }
         public List<SingleEvent> Values { get {
-                if (Values == null )
+                Values = null;
+                if (Values == null && 1==2)
                 {
                     Values = new List<SingleEvent>();
                     if (this.GroupPoints != null)

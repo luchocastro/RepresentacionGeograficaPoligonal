@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Hexagon.Model
 {
@@ -13,7 +14,7 @@ namespace Hexagon.Model
         public Hex(float q =0, float r = 0, float s = 0)
             {
             if (Math.Round(q + r + s) != 0) throw new Exception("q + r + s must be 0");
-
+            this.Lines = new List<Line>();
             R = r;
             S = s;
             Q = q;
@@ -30,7 +31,7 @@ namespace Hexagon.Model
             this.RGBColor = new int[] { 254, 254, 254 };
             this.Values = null;
             this.Hexagonos = null;
-            
+            this.HexagonDetailsID = "";
         }
         
 
@@ -44,12 +45,17 @@ namespace Hexagon.Model
                 ret += "Q:" + Q.ToString() + ",";
                 ret += "R:" + R.ToString() + ",";
                 ret += "S:" + S.ToString() + ",";
-                ret += "Value:" +Value.ToString() + ",Values:[";
+                ret += "Value:" + Value.ToString();
+                if (Values !=null)
+                { 
+                ret += ",Values:[";
                 foreach (var item in Values)
                 {
                     ret += item.ListValues + ",";
                 }
-                ret += "]}";
+                    ret += "]";
+                }
+                ret += "}";
                 return ret; } }
 
         public List<Hex> Hexagonos { get; }
@@ -75,7 +81,8 @@ namespace Hexagon.Model
 
         public override int GetHashCode() => (int)(Q*R*S );
         #endregion
-
+        [JsonIgnore]
+        public List<Line> Lines { get; set; }
         public float Value { get; set; } 
         public float PorcentualXaxisPosition { 
         get; set;}
@@ -95,6 +102,7 @@ namespace Hexagon.Model
         public float Opacity { get; set; }
         public string BorderColor { get; set; }
         public string BorderType { get; set; }
-        
+        [JsonIgnore]
+        public string HexagonDetailsID { get; set; }
     }
 }

@@ -14,7 +14,10 @@ namespace Hexagon.Model
             [Description("MapFile")]
         MapFile,
         [Description("HexaFile")]
-        HexaFile
+        HexaFile,
+        [Description("HexaDetails")]
+        HexaDetails
+
 
     }
 }

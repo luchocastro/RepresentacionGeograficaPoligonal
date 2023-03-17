@@ -9,7 +9,9 @@ namespace Hexagon.Shared.DTOs
 {
     public class LayoutDto
     {
-        public LayoutDto(bool flat, PointF size, PointF origin,int HexPerLine, float MaxPictureSizeX= 3200f, float MaxPictureSizeY=3200f, bool FillPolygon = false, MapDefinitionDTO MapDefinition = null)
+        public LayoutDto()
+        { }
+            public LayoutDto(bool flat, PointF size, PointF origin,int HexPerLine, float MaxPictureSizeX= 3200f, float MaxPictureSizeY=3200f, bool FillPolygon = false, MapDefinitionDTO MapDefinition = null)
         {
             if (flat)
                 this.Orientation = new OrientationDto(3.0f / 2.0f, 0.0f, Math.Sqrt(3.0f) / 2.0f, Math.Sqrt(3.0f), 2.0f / 3.0f, 0.0f, -1.0f / 3.0f, Math.Sqrt(3.0f) / 3.0f, 0.0f);
@@ -36,6 +38,10 @@ namespace Hexagon.Shared.DTOs
         public float MaxPictureSizeY { get; set; }
         public bool  FillPolygon { get; set; }
         public MapDefinitionDTO MapDefinition { get; set; }
+
+        public string ID { get; set; }
+        public string ParentID { get; set; }
+
     }
 }
 

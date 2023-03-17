@@ -6,7 +6,13 @@ namespace Average
 {
     public class Statistics
     {
-         
+        public  float Average2(Dictionary<string, object[]> Values)
+        {
+            var ToCalc = Values.FirstOrDefault().Value;
+
+            var res = ToCalc.Average(x => (float)x);
+            return res;
+        }
         public static float Average(Dictionary<string, object[]> Values)
         {
             var ToCalc = Values.FirstOrDefault().Value;
