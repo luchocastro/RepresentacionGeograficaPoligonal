@@ -228,13 +228,14 @@ namespace Hexagon.Services.Helpers
             List<Hex> ret = new List<Hex>();
             Layout Layout = HexagonGrid.Layout;
 
-            var NameOfGroup = Layout.MapDefinition.ColumnForMapGroup;
+            var NameOfGroup = "";// Layout.MapDefinition.ColumnForMapGroup;
             var PolygonToTake = new List<Polygon>();
             var PoitsToTake = new List<GeoJSON.Net.Geometry.Point>();
             var Positions = new List<IPosition>();
             var PoliygonList = new List<List<Model.Point>>();
             var EventPoints = new List<EventPoint>();
             HexagonGrid.PuntosACalcular = new List<EventPoint>();
+            var ColmnsForFunctionParaQueCompile = new string[] { "", "", "" };
             using (StreamReader file = File.OpenText(PathJsonMap))
             {
                 var mapa = file.ReadToEnd();
@@ -267,7 +268,7 @@ namespace Hexagon.Services.Helpers
                                 EventPoint EventPoint = new EventPoint();
                                 EventPoint.Description = featureItem.Properties[Layout.MapDefinition.ColumnForMapGroup].ToString();
                                 var Values = new List<string>();
-                                foreach (var ValueNames in Layout.MapDefinition.ColumnsNameForFuntion)
+                                foreach (var ValueNames in new string[] {"ACA","VAN","LAS", "" })
                                 {
 
                                     Values.Add(featureItem.Properties.FirstOrDefault(value => value.Key == ValueNames).Value.ToString());
@@ -301,7 +302,8 @@ namespace Hexagon.Services.Helpers
                                 EventPoint.Description = featureItem.Properties[Layout.MapDefinition.ColumnForMapGroup].ToString();
                                 var Values = new List<string>();
                                 SingleEvent SingleEvent = new SingleEvent ();
-                                foreach (var ValueNames in Layout.MapDefinition.ColumnsNameForFuntion)
+                                //foreach (var ValueNames in Layout.MapDefinition.ColumnsNameForFuntion)
+                                foreach (var ValueNames in ColmnsForFunctionParaQueCompile)
                                 {
 
                                     Values.Add(featureItem.Properties.FirstOrDefault(value => value.Key == ValueNames).Value.ToString());
@@ -339,8 +341,10 @@ namespace Hexagon.Services.Helpers
                             EventPoint.Description = featureItem.Properties[Layout.MapDefinition.ColumnForMapGroup].ToString();
                             var Values = new List<string>();
                             SingleEvent SingleEvent = new SingleEvent();
-                            foreach (var ValueNames in Layout.MapDefinition.ColumnsNameForFuntion)
+                            //foreach (var ValueNames in Layout.MapDefinition.ColumnsNameForFuntion)
+                            foreach (var ValueNames in ColmnsForFunctionParaQueCompile)
                             {
+                                
 
                                 Values.Add(featureItem.Properties.FirstOrDefault(value => value.Key == ValueNames).Value.ToString());
 
@@ -580,7 +584,8 @@ namespace Hexagon.Services.Helpers
             List<Hex> ret = new List<Hex>();
             Layout Layout = HexagonGrid.Layout;
 
-            var PoliygonList = new List<List<Model.Point>>();
+    var ColmnsForFunctionParaQueCompile = new string[] { "", "", "" };
+    var PoliygonList = new List<List<Model.Point>>();
 
             if (NativeFileDTO.Content.Count() == 0)
                 return;
@@ -588,7 +593,7 @@ namespace Hexagon.Services.Helpers
             var NameOfGroup = Layout.MapDefinition.ColumnForMapGroup;
             var ColumnX = Layout.MapDefinition.ColumnNameForX;
             var ColumnY = Layout.MapDefinition.ColumnNameForY;
-            var ColumnValue = Layout.MapDefinition.ColumnsNameForFuntion[0];
+            var ColumnValue = ColmnsForFunctionParaQueCompile [0];
             var EventPoints = new List<EventPoint>();
              HexagonDetails.Columns =  NativeFileDTO.Columns.Select(Col => new Column(Col.Name, Col.OriginalPosition, EnumActionToDoWithUncasted.DeleteData,EnumAlowedDataType.Character) ).ToList () ;
             var QColumns = HexagonDetails.Columns.Count();

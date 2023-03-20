@@ -18,6 +18,7 @@ using AutoMapper;
 using Hexagon.Model.Repository;
 using Microsoft.AspNetCore.Http;
 using Hexagon.Model.FileDataManager;
+using System.Drawing;
 
 namespace Hexagon.Services
 {
@@ -38,6 +39,9 @@ namespace Hexagon.Services
         private IDataRepository<NativeFileDTO , NativeFile> NativeFileDataManager;
 
         private readonly IDataRepository<HexFileDTO , HexFile> FileRepository;
+        private IDataRepository<LayoutDto, Layout> LayoutDataManager;
+        private IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager;
+        private IDataRepository<HexagonDetailsDTO , HexagonDetails> HexagonDetailsManager;
         private readonly User User = null;
         public FileService(IConfiguration Configuration,IMapper Mapper, 
             IDataRepository<ProyectDataDTO, ProyectData> IDataRepository,
@@ -45,7 +49,10 @@ namespace Hexagon.Services
             IDataRepository<AnalizedFileDTO, AnalizedFile> AnalizedFileDataManager,
             IDataRepository<UserDTO, User>  DataUser,
             IFileDataManagerOptions IFileDataManagerOptions ,
-            IDataRepository<NativeFileDTO, NativeFile> NativeFileDataManager
+            IDataRepository<NativeFileDTO, NativeFile> NativeFileDataManager,
+            IDataRepository<LayoutDto, Layout> LayoutDataManager,
+            IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager,
+            IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsDataManager
             )
         {
             this.DataUser = DataUser;
@@ -56,6 +63,10 @@ namespace Hexagon.Services
             FileDataManagerOptions = IFileDataManagerOptions;
             _Mapper = Mapper;
             this.NativeFileDataManager = NativeFileDataManager;
+            this.LayoutDataManager = LayoutDataManager;
+            this.HexagonDetailsManager = HexagonDetailsDataManager;
+            this.MapDefinitionDataManager = MapDefinitionDataManager;
+
          }
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData )
         {
@@ -101,7 +112,7 @@ namespace Hexagon.Services
                 NativeFile.DataFileConfiguration = _Mapper.Map<DataFileConfiguration>(FileData);
                 var Natid = NativeFileDataManager.GenerateFullID(NativeFile);
                 NativeFile.PathFile = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), NativeFile.FileName);
-                    NativeFileDto = NativeFileDataManager.Add(NativeFile);
+                NativeFileDto = NativeFileDataManager.Add(NativeFile);
             }
             else
             {
@@ -159,7 +170,7 @@ namespace Hexagon.Services
             {
 
                 HexagonsHexagonMap = JsonConvert.SerializeObject(HexagonGrid.HexagonMap.Select(x => x.ListValues)),
-                FullClassName = JsonConvert.SerializeObject(HexagonGrid.Layout.MapDefinition.Function),
+                //FullClassName = JsonConvert.SerializeObject(HexagonGrid.Layout.MapDefinition.Function),
                 Layout = JsonConvert.SerializeObject(HexagonGrid.Layout)
             }; 
 
@@ -203,7 +214,66 @@ namespace Hexagon.Services
                 throw Exception;
             }
         }
-        public string GenerateImge(LayoutDto Layout, string NativeFileID )
+        public string GenerateImge(LayoutDto Layout, string NativeFileID)
+        {
+            NativeFileDTO NativeFile = NativeFileDataManager.Get(NativeFileID);
+            var layout = _Mapper.Map<Layout>(Layout);
+            var QColumns = NativeFile.Columns.Count();
+            var HexDetailList = new List<HexagonDetail>();
+            var HexagonDetails = new HexagonDetails();
+            HexagonDetails.Columns = NativeFile.Columns.Select(x=> _Mapper.Map<Column>(x)).ToList(); 
+            var Map = layout.MapDefinition;
+            if (layout.MapDefinition.ColumnForMapGroup != "")
+            {
+                var col = NativeFile.Columns.Where(x => x.Name == Map.ColumnForMapGroup).FirstOrDefault();
+
+                var pols = NativeFile.Content.Select(x => x.Fieds[col.OriginalPosition]);
+                var PoliygonList = pols.Select(X => X.Split(",").Select(y => new Model.Point((float)Convert.ToDouble(y[0]), (float)Convert.ToDouble(y[1]))).ToList()).ToList();
+                
+            }
+            else
+            {
+                var colX = NativeFile.Columns.Where(x => x.Name == Map.ColumnNameForX).FirstOrDefault();
+                var colY = NativeFile.Columns.Where(x => x.Name == Map.ColumnNameForY).FirstOrDefault();
+                layout.PaintLines = false;
+                var PoliygonList = NativeFile.Content.Where(x => x.Fieds.Count() == QColumns).Select(y => new Model.Point((float)Convert.ToDouble(y.Fieds[colX.OriginalPosition]), (float)Convert.ToDouble(y.Fieds[colY.OriginalPosition]))).ToList();
+                var ImageDifinition = new ImageDefinition(PoliygonList, layout);
+
+                layout = new Layout(Layout.Flat, new System.Drawing.PointF(ImageDifinition.HexagonSize, ImageDifinition.HexagonSize), new PointF(ImageDifinition.TransformedWidth / 2f, ImageDifinition.TransformedHeigth / 2f), Layout.HexPerLine, ImageDifinition.TransformedWidth, ImageDifinition.TransformedHeigth, Layout.FillPolygon);
+                var QLines = NativeFile.Content.Count();
+                foreach (var Line in NativeFile.Content)
+                {
+                    if (QColumns != Line.Fieds.Count())
+                        continue;
+                    var EventPoint = new EventPoint() { PositionInMeters = new PointF((float)Convert.ToDouble(Line.Fieds[colX.OriginalPosition]), (float)Convert.ToDouble(Line.Fieds[colY.OriginalPosition]))  };
+                    var X = Layout.Size.X * 2 + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
+                    var Y = MathF.Sqrt(3) * Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
+                    var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
+                                             new Model.Point(X, Y));
+                    HexagonDetail HexagonDetail = null;
+                    var ListLine = new List<Line>();
+
+                    var IdexHexDetail = HexDetailList.FindLastIndex(x => x.Q == hexPosition1.Q && x.R == hexPosition1.R
+                             && x.S == hexPosition1.S);
+                    if (IdexHexDetail==-1)
+                    {//if (hexPosition1.Values == null)
+
+
+                        HexDetailList.Add(new HexagonDetail(hexPosition1, ListLine));
+                    }
+                    else
+                    {
+
+
+                        HexDetailList[IdexHexDetail].Lines.Add(new Line() { Fieds = Line.Fieds });
+                    }
+
+                }
+                
+            }
+            return "";
+        }
+            public string GenerateImge4(LayoutDto Layout, string NativeFileID )
         {
             HexagonGrid HexagonGrid = new HexagonGrid();
             NativeFileDTO NativeFile = NativeFileDataManager.Get(NativeFileID);
