@@ -10,40 +10,8 @@ namespace Hexagon.Model.Models
         public string ColumnNameForX { get; set; }
         public string ColumnNameForY { get; set; }
         public string ColumnForMapGroup { get; set; }
-        public List<string> ColumnsNameForFuntion { get; set; }
-        public PaletteClass PaletteClass { get; set; }
-        public string FunctionName { get { return Function != null ? Function.FunctionName : ""; } }
-        public Function Function { get; set; }
-        public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
+
         
-
-        public MapDefinition( )
-             
-        {
-
-            this.ColumnNameForX = "No Set";
-            this.ColumnNameForY = "No Set";
-            this.ColumnsNameForFuntion = null;  
-            this.ColumnForMapGroup = "No Set";
-             
-            ActionToDoWithUncasted = EnumActionToDoWithUncasted.DeleteData;
-        }
-        public MapDefinition(
-         
-        string _ColumnNameForX,
-        string _ColumnNameForY,
-        string _ColumnForMapGroup,
-        List<string> _ColumnsNameForFuntion,
-        string _FunctionName,
-        EnumActionToDoWithUncasted _ActionToDoWithUncasted)
-        {
-            
-            this.ColumnNameForX = _ColumnNameForX;
-            this.ColumnNameForY = _ColumnNameForY;
-            this.ColumnsNameForFuntion = _ColumnsNameForFuntion;
-            this.ColumnForMapGroup = _ColumnForMapGroup;
-             ActionToDoWithUncasted = _ActionToDoWithUncasted;
-        }
 
     }
 }

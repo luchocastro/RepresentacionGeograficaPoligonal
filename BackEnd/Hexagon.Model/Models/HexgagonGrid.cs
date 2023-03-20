@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 namespace Hexagon.Model
 {
-    public class HexagonGrid: System.Collections.IEnumerable, IModelPersistible
+    public class HexagonGrid :Base,  System.Collections.IEnumerable 
     {
         private List<EventPoint> _PuntosACalcular = new List<EventPoint>();
         public HexagonGrid(List<EventPoint> PuntosACalcular, Layout  Layout, Function Function)
@@ -31,14 +31,14 @@ namespace Hexagon.Model
             this.PuntosACalcular = GrillaAnterior.HexagonMap.SelectMany(x=>x.Values).ToList();
         }
 
-        
+
+        [JsonIgnore]
         public List<Hex> HexagonMap { get; set; }
         public Layout Layout { get;  set; }
 
         [JsonIgnore]
         public List<EventPoint> PuntosACalcular { get { return _PuntosACalcular; } set { _PuntosACalcular = value; } }
         //public Function Function { get; set; }
-        public string ID { get ; set ; }
 
         public IEnumerator GetEnumerator()
         {
