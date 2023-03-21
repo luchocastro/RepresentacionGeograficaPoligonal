@@ -226,6 +226,7 @@ namespace Hexagon.Services
             var HexagonDetails = new HexagonDetails();
             HexagonDetails.Columns = NativeFile.Columns.Select(x=> _Mapper.Map<Column>(x)).ToList(); 
             var Map = layout.MapDefinition;
+            
             if (layout.MapDefinition.ColumnForMapGroup != "")
             {
                 var col = NativeFile.Columns.Where(x => x.Name == Map.ColumnForMapGroup).FirstOrDefault();
@@ -239,16 +240,19 @@ namespace Hexagon.Services
                 var colX = NativeFile.Columns.Where(x => x.Name == Map.ColumnNameForX).FirstOrDefault();
                 var colY = NativeFile.Columns.Where(x => x.Name == Map.ColumnNameForY).FirstOrDefault();
                 layout.PaintLines = false;
-                var PoliygonList = NativeFile.Content.Where(x => x.Fieds.Count() == QColumns).Select(y => new Model.Point((float)Convert.ToDouble(y.Fieds[colX.OriginalPosition]), (float)Convert.ToDouble(y.Fieds[colY.OriginalPosition]))).ToList();
+                var PoliygonList = NativeFile.Content.Where(x => x.Fieds.Count() == QColumns).Select(y => new Model.Point((float)Convert.ToDouble(y.Fieds[colX.OriginalPosition].ToString().Replace(".", ",")), (float)Convert.ToDouble(y.Fieds[colY.OriginalPosition].ToString().Replace(".", ",")))).ToList();
                 var ImageDifinition = new ImageDefinition(PoliygonList, layout);
-
-                layout = new Layout(Layout.Flat, new System.Drawing.PointF(ImageDifinition.HexagonSize, ImageDifinition.HexagonSize), new PointF(ImageDifinition.TransformedWidth / 2f, ImageDifinition.TransformedHeigth / 2f), Layout.HexPerLine, ImageDifinition.TransformedWidth, ImageDifinition.TransformedHeigth, Layout.FillPolygon);
+                layout.Size = new System.Drawing.PointF(ImageDifinition.HexagonSize, ImageDifinition.HexagonSize);
+                layout.Origin = new PointF(ImageDifinition.TransformedWidth / 2f, ImageDifinition.TransformedHeigth / 2f);
+                layout.MaxPictureSizeX = ImageDifinition.TransformedWidth;
+                layout.MaxPictureSizeY = ImageDifinition.TransformedHeigth;
+                //layout = new Layout(Layout.Flat, new System.Drawing.PointF(ImageDifinition.HexagonSize, ImageDifinition.HexagonSize), new PointF(ImageDifinition.TransformedWidth / 2f, ImageDifinition.TransformedHeigth / 2f), Layout.HexPerLine, ImageDifinition.TransformedWidth, ImageDifinition.TransformedHeigth, Layout.FillPolygon);
                 var QLines = NativeFile.Content.Count();
                 foreach (var Line in NativeFile.Content)
                 {
                     if (QColumns != Line.Fieds.Count())
                         continue;
-                    var EventPoint = new EventPoint() { PositionInMeters = new PointF((float)Convert.ToDouble(Line.Fieds[colX.OriginalPosition]), (float)Convert.ToDouble(Line.Fieds[colY.OriginalPosition]))  };
+                    var EventPoint = new EventPoint() { PositionInMeters = new PointF((float)Convert.ToDouble(Line.Fieds[colX.OriginalPosition].ToString().Replace(".", ",")), (float)Convert.ToDouble(Line.Fieds[colY.OriginalPosition].ToString().Replace(".", ",")))  };
                     var X = Layout.Size.X * 2 + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
                     var Y = MathF.Sqrt(3) * Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
                     var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
@@ -259,7 +263,7 @@ namespace Hexagon.Services
                     var IdexHexDetail = HexDetailList.FindLastIndex(x => x.HexagonPositionForValues.Exists(y => y.Q == hexPosition1.Q && y.R == hexPosition1.R && y.S == hexPosition1.S));
                     if (IdexHexDetail==-1)
                     {//if (hexPosition1.Values == null)
-
+                            
                         HexagonDetail = new HexagonDetail();
                         HexagonDetail.HexagonPositionForValues.Add(HexagonPosition);
                         HexagonDetail.Lines.Add(_Mapper.Map<Line>( Line));
