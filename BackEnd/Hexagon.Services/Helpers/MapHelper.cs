@@ -652,11 +652,11 @@ namespace Hexagon.Services.Helpers
                         // Eventpoints.Add(EventPoints[i]);
                         hexPosition1.Value = EventPoint.Value;
                         //hexPosition1.Values = EventPoints;
-                        ListLine.Add(new Line( Line.Number, Line.Fieds));
-                        HexagonDetail = new HexagonDetail(hexPosition1, ListLine);
+                        //ListLine.Add(new Line( Line.Number, Line.Fieds));
+                        //HexagonDetail = new HexagonDetail(hexPosition1, ListLine);
 
-                        HexagonDetails.Add(HexagonDetail)  ;
-                        ret.Add(hexPosition1);
+                        //HexagonDetails.Add(HexagonDetail)  ;
+                        //ret.Add(hexPosition1);
                     }
                     else
                     {
@@ -667,10 +667,10 @@ namespace Hexagon.Services.Helpers
                         //aca hay que calcular y guardar los valores
 
                         ListLine.Add(new Line(Line.Number, Line.Fieds));
-                        var indexOF = HexagonDetails.List.FindLastIndex( x => x.Q == hexPosition1.Q && x.R == hexPosition1.R
-                              && x.S == hexPosition1.S);
+                        ////var indexOF = HexagonDetails.List.FindLastIndex( x => x.Q == hexPosition1.Q && x.R == hexPosition1.R
+                        ////      && x.S == hexPosition1.S);
 
-                        HexagonDetails.List[indexOF].Lines.Add(new Line() { Fieds = Line.Fieds });
+                        ////HexagonDetails.List[indexOF].Lines.Add(new Line() { Fieds = Line.Fieds });
 
                         hexPosition1.Value = EventPoint.Value;
                         //hexPosition1.Values = EventPoints;
