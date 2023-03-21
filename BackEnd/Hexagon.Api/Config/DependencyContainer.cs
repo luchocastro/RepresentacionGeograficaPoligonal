@@ -46,8 +46,8 @@ namespace Hexagon.Api.Config
             services.AddScoped<IDataRepository<LayoutDto , Layout>, FileDataManager<LayoutDto, Layout>>();
             services.AddScoped <IDataRepository<MapDefinitionDTO, MapDefinition>, FileDataManager<MapDefinitionDTO, MapDefinition>>();
             services.AddScoped<IDataRepository<HexagonDetailsDTO, HexagonDetails>, FileDataManager<HexagonDetailsDTO, HexagonDetails>>();
-        
-        services.AddHttpContextAccessor();
+            services.AddScoped<IDataRepository<FunctionDTO, Function>, FileDataManager<FunctionDTO, Function>>();
+            services.AddHttpContextAccessor();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<Hexagon.Services.Interfaces.IHexAuthenticationService, HexAuthenticationService>();
             services.AddScoped<IFormulasResumen, FormulasResumenService>();

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Hexagon.Shared.DTOs
 {
-    public class FunctionDTO
+    public class FunctionDTO : Base.BaseDto
     {
         public FunctionDTO( )
         {

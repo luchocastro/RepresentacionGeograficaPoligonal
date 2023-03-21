@@ -41,7 +41,8 @@ namespace Hexagon.Services
         private readonly IDataRepository<HexFileDTO , HexFile> FileRepository;
         private IDataRepository<LayoutDto, Layout> LayoutDataManager;
         private IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager;
-        private IDataRepository<HexagonDetailsDTO , HexagonDetails> HexagonDetailsManager;
+        private IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsManager;
+        private IDataRepository<FunctionDTO, Function> FunctionManager;
         private readonly User User = null;
         public FileService(IConfiguration Configuration,IMapper Mapper, 
             IDataRepository<ProyectDataDTO, ProyectData> IDataRepository,
@@ -52,7 +53,8 @@ namespace Hexagon.Services
             IDataRepository<NativeFileDTO, NativeFile> NativeFileDataManager,
             IDataRepository<LayoutDto, Layout> LayoutDataManager,
             IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager,
-            IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsDataManager
+            IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsDataManager,
+            IDataRepository<FunctionDTO, Function> FunctionManager
             )
         {
             this.DataUser = DataUser;
@@ -66,6 +68,7 @@ namespace Hexagon.Services
             this.LayoutDataManager = LayoutDataManager;
             this.HexagonDetailsManager = HexagonDetailsDataManager;
             this.MapDefinitionDataManager = MapDefinitionDataManager;
+            this.FunctionManager = FunctionManager;
 
          }
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData )
@@ -228,8 +231,8 @@ namespace Hexagon.Services
                 var col = NativeFile.Columns.Where(x => x.Name == Map.ColumnForMapGroup).FirstOrDefault();
 
                 var pols = NativeFile.Content.Select(x => x.Fieds[col.OriginalPosition]);
-                var PoliygonList = pols.Select(X => X.Split(",").Select(y => new Model.Point((float)Convert.ToDouble(y[0]), (float)Convert.ToDouble(y[1]))).ToList()).ToList();
-                
+                var PoliygonList = pols.Select(X => X.Split(",").Select(y => new Model.Point((float)Convert.ToDouble(y[0]), (float)Convert.ToDouble(y[1]))).ToList()).SelectMany(x => x.ToArray()).ToList();
+                var ImageDifinition = new ImageDefinition(PoliygonList, layout);
             }
             else
             {
@@ -252,20 +255,22 @@ namespace Hexagon.Services
                                              new Model.Point(X, Y));
                     HexagonDetail HexagonDetail = null;
                     var ListLine = new List<Line>();
-
-                    var IdexHexDetail = HexDetailList.FindLastIndex(x => x.Q == hexPosition1.Q && x.R == hexPosition1.R
-                             && x.S == hexPosition1.S);
+                    var HexagonPosition = new HexagonPosition { Q = hexPosition1.Q, R = hexPosition1.R, S = hexPosition1.S };
+                    var IdexHexDetail = HexDetailList.FindLastIndex(x => x.HexagonPositionForValues.Exists(y => y.Q == hexPosition1.Q && y.R == hexPosition1.R && y.S == hexPosition1.S));
                     if (IdexHexDetail==-1)
                     {//if (hexPosition1.Values == null)
 
-
-                        HexDetailList.Add(new HexagonDetail(hexPosition1, ListLine));
+                        HexagonDetail = new HexagonDetail();
+                        HexagonDetail.HexagonPositionForValues.Add(HexagonPosition);
+                        HexagonDetail.Lines.Add(_Mapper.Map<Line>( Line));
+                        HexDetailList.Add(HexagonDetail);
                     }
                     else
                     {
 
 
-                        HexDetailList[IdexHexDetail].Lines.Add(new Line() { Fieds = Line.Fieds });
+                        HexDetailList[IdexHexDetail].Lines.Add(_Mapper.Map<Line>(Line));
+
                     }
 
                 }
