@@ -138,7 +138,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             }
 
             NativeFile.Columns = ColumnsForModel;
-            
+            NativeFile.DataFileConfiguration = FileData;
 
             return NativeFile;
         }

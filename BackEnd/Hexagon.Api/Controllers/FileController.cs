@@ -109,9 +109,7 @@ namespace Hexagon.Api.Controllers
         [HttpPost("[action]")]
         public IActionResult ParseFile(ProjectDataPost ProjectDataPost)
         {
-            DataFileConfigurationDTO DataFileConfiguration = new DataFileConfigurationDTO();
-            DataFileConfiguration.FileType = ProjectDataPost.FileType;
-            DataFileConfiguration.FileProperties = ProjectDataPost.FileProperties;
+            DataFileConfigurationDTO DataFileConfiguration = ProjectDataPost.DataFileConfiguration;
 
                 
                 var ret = FileService.ConvertFile(DataFileConfiguration , ProjectDataPost.HexFileID);

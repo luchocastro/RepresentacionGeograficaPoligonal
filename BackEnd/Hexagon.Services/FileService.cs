@@ -43,6 +43,7 @@ namespace Hexagon.Services
         private IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager;
         private IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsManager;
         private IDataRepository<FunctionDTO, Function> FunctionManager;
+        private IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager;
         private readonly User User = null;
         public FileService(IConfiguration Configuration,IMapper Mapper, 
             IDataRepository<ProyectDataDTO, ProyectData> IDataRepository,
@@ -54,7 +55,8 @@ namespace Hexagon.Services
             IDataRepository<LayoutDto, Layout> LayoutDataManager,
             IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager,
             IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsDataManager,
-            IDataRepository<FunctionDTO, Function> FunctionManager
+            IDataRepository<FunctionDTO, Function> FunctionManager,
+            IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager
             )
         {
             this.DataUser = DataUser;
@@ -69,6 +71,7 @@ namespace Hexagon.Services
             this.HexagonDetailsManager = HexagonDetailsDataManager;
             this.MapDefinitionDataManager = MapDefinitionDataManager;
             this.FunctionManager = FunctionManager;
+            this.DataFileConfigurationManager = DataFileConfigurationManager;
 
          }
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData )
@@ -135,8 +138,8 @@ namespace Hexagon.Services
         }
         public List<DataFileConfigurationDTO> GetDataFileConfiguration(string Path)
         {
+            return DataFileConfigurationManager.GetColectionFromParent("").ToList();
             
-            return FilesHelper.ReadDataFileConfiguration(Path );
         }
 
         public List<ColumnDTO> GetFileColumsFromFile(string PathFile)

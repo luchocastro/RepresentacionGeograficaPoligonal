@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Hexagon.Model.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Hexagon.Model
 {
-    public class DataFileConfiguration
+    public class DataFileConfiguration :Base
     {
         public string FileType { get; set; }
         public string DecimalSeparator { get; set; }
