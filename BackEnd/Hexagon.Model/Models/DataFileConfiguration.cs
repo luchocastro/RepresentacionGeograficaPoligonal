@@ -7,6 +7,9 @@ namespace Hexagon.Model
     public class DataFileConfiguration
     {
         public string FileType { get; set; }
+        public string DecimalSeparator { get; set; }
+        public string DatetimeFormart { get; set; }
+        public string TextDelimiter { get; set; }
         public Dictionary<string, object> FileProperties { get; set; }
 
     }
