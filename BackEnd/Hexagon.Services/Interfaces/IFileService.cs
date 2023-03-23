@@ -24,3 +24,4 @@ namespace Hexagon.Services.Interfaces
         List<AnalizedFileDTO> GetAnalizedFiles(string ProyectID);
     }
 }
+    
