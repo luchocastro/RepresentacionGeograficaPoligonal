@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 
 namespace Hexagon.Model.Models
 {
@@ -10,8 +11,13 @@ namespace Hexagon.Model.Models
 
         public HexagonDetails() { }
         public HexagonDetails(List<Column> Columns) { this.Columns = Columns; }
+        [JsonIgnore]
         public List<HexagonDetail>  List { get;  set; }
+        [JsonIgnore]
         public List <Column> Columns { get; set; }
+        [JsonIgnore]
+        public string Name { get; set; }
+         
         public int IndexOfHexagon(HexagonPosition HexagonPosition)
         {
             if (this.List == null || this.List.Count == 0)
@@ -38,20 +44,28 @@ namespace Hexagon.Model.Models
         {
             this.HexagonPositionForValues = new List<HexagonPosition>();
             this.Lines = new List<Line>();
+            
         }
+        [JsonIgnore]
         public float Value { get; set; }
-     
+        [JsonIgnore]
         public string Color
         {
             get; set;
         }
-
+        public List<long> IndexLines
+        {
+            get; set;
+        } = new List<long>();
         public int[] RGBColor
         {
             get; set;
         }
+        [JsonIgnore]
         public float Opacity { get; set; }
+        [JsonIgnore] 
         public string BorderColor { get; set; }
+        [JsonIgnore] 
         public string BorderType { get; set; }
         public List<Line> Lines { get; set; }
         public List<HexagonPosition> HexagonPositionForValues { get; set; }

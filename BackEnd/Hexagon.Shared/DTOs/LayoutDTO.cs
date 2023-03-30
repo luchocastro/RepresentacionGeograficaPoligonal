@@ -28,7 +28,7 @@ namespace Hexagon.Shared.DTOs
             this.FillPolygon = FillPolygon;
         }
 
-        public OrientationDto Orientation { get; set; }
+        public OrientationDto Orientation { get; set; }  
         public PointF Size { get; set; }
         public PointF Origin { get; set; }
         public bool Flat { get; set; }
