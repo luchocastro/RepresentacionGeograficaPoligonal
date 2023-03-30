@@ -595,8 +595,7 @@ namespace Hexagon.Services.Helpers
             var ColumnY = Layout.MapDefinition.ColumnNameForY;
             var ColumnValue = ColmnsForFunctionParaQueCompile [0];
             var EventPoints = new List<EventPoint>();
-             HexagonDetails.Columns =  NativeFileDTO.Columns.Select(Col => new Column(Col.Name, Col.OriginalPosition, EnumActionToDoWithUncasted.DeleteData,EnumAlowedDataType.Character) ).ToList () ;
-            var QColumns = HexagonDetails.Columns.Count();
+             var QColumns = NativeFileDTO.Columns.Count();
             if (NameOfGroup != "")
             {
                 var col = NativeFileDTO.Columns.Where(x => x.Name == NameOfGroup).FirstOrDefault();

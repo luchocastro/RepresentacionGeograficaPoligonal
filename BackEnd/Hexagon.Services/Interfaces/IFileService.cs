@@ -22,6 +22,7 @@ namespace Hexagon.Services.Interfaces
         public HexFileDTO PutFile(string User, string Project, string NicName, IFormFile IFormFile);
         List<HexFileDTO> GetHexFiles(string AnalizedFileID);
         List<AnalizedFileDTO> GetAnalizedFiles(string ProyectID);
+        public FunctionDTO SetFunction(string HexagonDetailstID, FunctionDTO Function);
     }
 }
     
