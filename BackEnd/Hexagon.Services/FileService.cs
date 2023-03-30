@@ -99,7 +99,8 @@ namespace Hexagon.Services
 
             return NativeFile;
 
-        } 
+        }
+        
         public NativeFileDTO ConvertFile (  DataFileConfigurationDTO FileData,  string  HexFileID )
         {
             NativeFileDTO NativeFileDto = new NativeFileDTO();
@@ -239,7 +240,6 @@ namespace Hexagon.Services
             var QColumns = NativeFile.Columns.Count();
             var HexDetailList = new List<HexagonDetail>();
             var HexagonDetails = new HexagonDetails();
-            HexagonDetails.Columns = NativeFile.Columns.Select(x=> _Mapper.Map<Column>(x)).ToList(); 
             var Map = layout.MapDefinition;
             long NumLine = 0;
 
@@ -589,5 +589,24 @@ NumLine++;          HexDetailList.Add(HexagonDetail);
         {
             throw new NotImplementedException();
         }
+
+        public FunctionDTO SetFunction(string HexagonDetailstID, FunctionDTO Function)
+        {
+            var FunctionExist = FunctionManager.GetColectionFromParent(HexagonDetailstID).Where(x=>x== Function).FirstOrDefault();
+            if (FunctionExist!=null)
+                Function = FunctionExist;
+            else
+            {
+                Function.ParentID = HexagonDetailstID;
+                Function = FunctionManager.Add(_Mapper.Map<Function>(Function));
+            }
+            return Function;
+
+
+            FunctionDTO FunctionDTO = FunctionManager.Get(Function.ID);
+            if (FunctionDTO == null)
+                FunctionDTO = FunctionManager.Add(_Mapper.Map<Function>(FunctionDTO));
+        }
+        
     }
 }

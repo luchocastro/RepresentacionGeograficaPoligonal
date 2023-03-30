@@ -130,6 +130,13 @@ namespace Hexagon.Api.Controllers
 
             return Ok(ret);
         }
+        [HttpPost]
+        [Route("SetFunction")]
+
+        public IActionResult SetFunction(string HexagonDetailstID, FunctionDTO Function)
+        {
+            return Ok(FileService.SetFunction(HexagonDetailstID, Function));
+        }
         [HttpGet]
         public IActionResult Get()
         {
@@ -140,6 +147,7 @@ namespace Hexagon.Api.Controllers
         /// </summary>
         /// <returns></returns>
             //DataFileConfigurationDTO
+
             [HttpGet]
         [Route("GetDataFileConfigurations")]
         
