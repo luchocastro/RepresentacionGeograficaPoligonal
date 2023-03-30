@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 
@@ -7,7 +8,9 @@ namespace Hexagon.Model
 {
     public class Column
     {
-        public Column(string Name, int OriginalPosition, EnumActionToDoWithUncasted ActionToDoWithUncasted,
+        public Column()
+        { }
+            public Column(string Name, int OriginalPosition, EnumActionToDoWithUncasted ActionToDoWithUncasted,
             EnumAlowedDataType DataTypeSelected)
         {
             this.ActionToDoWithUncasted = ActionToDoWithUncasted;
@@ -15,11 +18,12 @@ namespace Hexagon.Model
             this.OriginalPosition = OriginalPosition;
             this.DataTypeSelected = DataTypeSelected;
         }
-        public List<EnumAlowedDataType> DataTypeFinded { get; set; }
+        public List<EnumAlowedDataType> DataTypeFinded { get; set; } = (new EnumAlowedDataType[] { EnumAlowedDataType.Character }).ToList();
         public EnumAlowedDataType DataTypeSelected { get; set; }
-        public string Name { get; }
-        public int OriginalPosition { get; }
-        public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; }
+        public string Name { get; set; }
+        public int OriginalPosition { get; set; }
+        public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
         public List<Field> Fields { get; set; }
+
     }
 }

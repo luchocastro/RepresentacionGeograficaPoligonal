@@ -19,7 +19,7 @@ namespace Hexagon.Services.Helpers
         {
 
 
-            Line line = new Line(Number, Lista.Select(x => x).ToArray());
+            Line line = new Line(Number, Lista );
 
             return line;
 

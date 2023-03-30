@@ -366,16 +366,16 @@ namespace Hexagon.Services.Helpers
                 }
             }
             HexagonGrid.Layout = Layout;
-            ret = HexListFomPolygon(PoliygonList, ref HexagonGrid );
+            //ret = HexListFomPolygon(PoliygonList, ref HexagonGrid );
             HexagonGrid.HexagonMap = ret;
             
             return ret.Distinct().ToList();
         }
-        public static List<Hex> HexListFomPolygon(List<List<Model.Point>> PointsToTransformToHex, ref HexagonGrid HexagonGrid)
+        public static List<Hex> HexListFomPolygon(NativeFile NativeFile, ref HexagonGrid HexagonGrid)
         {
             Layout Layout = HexagonGrid.Layout;
             List<Hex> ret = new List<Hex>();
-
+            
             var PoligonList = HexagonGrid.PuntosACalcular.SelectMany(x => x.GroupPoints).Distinct ().ToList();
             
             var ImageDifinition = new ImageDefinition(PoligonList, Layout);
@@ -438,16 +438,16 @@ namespace Hexagon.Services.Helpers
                     var hexPosition1 = HexagonFunction.PixelToHexagon(Layout,
                                              new Model.Point(X, Y));
                     var Existe = false;
-                    if (ret.Contains(hexPosition1))
-                    {
-                        Existe = true;
-                        hexPosition1 = ret[ret.IndexOf(hexPosition1)];
+                    //if (ret.Contains(hexPosition1))
+                    //{
+                    //    Existe = true;
+                    //    hexPosition1 = ret[ret.IndexOf(hexPosition1)];
 
-                        hexPosition1.Values.Add(item);
-                        ret[ret.IndexOf(hexPosition1)] = hexPosition1 ;
+                    //    hexPosition1.Values.Add(item);
+                    //    ret[ret.IndexOf(hexPosition1)] = hexPosition1 ;
 
-                    }
-                    else
+                    //}
+                    //else
                     {
                         hexPosition1.Values = new List<EventPoint>();
 
@@ -470,7 +470,7 @@ namespace Hexagon.Services.Helpers
 
             }
             HexagonGrid.Layout = Layout;
-            var Grupo = ret.GroupBy(x => x.Q.ToString() + "-" + x.R.ToString() + "-" + x.S.ToString());
+            var Grupo = ret.GroupBy(x => x.ToString() );
             var RetGroup = new List<Hex>();
             foreach (var grupo in Grupo)
             {
@@ -604,7 +604,7 @@ namespace Hexagon.Services.Helpers
                 var pols = NativeFileDTO.Content.Select(x => x.Fieds[col.OriginalPosition]);
                 PoliygonList = pols.Select(X => X.Split(",").Select(y => new Model.Point((float)Convert.ToDouble(y[0]), (float)Convert.ToDouble(y[1]))).ToList()).ToList();
                 Layout.PaintLines = true;
-                ret = MapHelper.HexListFomPolygon(PoliygonList, ref HexagonGrid);
+                //ret = MapHelper.HexListFomPolygon(PoliygonList, ref HexagonGrid);
 
             }
             else

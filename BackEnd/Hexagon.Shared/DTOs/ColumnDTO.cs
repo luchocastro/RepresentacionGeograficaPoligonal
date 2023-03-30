@@ -17,10 +17,11 @@ namespace Hexagon.Shared.DTOs
             this.DataTypeSelected = DataTypeSelected;
         }
 
+        public List<EnumAlowedDataTypeDTO> DataTypeFinded { get; set; }
         public EnumAlowedDataTypeDTO DataTypeSelected { get; set; }
-        public string Name { get; }
-        public int OriginalPosition { get; }
-        public EnumActionToDoWithUncastedDTO ActionToDoWithUncasted { get; }
+        public string Name { get; set; }
+        public int OriginalPosition { get; set; }
+        public EnumActionToDoWithUncastedDTO ActionToDoWithUncasted { get; set; }
         
     }
 }

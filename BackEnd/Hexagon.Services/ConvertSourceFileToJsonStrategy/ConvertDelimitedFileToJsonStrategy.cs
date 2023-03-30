@@ -84,7 +84,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
         public NativeFile DoFromFile(string PathFileOrigen, DataFileConfiguration FileData)
         {
             
-            object Delimiter = null;
+            object Delimiter = FileData.DecimalSeparator;
             FileData.FileProperties.TryGetValue("Delimiter", out Delimiter);
             if (Delimiter == null)
                 throw new Exception(ServicesConstants.DelimiterMissing);
@@ -92,8 +92,10 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             FileData.FileProperties.TryGetValue("HasTitle", out HasTitleInDefinition);
             bool HasTitle = HasTitleInDefinition != null && Convert.ToBoolean(HasTitleInDefinition.ToString());
             string[] Columns = null;
-            int Step = 0;
+            int Step = 1;
             List<Line> Lineas = new List<Line>();
+            List<Column> ColumnsForModel = new List<Column>();
+            bool SetCols = true;
             using (StreamReader StreamReader = new StreamReader(PathFileOrigen))
             {
                 String ActualLine = "";
@@ -101,11 +103,13 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                 {
                     string[] DataInLine = ActualLine.Split(Delimiter.ToString());
                     int ColumnsQuantity = DataInLine.Length;
-                    Step++;
-                    if (Step == 1)
+
+                    
+                    if (SetCols)
                     {
                         if (HasTitle)
                         {
+
                             Columns = DataInLine;
                         }
                         else
@@ -116,26 +120,43 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                                 Columns[i] = "Column-" + i.ToString();
                             }
                             Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (ulong)Step));
+                            Step++;
                         }
-
-
+                        for (int i = 0; i < ColumnsQuantity ; i++)
+                        {
+                            ColumnsForModel.Add(new Column { Name = Columns[i], OriginalPosition = i });
+                        }
+                        SetCols = false;
                     }
                     else
                     { 
+
                     Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (ulong)Step));
+                        Step++;
                     }
+                    //if (Step < 100)
+                    //{
+                    //    for (int i = 0; i < ColumnsQuantity; i++)
+                    //    {
+                    //        var Parsed = FindTypesAllowed.GetTypesAllows(DataInLine[i], FileData);
+
+                    //        ColumnsArray[i].DataTypeFinded.AddRange(Parsed);
+                    //    }
+                       
+                    //}
+                     
                 }
             }
 
             NativeFile NativeFile = new NativeFile();
             NativeFile.Content = Lineas;
-            var ColumnsForModel = new List<Column>();
-            int pos = 0;
-            foreach (var item in Columns)
-            {
-                ColumnsForModel.Add(new Column(item, pos, EnumActionToDoWithUncasted.DeleteData, EnumAlowedDataType.Character));
-                pos++;
-            }
+            //for (int i = 0; i < ColumnsForModel.Count(); i++)
+            //{
+            //    var col = ColumnsForModel[i];
+            //    var FieldsEv = Step > 100 ? 100 : Step;
+            //    var datatypes = FindTypesAllowed.TypesPrincipals(ColumnsArray[i].DataTypeFinded, FieldsEv);
+            //    ColumnsForModel[i].DataTypeFinded.AddRange(  datatypes);
+            //}
 
             NativeFile.Columns = ColumnsForModel;
             NativeFile.DataFileConfiguration = FileData;

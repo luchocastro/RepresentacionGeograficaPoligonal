@@ -95,32 +95,54 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
 
             List<Line> Lineas = new List<Line>();
             List<string> Columns = new List<string>();
+            List<Column> ColumnsForModel = new List<Column>();
+            Column[] ColumnsArray = null;
+            int Step = 1; 
             using (StreamReader file = File.OpenText(PathFileOrigen))
             {
                 var mapa = file.ReadToEnd();
                 var feature = JsonConvert.DeserializeObject<FeatureCollection>(mapa);
-                int Step = 0;
-                 
+                
                 foreach (var featureItem in feature.Features)
                 {
+                    var Column = new Column();
+                    int pos = 0;
                     if (primera)
                     {
                         foreach (var ValueNames in featureItem.Properties.Keys)
                         {
-
+                            Column = new Column();
+                            Column.Name = ValueNames;
+                            Column.OriginalPosition = pos;
+                            pos++;
+                            var Types = Column.DataTypeFinded;
+                            ColumnsForModel.Add(Column);
                             Columns.Add(ValueNames);
                             primera = false;
                         }
                         Columns.Add("Geometry");
-                        Lineas.Add(Helpers.FilesHelper.LineToField(Columns.ToArray(), (ulong)Step));
+                        Column = new Column();
+                        Column.Name = "Geometry";
+                        Column.OriginalPosition = pos;
+                        ColumnsForModel.Add(Column);
+                        //ColumnsArray = ColumnsForModel.ToArray();
+                        //Lineas.Add(Helpers.FilesHelper.LineToField(Columns.ToArray(), (ulong)Step));
                     }
                     var Values = new List<string>();
+
+                    pos = 0;
                     foreach (var ValueNames in featureItem.Properties.Keys)
                     {
                         object value = new object();
                         featureItem.Properties.TryGetValue(ValueNames, out value) ;
                         if (value == null)
                             value = "";
+                        //if (Step<100)
+                        //{ 
+                        //var Parsed = FindTypesAllowed.GetTypesAllows(value.ToString(), FileData);
+                        
+                        //ColumnsArray[pos].DataTypeFinded.AddRange(Parsed);
+                        //}
                         Values.Add(value.ToString());
 
                     }
@@ -185,21 +207,22 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     }
                     Values.Add(String.Join(",", Figure.Select(x => x.X.ToString() + ":" + x.Y.ToString()).ToArray()));
                    
-                    Lineas.Add(Helpers.FilesHelper.LineToField(Values.ToArray(), (ulong)Step));
+                    Lineas.Add(new Line((ulong)Step, Values.ToArray() ));
                     Step++;
                 }
             }
             
             NativeFile.Content = Lineas;
-            var ColumnsForModel = new List<Column>();
-            int pos = 0;
-            foreach (var item in Columns)
-            {
-                ColumnsForModel.Add(new Column(item, pos, EnumActionToDoWithUncasted.DeleteData, EnumAlowedDataType.Character));
-                pos++;
-            }
-
+            //for (int i = 0; i < ColumnsForModel.Count(); i++)
+            //{
+            //    var col = ColumnsForModel[i];
+            //    var FieldsEv = Step > 100 ? 100 : Step;
+            //    var datatypes = FindTypesAllowed.TypesPrincipals(ColumnsArray[i].DataTypeFinded, FieldsEv);
+            //    ColumnsForModel[i].DataTypeFinded=datatypes;
+            //}
+            NativeFile.DataFileConfiguration = FileData;
             NativeFile.Columns = ColumnsForModel;
+            NativeFile.IsPolygon = true;
             return NativeFile;
 
 
