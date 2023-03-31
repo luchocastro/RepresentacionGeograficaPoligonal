@@ -13,14 +13,14 @@ namespace Hexagon.Model.Models
             this.Number = 0;
             this.Fieds = null;
         }
-        public Line(UInt64 Number, string [] Fields)
+        public Line(long Number, string [] Fields)
         {
             this.Number = Number;
             this.Fieds = Fields ;
         }
         [JsonProperty("Fieds")]
         public string []Fieds { set; get; }
-        public UInt64 Number { set; get; }
+        public long Number { set; get; }
 
     }
 }

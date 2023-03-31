@@ -39,7 +39,8 @@ namespace Hexagon.Services.CalcStrategy
                         Params.Add(parameter.Name, parameter.ParameterType.FullName  );
                     }
                     Function function = new Function( FullClassName, objtype.FullName, method.Name, Params);
-                    ret.Add(function);
+                        function.Path = FullClassName;
+                        ret.Add(function);
                     }
                 }
             }

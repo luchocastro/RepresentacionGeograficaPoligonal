@@ -133,9 +133,9 @@ namespace Hexagon.Api.Controllers
         [HttpPost]
         [Route("SetFunction")]
 
-        public IActionResult SetFunction(string HexagonDetailstID, FunctionDTO Function)
+        public IActionResult SetFunction(FunctionDataPost functionDataPost)
         {
-            return Ok(FileService.SetFunction(HexagonDetailstID, Function));
+            return Ok(FileService.SetFunction(functionDataPost.ParentID, functionDataPost.Function));
         }
         [HttpGet]
         public IActionResult Get()

@@ -6,8 +6,9 @@ using System.Text;
 
 namespace Hexagon.Shared.DTOs
 {
-    public class ColumnDTO
+    public class ColumnDTO :Base.BaseDto
     {
+        public ColumnDTO() { }
         public ColumnDTO(string Name, int OriginalPosition, EnumActionToDoWithUncastedDTO ActionToDoWithUncasted,
             EnumAlowedDataTypeDTO DataTypeSelected)
         {

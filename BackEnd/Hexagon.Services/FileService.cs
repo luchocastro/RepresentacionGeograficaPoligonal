@@ -43,6 +43,8 @@ namespace Hexagon.Services
         private IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager;
         private IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsManager;
         private IDataRepository<FunctionDTO, Function> FunctionManager;
+        private IDataRepository<CalculatedHexagonDTO, CalculatedHexagon> CalculatedHexagonManager;
+        private IDataRepository<ColumnDTO, Column> ColumnManager;
         private IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager;
         private readonly User User = null;
         public FileService(IConfiguration Configuration,IMapper Mapper, 
@@ -56,7 +58,11 @@ namespace Hexagon.Services
             IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager,
             IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsDataManager,
             IDataRepository<FunctionDTO, Function> FunctionManager,
-            IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager
+            IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager,
+            
+            IDataRepository<CalculatedHexagonDTO, CalculatedHexagon> CalculatedHexagonManager,
+        IDataRepository<ColumnDTO, Column> ColumnManager
+        
             )
         {
             this.DataUser = DataUser;
@@ -72,6 +78,8 @@ namespace Hexagon.Services
             this.MapDefinitionDataManager = MapDefinitionDataManager;
             this.FunctionManager = FunctionManager;
             this.DataFileConfigurationManager = DataFileConfigurationManager;
+            this.ColumnManager = ColumnManager;
+            this.CalculatedHexagonManager = CalculatedHexagonManager;
 
          }
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData )
@@ -122,16 +130,17 @@ namespace Hexagon.Services
                 NativeFileDto = NativeFileDataManager.Add(NativeFile);
                 foreach (var item in NativeFile.Columns)
                 {
-                    var NativeCol = new NativeFile();
-                    NativeCol.Columns = NativeFile.Columns.Where(x => x.Name == item.Name).ToList();
-                    NativeCol.ParentID = HexFileID;
-                    NativeCol.FileName = "Column_" + item.OriginalPosition.ToString() + "_"+NativeFile.FileName + ".HexJson";
-                    NativeCol.Content = NativeFile.Content.Select(x => new Line { Fieds = new string[] { x.Fieds[item.OriginalPosition] }, Number = x.Number }).ToList();
-                    NativeCol.DataFileConfiguration = _Mapper.Map<DataFileConfiguration>(FileData);
-                    Natid = NativeFileDataManager.GenerateFullID(NativeCol);
-                    NativeCol.PathFile = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), NativeFile.FileName);
-                    NativeFileDto = NativeFileDataManager.Add(NativeCol);
+
+                    item.ParentID = NativeFileDto.ParentID;
+                    
+                    ;
+                    item.Fields = NativeFile.Content.Select(x => new Field { Value  = x.Fieds[item.OriginalPosition] , Index = x.Number }).ToList();
+                    Natid = ColumnManager.GenerateFullID(item);
+                    //item.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), "Column_" + item.OriginalPosition.ToString() + "_" + NativeFile.FileName + ".HexJson");
+                    ColumnManager.Add(item);
                 }
+                NativeFileDto = _Mapper.Map<NativeFileDTO>(NativeFile);
+
             }
             else
             { 
@@ -259,7 +268,7 @@ namespace Hexagon.Services
                 ;
                 var ret = new List<Hex>();
 
-                
+
                 foreach (var Line in NativeFile.Content)
                 {
 
@@ -274,19 +283,19 @@ namespace Hexagon.Services
 
                     var linea = new List<Hex>();
                     var PointsHexCornes = new List<PointF>();
-                    var item = Line.Fieds[col.OriginalPosition].Split(",") ;
+                    var item = Line.Fieds[col.OriginalPosition].Split(",");
                     ret = new List<Hex>();
-                     for (int i = 0; i < item.Count(); i++)
+                    for (int i = 0; i < item.Count(); i++)
                     {
 
                         var XOriginal = float.Parse(item[i].Split(":")[0]);
 
                         var YOriginal = float.Parse(item[i].Split(":")[1]);
-                        var EventPoint = new EventPoint() { PositionInMeters = new PointF(XOriginal,YOriginal )   };
+                        var EventPoint = new EventPoint() { PositionInMeters = new PointF(XOriginal, YOriginal) };
                         var X = Layout.Size.X * 2 + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
                         var Y = MathF.Sqrt(3) * Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
-                         var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
-                                                 new Model.Point(X, Y));
+                        var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
+                                                new Model.Point(X, Y));
                         var Existe = false;
                         //if (ret.Contains(hexPosition1))
                         //{
@@ -316,7 +325,7 @@ namespace Hexagon.Services
                                                  new Model.Point(X, Y));
                     }
                     if (Layout.FillPolygon)
-                       Helpers.MapHelper.PaintHexInsidePolygon(PointsHexCornes, ref ret, layout);
+                        Helpers.MapHelper.PaintHexInsidePolygon(PointsHexCornes, ref ret, layout);
                     var Grupo = ret.GroupBy(x => x.ToString());
                     var RetGroup = new List<Hex>();
                     foreach (var grupo in Grupo)
@@ -334,7 +343,8 @@ namespace Hexagon.Services
                         RetGroup.Add(hex);
                     }
                     HexagonDetail.HexagonPositionForValues = RetGroup.Select(x => new HexagonPosition { Q = x.Q, R = x.R, S = x.S }).ToList();
-NumLine++;          HexDetailList.Add(HexagonDetail);
+                    NumLine++;
+                    HexDetailList.Add(HexagonDetail);
 
                 }
                 HexagonDetails.List = HexDetailList;
@@ -370,16 +380,16 @@ NumLine++;          HexDetailList.Add(HexagonDetail);
                      
                     var ListLine = new List<Line>();
                     var HexagonPosition = new HexagonPosition { Q = hexPosition1.Q, R = hexPosition1.R, S = hexPosition1.S };
-                    var IdexHexDetail = HexDetailList.FindLastIndex(x => x.HexagonPositionForValues.Exists(y => y.Q == hexPosition1.Q && y.R == hexPosition1.R && y.S == hexPosition1.S));
-                    if (IdexHexDetail==-1)
-                    {//if (hexPosition1.Values == null)
+                    //var IdexHexDetail = HexDetailList.FindLastIndex(x => x.HexagonPositionForValues.Exists(y => y.Q == hexPosition1.Q && y.R == hexPosition1.R && y.S == hexPosition1.S));
+                    //if (IdexHexDetail==-1)
+                    //{//if (hexPosition1.Values == null)
                             
-                        HexagonDetail = new HexagonDetail();
-                        HexagonDetail.HexagonPositionForValues.Add(HexagonPosition);
-                        HexagonDetail.IndexLines.Add(NumLine) ;
-                        HexDetailList.Add(HexagonDetail);
-                    }
-                    else
+                    //    HexagonDetail = new HexagonDetail();
+                    //    HexagonDetail.HexagonPositionForValues.Add(HexagonPosition);
+                    //    HexagonDetail.IndexLines.Add(NumLine) ;
+                    //    HexDetailList.Add(HexagonDetail);
+                    //}
+                    //else
                     {
 
 
@@ -398,12 +408,46 @@ NumLine++;          HexDetailList.Add(HexagonDetail);
             layout.ParentID = NativeFile.ID;
             layout.ID = layout.Name;
             var lay = LayoutDataManager.Add(layout);
+            HexagonDetails = HexagonDetails.OrderList();
+
             HexagonDetails.ParentID = lay.ID;
             HexagonDetails.Name = DateTime.Now.ToString("ddMMyyyyhhmmss");
             HexagonDetailsManager.Add(HexagonDetails);
-            return "";
+            return HexagonDetails.ID;
         }
-            public string GenerateImge4(LayoutDto Layout, string NativeFileID )
+        public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns)
+        {
+            var Function = FunctionManager.Get(FunctionID);
+            var HexagonDetails = HexagonDetailsManager.Get(Function.ParentID);
+            var Layout = LayoutDataManager.Get(HexagonDetails.ParentID);
+            var NativeFile = NativeFileDataManager.Get(Layout.ParentID);
+
+            var CalculatedHexagon = new CalculatedHexagonDTO();
+
+            foreach (var lista in HexagonDetails.List)
+            {
+
+
+                var DataForFunction = new Dictionary<string, object[]>();
+                var i = 0;
+                foreach (var OrderCol in Columns)
+                {
+                    i++;
+                    var Column = ColumnManager.Get(new ColumnDTO { Name = OrderCol, ParentID = NativeFile.ParentID });
+                    var Data = Column.Fields.Where(x => lista.IndexLines.Contains(x.Index)).Select(x => x.Value).ToArray();
+                    DataForFunction.Add(i.ToString(), Data);
+
+                }
+                var value = CalcStrategy.DoCalc.Do(new object[] { DataForFunction }, Function.Path, Function.FullClassName, Function.FunctionName);
+                CalculatedHexagon.HexaDetailWithValue.AddRange(lista.HexagonPositionForValues.Select(x => new HexaDetailWithValueDTO { HexagonPosition = x, Value = value }));
+            }
+            CalculatedHexagon.Name = String.Join("_", CalculatedHexagon.ColumnNamesForFunction);
+            CalculatedHexagon.ParentID = Function.ID;
+
+            return CalculatedHexagon;
+
+        }
+        public string GenerateImge4(LayoutDto Layout, string NativeFileID )
         {
             HexagonGrid HexagonGrid = new HexagonGrid();
             NativeFileDTO NativeFile = NativeFileDataManager.Get(NativeFileID);
@@ -592,20 +636,22 @@ NumLine++;          HexDetailList.Add(HexagonDetail);
 
         public FunctionDTO SetFunction(string HexagonDetailstID, FunctionDTO Function)
         {
-            var FunctionExist = FunctionManager.GetColectionFromParent(HexagonDetailstID).Where(x=>x== Function).FirstOrDefault();
-            if (FunctionExist!=null)
-                Function = FunctionExist;
-            else
+            try
+            {
+                var FunctionExist = FunctionManager.GetColectionFromParent(HexagonDetailstID).Where(x => x == Function).FirstOrDefault();
+                if (FunctionExist != null)
+                    Function = FunctionExist;
+            }
+            catch (Exception)
             {
                 Function.ParentID = HexagonDetailstID;
                 Function = FunctionManager.Add(_Mapper.Map<Function>(Function));
+                 
             }
+            
             return Function;
 
-
-            FunctionDTO FunctionDTO = FunctionManager.Get(Function.ID);
-            if (FunctionDTO == null)
-                FunctionDTO = FunctionManager.Add(_Mapper.Map<Function>(FunctionDTO));
+;
         }
         
     }

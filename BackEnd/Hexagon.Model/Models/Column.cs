@@ -1,12 +1,13 @@
-﻿using System;
+﻿using Hexagon.Model.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using System.Text.Json.Serialization;
 
 namespace Hexagon.Model
 {
-    public class Column
+    public class Column :Base
     {
         public Column()
         { }
@@ -18,10 +19,13 @@ namespace Hexagon.Model
             this.OriginalPosition = OriginalPosition;
             this.DataTypeSelected = DataTypeSelected;
         }
+        [JsonIgnore]
         public List<EnumAlowedDataType> DataTypeFinded { get; set; } = (new EnumAlowedDataType[] { EnumAlowedDataType.Character }).ToList();
+        [JsonIgnore]
         public EnumAlowedDataType DataTypeSelected { get; set; }
         public string Name { get; set; }
         public int OriginalPosition { get; set; }
+        [JsonIgnore]
         public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
         public List<Field> Fields { get; set; }
 

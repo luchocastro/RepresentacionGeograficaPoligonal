@@ -46,8 +46,19 @@ namespace Hexagon.Model.Mappings
             CreateMap<NativeFile, NativeFileDTO>(); ;
             CreateMap<Function, FunctionDTO>();
             CreateMap<FunctionDTO, Function>();
-            CreateMap<Orientation, OrientationDto>();
+            CreateMap<HexagonDetail, HexagonDetailDTO>();
+            CreateMap<HexagonDetailDTO , HexagonDetail>();
+            CreateMap<HexagonDetails, HexagonDetailsDTO>();
+            CreateMap<HexagonDetailsDTO, HexagonDetails>();
+            CreateMap<HexagonPosition, HexagonPositionDTO>();
+            CreateMap<HexagonPositionDTO, HexagonPosition>();
+            CreateMap<CalculatedHexagon, CalculatedHexagonDTO>();
+            CreateMap<CalculatedHexagonDTO, CalculatedHexagon>();
+            CreateMap<HexaDetailWithValueDTO, HexaDetailWithValue>();
+            CreateMap<HexaDetailWithValue, HexaDetailWithValueDTO>();
+
             CreateMap<OrientationDto, Orientation>();
+            CreateMap<Orientation, OrientationDto>();
         }
     }
 }
