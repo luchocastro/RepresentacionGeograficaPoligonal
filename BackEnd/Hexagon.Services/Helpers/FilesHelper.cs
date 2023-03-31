@@ -15,7 +15,7 @@ namespace Hexagon.Services.Helpers
 {
     public class FilesHelper
     {
-        public static Line LineToField(string[] Lista, UInt64 Number)
+        public static Line LineToField(string[] Lista, long Number)
         {
 
 

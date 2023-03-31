@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,15 +7,10 @@ namespace Hexagon.Model
 {
     public struct  Field
     {
-        public Field(object Value, List<EnumAlowedDataType> DataTypeFinded, int Line)
-        {
-
-            this.Value = Value;
-            this.DataTypeFinded = DataTypeFinded;
-            this.Index = Line;
-        }
-        public object Value { get; }
+      
+        public object Value { get; set; }
+        [JsonIgnore]
         public List<EnumAlowedDataType> DataTypeFinded { get;}
-        public int Index { get; set; }
+        public long Index { get; set; }
     }
 }

@@ -207,7 +207,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     }
                     Values.Add(String.Join(",", Figure.Select(x => x.X.ToString() + ":" + x.Y.ToString()).ToArray()));
                    
-                    Lineas.Add(new Line((ulong)Step, Values.ToArray() ));
+                    Lineas.Add(new Line((long)Step, Values.ToArray() ));
                     Step++;
                 }
             }

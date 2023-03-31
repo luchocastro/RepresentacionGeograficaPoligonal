@@ -13,8 +13,21 @@ namespace Hexagon.Model.Models
         {
             
         }
-        public List<HexagonDetail>  List { get;  set; }
-        public string Name { get;  set; } 
+        public List<HexagonDetail>  List { get; set; } 
+        public string Name { get;  set; }
+        public HexagonDetails OrderList()
+        {
+            var ListToOrder =new List<HexagonDetail>();
+            long Num = 1;
+            foreach (var item in this.List)
+            {
+                item.NumOrder = Num;
+                Num++;
+                ListToOrder.Add(item);
+            }
+            this.List = ListToOrder;
+            return this;
+        }
 }
     public struct HexagonPosition
     {
@@ -25,6 +38,7 @@ namespace Hexagon.Model.Models
     }
     public class HexagonDetail  
     {
+        public long NumOrder { get; set; }
         public HexagonDetail()
         {
             

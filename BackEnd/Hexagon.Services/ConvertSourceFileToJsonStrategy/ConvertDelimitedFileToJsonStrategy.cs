@@ -119,7 +119,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                             {
                                 Columns[i] = "Column-" + i.ToString();
                             }
-                            Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (ulong)Step));
+                            Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (long)Step));
                             Step++;
                         }
                         for (int i = 0; i < ColumnsQuantity ; i++)
@@ -131,7 +131,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     else
                     { 
 
-                    Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (ulong)Step));
+                    Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (long)Step));
                         Step++;
                     }
                     //if (Step < 100)
