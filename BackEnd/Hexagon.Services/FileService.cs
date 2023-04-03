@@ -19,6 +19,7 @@ using Hexagon.Model.Repository;
 using Microsoft.AspNetCore.Http;
 using Hexagon.Model.FileDataManager;
 using System.Drawing;
+using System.Globalization;
 
 namespace Hexagon.Services
 {
@@ -354,7 +355,7 @@ namespace Hexagon.Services
                 var colX = NativeFile.Columns.Where(x => x.Name == Map.ColumnNameForX).FirstOrDefault();
                 var colY = NativeFile.Columns.Where(x => x.Name == Map.ColumnNameForY).FirstOrDefault();
                 layout.PaintLines = false;
-                var PoliygonList = NativeFile.Content.Where(x => x.Fieds.Count() == QColumns).Select(y => new Model.Point((float)Convert.ToDouble(y.Fieds[colX.OriginalPosition].ToString().Replace(".", ",")), (float)Convert.ToDouble(y.Fieds[colY.OriginalPosition].ToString().Replace(".", ",")))).ToList();
+                var PoliygonList = NativeFile.Content.Where(x => x.Fieds.Count() == QColumns).Select(y => new Model.Point((float)Convert.ToDouble(y.Fieds[colX.OriginalPosition].ToString(CultureInfo.InvariantCulture) ), (float)Convert.ToDouble(y.Fieds[colY.OriginalPosition].ToString(CultureInfo.InvariantCulture)))).ToList();
                 var ImageDifinition = new ImageDefinition(PoliygonList, layout);
                 layout.Size = new System.Drawing.PointF(ImageDifinition.HexagonSize, ImageDifinition.HexagonSize);
                 layout.Origin = new PointF(ImageDifinition.TransformedWidth / 2f, ImageDifinition.TransformedHeigth / 2f);
@@ -372,7 +373,7 @@ namespace Hexagon.Services
                         NumLine++;
                         continue;
                     }
-                    var EventPoint = new EventPoint() { PositionInMeters = new PointF((float)Convert.ToDouble(Line.Fieds[colX.OriginalPosition].ToString().Replace(".", ",")), (float)Convert.ToDouble(Line.Fieds[colY.OriginalPosition].ToString().Replace(".", ",")))  };
+                    var EventPoint = new EventPoint() { PositionInMeters = new PointF((float)Convert.ToDouble(Line.Fieds[colX.OriginalPosition].ToString(CultureInfo.InvariantCulture) ), (float)Convert.ToDouble(Line.Fieds[colY.OriginalPosition].ToString(CultureInfo.InvariantCulture).Replace(".", ",")))  };
                     var X = Layout.Size.X * 2 + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
                     var Y = MathF.Sqrt(3) * Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
                     var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
@@ -415,7 +416,7 @@ namespace Hexagon.Services
             HexagonDetailsManager.Add(HexagonDetails);
             return HexagonDetails.ID;
         }
-        public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns)
+        public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns =null)
         {
             var Function = FunctionManager.Get(FunctionID);
             var HexagonDetails = HexagonDetailsManager.Get(Function.ParentID);
@@ -430,18 +431,33 @@ namespace Hexagon.Services
 
                 var DataForFunction = new Dictionary<string, object[]>();
                 var i = 0;
-                foreach (var OrderCol in Columns)
+                if (Columns != null && Columns.Count > 0)
                 {
-                    i++;
-                    var Column = ColumnManager.Get(new ColumnDTO { Name = OrderCol, ParentID = NativeFile.ParentID });
-                    var Data = Column.Fields.Where(x => lista.IndexLines.Contains(x.Index)).Select(x => x.Value).ToArray();
-                    DataForFunction.Add(i.ToString(), Data);
+                    foreach (var OrderCol in Columns)
+                    {
+                        i++;
+                        var Column = ColumnManager.Get(new ColumnDTO { Name = OrderCol, ParentID = NativeFile.ParentID });
+                        var Data = Column.Fields.Where(x => lista.IndexLines.Contains(x.Index)).Select(x => x.Value).ToArray();
+                        DataForFunction.Add(i.ToString(), Data);
 
+                    }
+                }
+                else
+                {
+                    DataForFunction.Add("1", new object[1]);
                 }
                 var value = CalcStrategy.DoCalc.Do(new object[] { DataForFunction }, Function.Path, Function.FullClassName, Function.FunctionName);
                 CalculatedHexagon.HexaDetailWithValue.AddRange(lista.HexagonPositionForValues.Select(x => new HexaDetailWithValueDTO { HexagonPosition = x, Value = value }));
             }
-            CalculatedHexagon.Name = String.Join("_", CalculatedHexagon.ColumnNamesForFunction);
+            if (Columns != null && Columns.Count > 0)
+            {
+                CalculatedHexagon.ColumnNamesForFunction = Columns;
+                CalculatedHexagon.Name = String.Join("_", CalculatedHexagon.ColumnNamesForFunction);
+            }
+            else
+            {
+                CalculatedHexagon.Name = "" ;
+            }
             CalculatedHexagon.ParentID = Function.ID;
 
             return CalculatedHexagon;
