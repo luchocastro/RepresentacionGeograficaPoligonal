@@ -10,6 +10,7 @@ using Hexagon.Shared.CommonFunctions;
 using Hexagon.Model;
 using GeoJSON.Net.Feature;
 using GeoJSON.Net.Geometry;
+using System.Globalization;
 
 namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
 {
@@ -205,7 +206,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                         }
                         //event point
                     }
-                    Values.Add(String.Join(",", Figure.Select(x => x.X.ToString() + ":" + x.Y.ToString()).ToArray()));
+                    Values.Add(String.Join(",", Figure.Select(x => x.X.ToString(CultureInfo.InvariantCulture) + ":" + x.Y.ToString(CultureInfo.InvariantCulture)).ToArray()));
                    
                     Lineas.Add(new Line((long)Step, Values.ToArray() ));
                     Step++;

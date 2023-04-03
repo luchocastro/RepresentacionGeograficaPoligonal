@@ -107,6 +107,21 @@ namespace Hexagon.Api.Controllers
         /// <param name="ProjectDataPost"></param>
         /// <returns></returns>
         [HttpPost("[action]")]
+        public IActionResult DoCalc(DoCalcDataPost DoCalcDataPost)
+        {
+
+
+
+            var ret = FileService.DoCalc(DoCalcDataPost.FunctionID, DoCalcDataPost.Columns);
+
+            return Ok(ret);
+        }
+        /// <summary>
+        /// Parse el archivo ya subido
+        /// </summary>
+        /// <param name="ProjectDataPost"></param>
+        /// <returns></returns>
+        [HttpPost("[action]")]
         public IActionResult ParseFile(ProjectDataPost ProjectDataPost)
         {
             DataFileConfigurationDTO DataFileConfiguration = ProjectDataPost.DataFileConfiguration;
