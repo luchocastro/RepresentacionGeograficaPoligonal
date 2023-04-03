@@ -12,8 +12,8 @@ namespace Hexagon.Shared.DTOs
     }
     public class CalculatedHexagonDTO : Base.BaseDto
     {
-        public string Name { get; set; }
-        public List<string> ColumnNamesForFunction { get; set; }
-        public List<HexaDetailWithValueDTO> HexaDetailWithValue { get; set; }
+        public string Name { get; set; } = "";
+        public List<string> ColumnNamesForFunction { get; set; } = new List<string>();
+        public List<HexaDetailWithValueDTO> HexaDetailWithValue { get; set; } = new List<HexaDetailWithValueDTO>();
     }
 }

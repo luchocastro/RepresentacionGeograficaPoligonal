@@ -258,7 +258,7 @@ namespace Hexagon.Services
                 var col = NativeFile.Columns.Where(x => x.Name == Map.ColumnForMapGroup).FirstOrDefault();
 
                 var pols = NativeFile.Content.Select(x => x.Fieds[col.OriginalPosition]);
-                var PoliygonList = pols.Select(X => X.Split(",").Select(y => new Model.Point((float)Convert.ToDouble(y.Split(":") [0]), (float)Convert.ToDouble(y.Split(":")[1]))).ToList()).SelectMany(x => x.ToArray()).ToList();
+                var PoliygonList = pols.Select(X => X.Split(",").Select(y => new Model.Point((float)Convert.ToDouble(y.Split(":") [0], CultureInfo.InvariantCulture), (float)Convert.ToDouble(y.Split(":")[1], CultureInfo.InvariantCulture))).ToList()).SelectMany(x => x.ToArray()).ToList();
                 var ImageDifinition = new ImageDefinition(PoliygonList, layout);
 
 
@@ -289,11 +289,11 @@ namespace Hexagon.Services
                     for (int i = 0; i < item.Count(); i++)
                     {
 
-                        var XOriginal = float.Parse(item[i].Split(":")[0]);
+                        var XOriginal = float.Parse(item[i].Split(":")[0], CultureInfo.InvariantCulture);
 
-                        var YOriginal = float.Parse(item[i].Split(":")[1]);
+                        var YOriginal = float.Parse(item[i].Split(":")[1], CultureInfo.InvariantCulture);
                         var EventPoint = new EventPoint() { PositionInMeters = new PointF(XOriginal, YOriginal) };
-                        var X = Layout.Size.X * 2 + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
+                        var X = Layout.Size.X * 2f + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
                         var Y = MathF.Sqrt(3) * Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
                         var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
                                                 new Model.Point(X, Y));
@@ -456,9 +456,11 @@ namespace Hexagon.Services
             }
             else
             {
-                CalculatedHexagon.Name = "" ;
+                CalculatedHexagon.Name = "WithoutCol" ;
             }
-            CalculatedHexagon.ParentID = Function.ID;
+            CalculatedHexagon.ParentID = Function.ID; 
+            CalculatedHexagonManager.Add(_Mapper.Map<CalculatedHexagon>(CalculatedHexagon));
+            
 
             return CalculatedHexagon;
 

@@ -50,6 +50,9 @@ namespace Average
 
             return mode;
         }
-
+        public static float Return0(Dictionary<string, object[]> Values)
+        {
+            return 0;
+        }
     }
 }

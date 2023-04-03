@@ -23,6 +23,7 @@ namespace Hexagon.Services.Interfaces
         List<HexFileDTO> GetHexFiles(string AnalizedFileID);
         List<AnalizedFileDTO> GetAnalizedFiles(string ProyectID);
         public FunctionDTO SetFunction(string HexagonDetailstID, FunctionDTO Function);
+        public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns = null);
     }
 }
     
