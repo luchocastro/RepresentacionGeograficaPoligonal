@@ -1,6 +1,11 @@
-﻿namespace Hexagon.Model
+﻿using Hexagon.Model.Models;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Text.Json.Serialization;
+
+namespace Hexagon.Model
 {
-    public struct PaletteClass
+    public class PaletteClass : Base
     {
         /// <summary>
         /// Informa el tipo de dato para el que se usará la paleta. En caso de MemberNumber >0 se descarta Datalimits.
@@ -9,14 +14,13 @@
         /// <param name="EnumPaletteClass">Clase de paleta</param>
         /// <param name="MemberNumber">Cantidad de Clases</param>
         /// <param name="DataRange">Rango de las clases</param>
-        public PaletteClass(EnumPaletteClass EnumPaletteClass, int MemberNumber = 0, float[] DataRange=null)
-        {
-            this.EnumPaletteClass = EnumPaletteClass;
-            this.MemberNumber = MemberNumber;
-            this.DataRange = DataRange;
-        }
-        public EnumPaletteClass EnumPaletteClass { get; }
-        public int MemberNumber { get; }
-        public float[] DataRange { get; }
+        public EnumPaletteClass EnumPaletteClass { get; set; }
+        public int MemberNumber { get; set; }
+        public Dictionary<int, Color> RGBS { get; set; } = new Dictionary<int, Color>();
+        public string Palette { get; set; }
+        
+        public string Name { get { return Palette + "_" + this.EnumPaletteClass.ToString() + "_" + MemberNumber.ToString(); }  set { }  } 
+        
+
     }
 }

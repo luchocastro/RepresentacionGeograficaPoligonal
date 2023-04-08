@@ -39,9 +39,9 @@ namespace Hexagon.Model.FileDataManager
             return true;
 
         }
-        public virtual string DefaultMaskID { get { 
-                return 
-                    "ID/PropName"; 
+        public  string DefaultMaskID { get { 
+                return
+                    "ParentID/Type/Name"; 
             } }
         public virtual IFileDataManagerOptions IFileDataManagerOptions
         {
@@ -53,12 +53,7 @@ namespace Hexagon.Model.FileDataManager
         }
 
 
-        public string GetClassLocation(G G)
-        {   TEntity TEntity = Mapper.Map<TEntity>(G);
-            var ID =  GenerateFullID(TEntity);
-            return Path.Combine(ParentDirectory(), ID.Substring(0, ID.LastIndexOf("\\")));
-
-        }
+        
         public string ParentDirectory()
         {
             return Path.Combine(Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, AppDomain.CurrentDomain.FriendlyName  );
@@ -155,6 +150,13 @@ namespace Hexagon.Model.FileDataManager
         public TEntity Get (G EntityDTO)
         {
             var id = GenerateFullID(Mapper.Map<TEntity>(EntityDTO));
+
+            var PathToRead = Path.Combine(this.ParentDirectory(), id + DefaultExtension);
+            if (!File.Exists(PathToRead))
+                return default(TEntity);
+
+            return   Read(PathToRead);
+
             return Mapper.Map<TEntity>(Get(id));
 
         }
@@ -254,6 +256,7 @@ namespace Hexagon.Model.FileDataManager
             }
             return ret;
         }
+        
 
         public virtual TEntity GetFromFile(string Path)
         {
