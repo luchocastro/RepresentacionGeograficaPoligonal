@@ -7,11 +7,11 @@ namespace Hexagon.Model
 {
     public enum EnumPaletteClass
     {
-        [Description("Cualitativa")]
+        [Description("Qualitative")]
         Qualitative = 1,
         [Description("Sequential")]
         Sequential = 2,
-        [Description("Divergente")]
+        [Description("Diverging")]
         Diverging = 3
     }
 }

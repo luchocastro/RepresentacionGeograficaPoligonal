@@ -16,7 +16,7 @@ namespace Hexagon.Services.Interfaces
         List<ColumnDTO> GetFileColumsFromFile(string PathDef);
         List<ProyectDataDTO> GetProyects(string User );
         public ProyectDataDTO GetProyect(string User, string Project = "" );
-        public string GenerateImge(LayoutDto layout, string PathFile);
+        public string GenerateImge(string PaletteClassID, string FuctionID);
         public AnalizedFileDTO ConvertFileToHexList(ProyectDataDTO ProyectDataDTO, AnalizedFileDTO AnalizedFileDTO, LayoutDto LayoutDto);
         public HexFileDTO PutFile(string User, string Project  , string NicName, string FileName, string OriginalName);
         public HexFileDTO PutFile(string User, string Project, string NicName, IFormFile IFormFile);
@@ -24,6 +24,10 @@ namespace Hexagon.Services.Interfaces
         List<AnalizedFileDTO> GetAnalizedFiles(string ProyectID);
         public FunctionDTO SetFunction(string HexagonDetailstID, FunctionDTO Function);
         public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns = null);
+        List<PaletteClass> GetPaletteClasses(string Name, string Enum, int Q);
+        public string GenerateLayout(LayoutDto layout, string PathFile);
+        
+
     }
 }
     

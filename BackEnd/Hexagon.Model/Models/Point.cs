@@ -12,7 +12,7 @@ namespace Hexagon.Model
 
         public float X { get; }
         public float Y { get; }
-        public override string ToString() => $"({X}, {Y})";
+        public override string ToString() => $"{X}, {Y}";
 
     }
 }

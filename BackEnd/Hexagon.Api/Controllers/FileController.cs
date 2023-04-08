@@ -101,6 +101,16 @@ namespace Hexagon.Api.Controllers
                 return StatusCode(500, $"Internal server error: {ex}");
             }
         }
+            [HttpPost("[action]")]
+        public IActionResult GenerateImage(string PaletteClassID, string CalculatedHexagonID)
+        {
+
+
+
+            var ret = FileService.GenerateImge(PaletteClassID,  CalculatedHexagonID);
+
+            return Ok(ret);
+        }
         /// <summary>
         /// Parse el archivo ya subido
         /// </summary>
@@ -140,7 +150,7 @@ namespace Hexagon.Api.Controllers
         public IActionResult GetImageFile(DatosMapaPost DatosMapaPost)
         {
 
-            var ret = FileService.GenerateImge(DatosMapaPost.LayoutDto, DatosMapaPost.PathWithData);
+            var ret = FileService.GenerateLayout (DatosMapaPost.LayoutDto, DatosMapaPost.PathWithData);
                 ;
 
             return Ok(ret);

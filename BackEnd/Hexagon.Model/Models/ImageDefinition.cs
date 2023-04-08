@@ -27,7 +27,7 @@ namespace Hexagon.Model.Models
                     this.HexagonSize = MathF.Floor(Layout.MaxPictureSizeX / Layout.HexPerLine);
                 }
 
-                this.TransformedWidth = Layout.HexPerLine * this.HexagonSize;
+                this.TransformedWidth = Layout.MaxPictureSizeX;
                 this.ProportationToScale = MathF.Floor(TransformedWidth / OriginalRangeX);
                 TransformedHeigth = MathF.Ceiling(this.OriginalRangeY * ProportationToScale) ;
 

@@ -59,6 +59,10 @@ namespace Hexagon.Model.Mappings
 
             CreateMap<OrientationDto, Orientation>();
             CreateMap<Orientation, OrientationDto>();
+            CreateMap<PaletteClass, PaletteClassDTO>();
+            CreateMap<PaletteClassDTO, PaletteClass>();
+            CreateMap<EnumPaletteClass, EnumPaletteClassDTO>();
+            CreateMap<EnumPaletteClassDTO, EnumPaletteClass>();
         }
     }
 }

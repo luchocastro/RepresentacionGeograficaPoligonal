@@ -15,5 +15,7 @@ namespace Hexagon.Model
         public string Name { get; set; }
         public List<string> ColumnNamesForFunction { get; set; }
         public List<HexaDetailWithValue> HexaDetailWithValue { get; set; }
+        public string LayoutID { get; set; } = "";
+
     }
 }

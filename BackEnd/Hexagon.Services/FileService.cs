@@ -47,6 +47,7 @@ namespace Hexagon.Services
         private IDataRepository<CalculatedHexagonDTO, CalculatedHexagon> CalculatedHexagonManager;
         private IDataRepository<ColumnDTO, Column> ColumnManager;
         private IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager;
+        private IDataRepository<PaletteClassDTO, PaletteClass> PaletteClassManager;
         private readonly User User = null;
         public FileService(IConfiguration Configuration,IMapper Mapper, 
             IDataRepository<ProyectDataDTO, ProyectData> IDataRepository,
@@ -62,8 +63,9 @@ namespace Hexagon.Services
             IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager,
             
             IDataRepository<CalculatedHexagonDTO, CalculatedHexagon> CalculatedHexagonManager,
-        IDataRepository<ColumnDTO, Column> ColumnManager
-        
+        IDataRepository<ColumnDTO, Column> ColumnManager,
+        IDataRepository<PaletteClassDTO, PaletteClass> PaletteClassManager
+
             )
         {
             this.DataUser = DataUser;
@@ -81,7 +83,7 @@ namespace Hexagon.Services
             this.DataFileConfigurationManager = DataFileConfigurationManager;
             this.ColumnManager = ColumnManager;
             this.CalculatedHexagonManager = CalculatedHexagonManager;
-
+            this.PaletteClassManager = PaletteClassManager;
          }
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData )
         {
@@ -243,7 +245,7 @@ namespace Hexagon.Services
                 throw Exception;
             }
         }
-        public string GenerateImge(LayoutDto Layout, string NativeFileID)
+        public string GenerateLayout(LayoutDto Layout, string NativeFileID)
         {
             NativeFileDTO NativeFile = NativeFileDataManager.Get(NativeFileID);
             var layout = _Mapper.Map<Layout>(Layout);
@@ -373,9 +375,9 @@ namespace Hexagon.Services
                         NumLine++;
                         continue;
                     }
-                    var EventPoint = new EventPoint() { PositionInMeters = new PointF((float)Convert.ToDouble(Line.Fieds[colX.OriginalPosition].ToString(CultureInfo.InvariantCulture) ), (float)Convert.ToDouble(Line.Fieds[colY.OriginalPosition].ToString(CultureInfo.InvariantCulture).Replace(".", ",")))  };
-                    var X = Layout.Size.X * 2 + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
-                    var Y = MathF.Sqrt(3) * Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
+                    var EventPoint = new EventPoint() { PositionInMeters = new PointF((float)Convert.ToDouble(Line.Fieds[colX.OriginalPosition].ToString(CultureInfo.InvariantCulture) ), (float)Convert.ToDouble(Line.Fieds[colY.OriginalPosition].ToString(CultureInfo.InvariantCulture) ))  };
+                    var X = Layout.Size.X   + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
+                    var Y =  Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
                     var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
                                              new Model.Point(X, Y));
                      
@@ -424,29 +426,37 @@ namespace Hexagon.Services
             var NativeFile = NativeFileDataManager.Get(Layout.ParentID);
 
             var CalculatedHexagon = new CalculatedHexagonDTO();
-
+            var ListaColumns = new List<Column>();
+            if (Columns != null && Columns.Count > 0)
+            {
+                foreach (var OrderCol in Columns)
+                {
+                    ListaColumns.Add(ColumnManager.Get(new ColumnDTO { Name = OrderCol, ParentID = NativeFile.ParentID }));
+                }
+            }
             foreach (var lista in HexagonDetails.List)
             {
 
 
                 var DataForFunction = new Dictionary<string, object[]>();
                 var i = 0;
+                var value = 0f;
                 if (Columns != null && Columns.Count > 0)
                 {
                     foreach (var OrderCol in Columns)
                     {
                         i++;
-                        var Column = ColumnManager.Get(new ColumnDTO { Name = OrderCol, ParentID = NativeFile.ParentID });
-                        var Data = Column.Fields.Where(x => lista.IndexLines.Contains(x.Index)).Select(x => x.Value).ToArray();
+                        var Data = ListaColumns.Where (x => x.Name == OrderCol).Single().Fields.Where(x => lista.IndexLines.Contains(x.Index)).Select(x => x.Value).ToArray();
                         DataForFunction.Add(i.ToString(), Data);
 
                     }
+                     value = CalcStrategy.DoCalc.Do(new Object[] { DataForFunction } , Function.Path, Function.FullClassName, Function.FunctionName);
+
                 }
                 else
                 {
-                    DataForFunction.Add("1", new object[1]);
+                    value = 0f;
                 }
-                var value = CalcStrategy.DoCalc.Do(new object[] { DataForFunction }, Function.Path, Function.FullClassName, Function.FunctionName);
                 CalculatedHexagon.HexaDetailWithValue.AddRange(lista.HexagonPositionForValues.Select(x => new HexaDetailWithValueDTO { HexagonPosition = x, Value = value }));
             }
             if (Columns != null && Columns.Count > 0)
@@ -458,7 +468,8 @@ namespace Hexagon.Services
             {
                 CalculatedHexagon.Name = "WithoutCol" ;
             }
-            CalculatedHexagon.ParentID = Function.ID; 
+            CalculatedHexagon.ParentID = Function.ID;
+            CalculatedHexagon.LayoutID = Layout.ID;
             CalculatedHexagonManager.Add(_Mapper.Map<CalculatedHexagon>(CalculatedHexagon));
             
 
@@ -656,9 +667,17 @@ namespace Hexagon.Services
         {
             try
             {
+                
                 var FunctionExist = FunctionManager.GetColectionFromParent(HexagonDetailstID).Where(x => x == Function).FirstOrDefault();
                 if (FunctionExist != null)
                     Function = FunctionExist;
+                else
+                {
+                    Function.ParentID = HexagonDetailstID;
+                    Function = FunctionManager.Add(_Mapper.Map<Function>(Function));
+
+
+                }
             }
             catch (Exception)
             {
@@ -670,6 +689,98 @@ namespace Hexagon.Services
             return Function;
 
 ;
+        }
+
+        public string GenerateImge(string PaletteClassID, string CalculatedHexagonID)
+        {
+
+            var paletteClass = PaletteClassManager.Get( PaletteClassID );
+             
+            var CalculatedHexagon = CalculatedHexagonManager.Get(  CalculatedHexagonID  );
+            var Max =CalculatedHexagon.HexaDetailWithValue.Select(x => x.Value).Max();
+            var Min = CalculatedHexagon.HexaDetailWithValue.Select(x => x.Value).Min();
+            var Layout =_Mapper.Map<Layout>( LayoutDataManager.Get( CalculatedHexagon.LayoutID));
+            
+            var dif = Max - Min;
+            var NumClass = paletteClass.MemberNumber;
+            var Graf = new string("<svg xmlns='http://www.w3.org/2000/svg' version='1.1'  height='" + Layout.MaxPictureSizeY.ToString () + "' width='" + Layout.MaxPictureSizeX.ToString() +"' >");
+            var Rango = dif / NumClass;
+             foreach (var item in CalculatedHexagon.HexaDetailWithValue)
+            {
+                var Hex = new Hex(item.HexagonPosition.Q, item.HexagonPosition.R, item.HexagonPosition.S);
+                var Points = HexagonFunction .PolygonCorners( Layout, Hex);
+                
+                Graf += "<polygon points= '";
+                foreach (var point in Points)
+                {
+                    Graf += point.X.ToString(CultureInfo.InvariantCulture) + "," + point.Y.ToString(CultureInfo.InvariantCulture);
+                    Graf += " ";
+
+                }
+                Graf += Points[0].X.ToString(CultureInfo.InvariantCulture) + "," + Points[0].Y.ToString(CultureInfo.InvariantCulture) ;
+                var index = ((int)(Math.Floor(item.Value - Min) / Rango))+1;
+                var Color = paletteClass.RGBS.GetValueOrDefault(index); 
+                var col = ColorTranslator.ToHtml(Color);
+
+                Graf += "' style = 'fill:" + col + ";stroke:purple;stroke-width:1'/> ";
+                 }
+            Graf += "</svg>";
+             
+            var file = Path.Combine(CalculatedHexagonManager.ParentDirectory(), CalculatedHexagonID) +paletteClass.Palette + "_" + paletteClass.EnumPaletteClass.ToString() + "_" + paletteClass.MemberNumber.ToString() + ".SVG";
+            using (StreamWriter StreamWriter = new StreamWriter(file) )
+            {
+                StreamWriter.Write(Graf);
+            }
+                return "";
+        }
+        public List<PaletteClass> GetPaletteClasses(string Name, string Enumj, int Q)
+        {
+           var Bewer = Path.Combine(FileRepository.ParentDirectory() , "Bewer.txt");
+
+
+            using (StreamReader file = File.OpenText(Bewer))
+            {
+                var filetexy = (file.ReadToEnd());
+                var split = filetexy.Split("\n");
+                var Paletas = new List<PaletteClass>();
+                var paleta = new PaletteClass();
+
+                paleta.Palette = "";
+
+                paleta.MemberNumber = -1;
+
+
+                foreach (var item in split)
+                {
+                    var col = item.Split(",");
+
+                    var color = Color.FromArgb(Convert.ToInt32(col[0]), Convert.ToInt32(col[1]), Convert.ToInt32(col[2]));
+                    paleta.RGBS.Add(Convert.ToInt32(col[8]), color); 
+
+
+                    if (Convert.ToInt32(col[8]) == Convert.ToInt32(col[5]))
+                    {
+                        paleta.EnumPaletteClass = (EnumPaletteClass)Enum.Parse(typeof(EnumPaletteClass), col[3].ToString(), true); ;
+                        paleta.ParentID = Path.Combine(paleta.GetType().Name, col[3], col[5], "Brewer");
+                        paleta.MemberNumber = Convert.ToInt32(col[5]);
+                        paleta.Palette = col[4];
+
+                        PaletteClassManager.Add(paleta);
+
+                        paleta = new PaletteClass();
+
+
+
+                    }
+
+
+
+
+
+                }
+            }
+            return null;
+            
         }
         
     }
