@@ -23,6 +23,7 @@ namespace Hexagon.Model
             this.FillPolygon = FillPolygon;
             this.MapDefinition = MapDefinition;
             this.PaintLines = true;
+
         }
         public Orientation Orientation { get { return new Orientation(3.0f / 2.0f, 0.0f, Math.Sqrt(3.0f) / 2.0f, Math.Sqrt(3.0f), 2.0f / 3.0f, 0.0f, -1.0f / 3.0f, Math.Sqrt(3.0f) / 3.0f, 0.0f); } set {; } } 
         public PointF Size { get; set; }

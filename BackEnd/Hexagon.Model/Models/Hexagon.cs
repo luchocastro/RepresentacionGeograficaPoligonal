@@ -7,38 +7,38 @@ using System.Text.Json.Serialization;
 namespace Hexagon.Model
 {
 
-    public struct Hex : IEquatable<Hex>
+    public class Hex : IEquatable<Hex>
     {
-        
 
-        public Hex(float q =0, float r = 0, float s = 0)
-            {
+
+        public Hex(float q = 0, float r = 0, float s = 0)
+        {
             if (Math.Round(q + r + s) != 0) throw new Exception("q + r + s must be 0");
             this.Lines = new List<Line>();
             R = r;
             S = s;
             Q = q;
             this.Value = 0;
-            this.Color= null;
+            this.Color = null;
             this.PorcentualXaxisPosition = 0;
 
-            this.PorcentualYaxisPosition= 0;
+            this.PorcentualYaxisPosition = 0;
 
             this.BorderColor = null;
 
-            this.BorderType= null;
+            this.BorderType = null;
             this.Opacity = 100;
             this.RGBColor = new int[] { 254, 254, 254 };
             this.Values = null;
             this.Hexagonos = null;
             this.HexagonDetailsID = "";
         }
-        
+
 
         public float Q { get; set; }
         public float R { get; set; }
         public float S { get; set; }
-        public List <EventPoint> Values { get; set; }
+        public List<EventPoint> Values { get; set; }
         public string ListValues
         { get {
                 string ret = "Hexagon:{";
@@ -46,13 +46,13 @@ namespace Hexagon.Model
                 ret += "R:" + R.ToString() + ",";
                 ret += "S:" + S.ToString() + ",";
                 ret += "Value:" + Value.ToString();
-                if (Values !=null)
-                { 
-                ret += ",Values:[";
-                foreach (var item in Values)
+                if (Values != null)
                 {
-                    ret += item.ListValues + ",";
-                }
+                    ret += ",Values:[";
+                    foreach (var item in Values)
+                    {
+                        ret += item.ListValues + ",";
+                    }
                     ret += "]";
                 }
                 ret += "}";
@@ -69,7 +69,7 @@ namespace Hexagon.Model
         public override bool Equals(object obj) => (obj is Hex other) && this.Equals(other);
 
         /// <inheritdoc/>
-        public bool Equals(Hex other) => (Q==other.Q && R==other.R && S==other.S);
+        public bool Equals(Hex other) => (Q == other.Q && R == other.R && S == other.S);
 
         /// <inheritdoc/>
 
@@ -79,13 +79,13 @@ namespace Hexagon.Model
         /// <summary>Tests value-equality.</summary>
         public static bool operator ==(Hex lhs, Hex rhs) => lhs.Equals(rhs);
 
-        public override int GetHashCode() => (int)(Q*R*S );
+        public override int GetHashCode() => (int)(Q * R * S);
         #endregion
         [JsonIgnore]
         public List<Line> Lines { get; set; }
-        public float Value { get; set; } 
-        public float PorcentualXaxisPosition { 
-        get; set;}
+        public float Value { get; set; }
+        public float PorcentualXaxisPosition {
+            get; set; }
         public float PorcentualYaxisPosition
         {
             get; set;
@@ -102,6 +102,7 @@ namespace Hexagon.Model
         public float Opacity { get; set; }
         public string BorderColor { get; set; }
         public string BorderType { get; set; }
+        public Point[] Corners { get; set; }  
         [JsonIgnore]
         public string HexagonDetailsID { get; set; }
     }
