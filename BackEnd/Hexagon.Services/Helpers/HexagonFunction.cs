@@ -196,9 +196,11 @@ namespace Hexagon.Services.Helpers
             var M = LayoutBasic.Orientation ;
 
             var pt = new Point((p.X), (p.Y));
-            var q = M.B0 * pt.X + M.B1 * pt.Y;
+            
+            var q = M.B0 * pt.X  ;
             var r = M.B2 * pt.X + M.B3 * pt.Y;
 
+            
             var hex = HexagonRound(new Hex(q, r, -q - r));
             hex.Corners = PolygonCorners(LayoutBasic, hex);
             return hex;
@@ -208,8 +210,8 @@ namespace Hexagon.Services.Helpers
             var M = layout.Orientation;
             var size = layout.Size;
             var origin = layout.Origin;
-            var pt = new Point((p.X - origin.X) / size.X, (p.Y - origin.Y) / size.Y);
-            var q = M.B0 * pt.X + M.B1 * pt.Y;
+            var pt = new Point((p.X ) / size.X, (p.Y - origin.Y) / size.Y);
+            var q = (M.B0 * pt.X + M.B1 * pt.Y);
             var r = M.B2 * pt.X + M.B3 * pt.Y;
             return HexagonRound(new Hex(q, r, -q - r));
         }
@@ -259,3 +261,125 @@ namespace Hexagon.Services.Helpers
     }
 }
 
+/*
+ * void Coordenadas::
+ 
+    CambioGeoUtm (int selector, char long_, char lat_, Coordenadas v, Coordenadas &t){
+ 
+    const double pi = 3.14159265358979323846;
+ 
+    double a, b;
+ 
+    switch (selector) {
+ 
+    case 1:
+ 
+        a = 6378388.0, b = 6356911.946130;    //Hayford
+     
+                break;
+ 
+    case 2:
+ 
+        a = 6378137.0;  b = 6356752.3142;     // WGS 84
+ 
+                break;
+     
+    }
+ 
+// Sobre la geometria del elipsoide
+// excentricidad = e1; segunda excentricidad = e2
+ 
+    double e1, e2;
+ 
+    e1 = sqrt (pow(a,2) - pow(b, 2)) / a;
+    e2 = sqrt (pow(a,2) - pow(b, 2)) / b;
+ 
+// Radio polar de curvatura y aplanamiento
+// radio polar de curvatura = c; aplanamiento = alpha
+ 
+    double c, alpha;
+ 
+    c = (a*a)/b;
+ 
+    alpha = (a -b) / a;
+ 
+    double long_gd_rad, lat_gd_rad;
+ 
+    if (long_ == 'E' || long_ == 'e') { 
+ 
+        long_gd_rad = -(v.a[0] * pi)/180;
+ 
+    }
+ 
+        else {
+ 
+        long_gd_rad = (v.a[0] * pi)/180;
+         
+        }
+ 
+    lat_gd_rad = (v.a[1] * pi) / 180;
+ 
+// Determinacion del Huso
+ 
+    double huso_dec;
+    int huso;
+ 
+    huso_dec = v.a[0]/6 + 31;
+ 
+    huso = int (huso_dec);
+ 
+// Obtencion del meridiano central del uso = lambda0
+ 
+    double lambda0, delta_lambda;
+ 
+    lambda0 = (huso * 6.0 - 183.0)*(pi/180.0);
+ 
+// Determinacion de la distancia angular que existe entre la longitud del punto (long_gd_rad) y
+// el meridiano central del huso (lamda0)
+ 
+    delta_lambda = long_gd_rad - lambda0;
+ 
+// Ecuaciones de Coticchia-Surace para el Problema Directo (Paso de Geograficas a UTM)
+// Calculo de Parametros
+ 
+    double A, xi, eta, nu, zeta, A1, A2, J2, J4, J6, alpha2, beta, gamma, B_phi;
+ 
+    A = cos(lat_gd_rad) * sin(delta_lambda);
+ 
+    xi = 0.5 * log((1+A)/(1-A));
+ 
+    eta = atan(tan(lat_gd_rad)/cos(delta_lambda)) - lat_gd_rad;
+ 
+    nu = (c*0.9996)/sqrt((1 + e2*e2*cos(lat_gd_rad)*cos(lat_gd_rad)));
+ 
+    zeta = (e2*e2/2)*(xi*xi)*(cos(lat_gd_rad)*cos(lat_gd_rad));
+ 
+    A1 = sin(2.0*lat_gd_rad);
+ 
+    A2 = A1 * (cos(lat_gd_rad)*cos(lat_gd_rad));
+ 
+    J2 = lat_gd_rad + A1/2.0;
+ 
+    J4 = (3*J2 + A2)/4;
+ 
+    J6 = (5*J4 + A2 * (cos(lat_gd_rad)*cos(lat_gd_rad)))/3;
+ 
+    alpha2 = (3.0/4.0)*(e2*e2);
+ 
+    beta = (5.0/3.0)*(alpha2*alpha2);
+ 
+    gamma = (35.0/27.0)*(pow(alpha2,3));
+ 
+    B_phi = 0.9996 * c * (lat_gd_rad - alpha2 * J2 + beta * J4 - gamma * J6);
+ 
+    t.a[0] = xi*nu*(1+zeta/3.0)+500000.00;
+ 
+    t.a[1] = eta*nu*(1+zeta)+B_phi;
+ 
+    if (lat_ == 'S' || lat_ == 's')
+ 
+        t.a[1] += 10000000.0;
+     
+    t.a[2] = v.a[2];
+ https://www.linz.govt.nz/guidance/geodetic-system/understanding-coordinate-conversions/projection-conversions/transverse-mercator-transformation-formulae
+}*/

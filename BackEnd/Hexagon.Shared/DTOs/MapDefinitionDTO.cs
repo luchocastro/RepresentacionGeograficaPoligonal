@@ -13,6 +13,6 @@ namespace Hexagon.Shared.DTOs
         public string ColumnNameForY { get; set; }
         public string ColumnForMapGroup { get; set; }
         
-
+        
     }
 }
