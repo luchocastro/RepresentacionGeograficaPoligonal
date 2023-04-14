@@ -18,7 +18,7 @@ namespace Hexagon.Shared.DTOs
         public float Q { get; set; }
         public float R { get; set; }
         public float S { get; set; }
-
+        public List<PointDTO> Corners { get; set; }
     }
     public class HexagonDetailDTO
     {

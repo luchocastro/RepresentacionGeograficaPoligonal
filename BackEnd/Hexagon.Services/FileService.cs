@@ -261,12 +261,11 @@ namespace Hexagon.Services
 
                 var pols = NativeFile.Content.Select(x => x.Fieds[col.OriginalPosition]);
                 var PoliygonList = pols.Select(X => X.Split(",").Select(y => new Model.Point((float)Convert.ToDouble(y.Split(":") [0], CultureInfo.InvariantCulture), (float)Convert.ToDouble(y.Split(":")[1], CultureInfo.InvariantCulture))).ToList()).SelectMany(x => x.ToArray()).ToList();
-                var ImageDifinition = new ImageDefinition(PoliygonList, layout);
+                //var ImageDifinition = new ImageDefinition(PoliygonList, layout);
 
-
-                layout.Size = new System.Drawing.PointF(ImageDifinition.HexagonSize, ImageDifinition.HexagonSize);
-                layout.Origin = new PointF(ImageDifinition.TransformedWidth / 2f, ImageDifinition.TransformedHeigth / 2f);
-                layout.MaxPictureSizeX = ImageDifinition.TransformedWidth;
+                var ImageDifinition = new ImageDefinition(PoliygonList );
+                layout = ImageDifinition.Layout;
+                 layout.MaxPictureSizeX = ImageDifinition.TransformedWidth;
                 layout.MaxPictureSizeY = ImageDifinition.TransformedHeigth; 
                 ;
                 var ret = new List<Hex>();
@@ -295,9 +294,9 @@ namespace Hexagon.Services
 
                         var YOriginal = float.Parse(item[i].Split(":")[1], CultureInfo.InvariantCulture);
                         var EventPoint = new EventPoint() { PositionInMeters = new PointF(XOriginal, YOriginal) };
-                        var X = Layout.Size.X * 2f + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
-                        var Y = MathF.Sqrt(3) * Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
-                        var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
+                        var X =  (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
+                        var Y = (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
+                        var hexPosition1 = HexagonFunction.PixelToHexagon( 
                                                 new Model.Point(X, Y));
                         var Existe = false;
                         //if (ret.Contains(hexPosition1))
@@ -324,8 +323,7 @@ namespace Hexagon.Services
                             ret.AddRange(linea);
 
                         }
-                        HexAnterior = HexagonFunction.PixelToHexagon(layout,
-                                                 new Model.Point(X, Y));
+                        HexAnterior = hexPosition1;
                     }
                     if (Layout.FillPolygon)
                         Helpers.MapHelper.PaintHexInsidePolygon(PointsHexCornes, ref ret, layout);
@@ -345,7 +343,7 @@ namespace Hexagon.Services
                         }
                         RetGroup.Add(hex);
                     }
-                    HexagonDetail.HexagonPositionForValues = RetGroup.Select(x => new HexagonPosition { Q = x.Q, R = x.R, S = x.S }).ToList();
+                    HexagonDetail.HexagonPositionForValues = RetGroup.Select(x => new HexagonPosition { Q = x.Q, R = x.R, S = x.S, Corners =x.Corners.ToList()  }).ToList();
                     NumLine++;
                     HexDetailList.Add(HexagonDetail);
 
@@ -358,9 +356,8 @@ namespace Hexagon.Services
                 var colY = NativeFile.Columns.Where(x => x.Name == Map.ColumnNameForY).FirstOrDefault();
                 layout.PaintLines = false;
                 var PoliygonList = NativeFile.Content.Where(x => x.Fieds.Count() == QColumns).Select(y => new Model.Point((float)Convert.ToDouble(y.Fieds[colX.OriginalPosition].ToString(CultureInfo.InvariantCulture) ), (float)Convert.ToDouble(y.Fieds[colY.OriginalPosition].ToString(CultureInfo.InvariantCulture)))).ToList();
-                var ImageDifinition = new ImageDefinition(PoliygonList, layout);
-                layout.Size = new System.Drawing.PointF(ImageDifinition.HexagonSize, ImageDifinition.HexagonSize);
-                layout.Origin = new PointF(ImageDifinition.TransformedWidth / 2f, ImageDifinition.TransformedHeigth / 2f);
+                var ImageDifinition = new ImageDefinition(PoliygonList);
+                layout = ImageDifinition.Layout;
                 layout.MaxPictureSizeX = ImageDifinition.TransformedWidth;
                 layout.MaxPictureSizeY = ImageDifinition.TransformedHeigth;
                 //layout = new Layout(Layout.Flat, new System.Drawing.PointF(ImageDifinition.HexagonSize, ImageDifinition.HexagonSize), new PointF(ImageDifinition.TransformedWidth / 2f, ImageDifinition.TransformedHeigth / 2f), Layout.HexPerLine, ImageDifinition.TransformedWidth, ImageDifinition.TransformedHeigth, Layout.FillPolygon);
@@ -376,13 +373,13 @@ namespace Hexagon.Services
                         continue;
                     }
                     var EventPoint = new EventPoint() { PositionInMeters = new PointF((float)Convert.ToDouble(Line.Fieds[colX.OriginalPosition].ToString(CultureInfo.InvariantCulture) ), (float)Convert.ToDouble(Line.Fieds[colY.OriginalPosition].ToString(CultureInfo.InvariantCulture) ))  };
-                    var X = Layout.Size.X   + (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
-                    var Y =  Layout.Size.Y + (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
-                    var hexPosition1 = HexagonFunction.PixelToHexagon(layout,
+                    var X = (EventPoint.PositionInMeters.X - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
+                    var Y = (ImageDifinition.OriginalMaxY - EventPoint.PositionInMeters.Y) * ImageDifinition.ProportationToScale;
+                    var hexPosition1 = HexagonFunction.PixelToHexagon(
                                              new Model.Point(X, Y));
                      
                     var ListLine = new List<Line>();
-                    var HexagonPosition = new HexagonPosition { Q = hexPosition1.Q, R = hexPosition1.R, S = hexPosition1.S };
+                    var HexagonPosition = new HexagonPosition { Q = hexPosition1.Q, R = hexPosition1.R, S = hexPosition1.S, Corners =hexPosition1.Corners.ToList() };
                     //var IdexHexDetail = HexDetailList.FindLastIndex(x => x.HexagonPositionForValues.Exists(y => y.Q == hexPosition1.Q && y.R == hexPosition1.R && y.S == hexPosition1.S));
                     //if (IdexHexDetail==-1)
                     //{//if (hexPosition1.Values == null)
@@ -691,7 +688,7 @@ namespace Hexagon.Services
 ;
         }
 
-        public string GenerateImge(string PaletteClassID, string CalculatedHexagonID)
+        public string GenerateImge(string PaletteClassID, string CalculatedHexagonID, float Size = 0)
         {
 
             var paletteClass = PaletteClassManager.Get( PaletteClassID );
@@ -708,7 +705,7 @@ namespace Hexagon.Services
              foreach (var item in CalculatedHexagon.HexaDetailWithValue)
             {
                 var Hex = new Hex(item.HexagonPosition.Q, item.HexagonPosition.R, item.HexagonPosition.S);
-                var Points = HexagonFunction .PolygonCorners( Layout, Hex);
+                var Points = Hex.Corners; 
                 
                 Graf += "<polygon points= '";
                 foreach (var point in Points)
@@ -719,7 +716,7 @@ namespace Hexagon.Services
                 }
                 Graf += Points[0].X.ToString(CultureInfo.InvariantCulture) + "," + Points[0].Y.ToString(CultureInfo.InvariantCulture) ;
                 var index = ((int)(Math.Floor(item.Value - Min) / Rango))+1;
-                var Color = paletteClass.RGBS.GetValueOrDefault(index); 
+                var Color = paletteClass.RGBS.GetValueOrDefault((NumClass-index)+1); 
                 var col = ColorTranslator.ToHtml(Color);
 
                 Graf += "' style = 'fill:" + col + ";stroke:purple;stroke-width:1'/> ";

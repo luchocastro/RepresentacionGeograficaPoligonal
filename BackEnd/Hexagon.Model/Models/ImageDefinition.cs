@@ -43,8 +43,56 @@ namespace Hexagon.Model.Models
                 TransformedWidth = MathF.Ceiling( OriginalRangeX * ProportationToScale);
                 
             }
-
+            this.Layout = new Layout();
             MaxProportion = OriginalRangeX > OriginalRangeY ? OriginalRangeX : OriginalRangeY;
+        }
+
+        public ImageDefinition(List<Model.Point> PointsToTransform, Point Scale = null )
+        {
+            if(Scale == null ) Scale= new Point(1000, 1000)  ;
+            this.OriginalMinX = PointsToTransform.Min(x => x.X);
+            this.OriginalMaxX = PointsToTransform.Max(x => x.X);
+            this.OriginalMinY = PointsToTransform.Min(x => x.Y);
+            this.OriginalMaxY = PointsToTransform.Max(x => x.Y);
+            this.OriginalRangeX = this.OriginalMaxX - this.OriginalMinX;
+            this.OriginalRangeY = this.OriginalMaxY - this.OriginalMinY;
+            
+            MaxProportion = OriginalRangeX > OriginalRangeY ? OriginalRangeX : OriginalRangeY;
+
+            if (this.OriginalRangeX > this.OriginalRangeY)
+            {
+
+                    this.HexagonSize = 1;
+                
+
+                this.TransformedWidth = Scale.X ;
+                this.ProportationToScale = MathF.Floor(TransformedWidth / OriginalRangeX);
+                TransformedHeigth = MathF.Ceiling(this.OriginalRangeY * ProportationToScale);
+
+            }
+            else
+            {
+                
+
+                    this.HexagonSize = 1;
+                
+                TransformedHeigth = Scale.Y;
+                ProportationToScale = MathF.Floor(TransformedHeigth / OriginalRangeY);
+                TransformedWidth = MathF.Ceiling(OriginalRangeX * ProportationToScale);
+
+            }
+            this.Layout = new Layout
+            {
+                FillPolygon = false,
+                Flat = true,
+                HexPerLine = (int)this.TransformedWidth,
+                Origin = new System.Drawing.PointF(0, 0),
+                Size = new System.Drawing.PointF(1, 1)
+            }
+                ;
+            
+
+
         }
         public float OriginalMinX { get;  }
         public float OriginalMinY { get; }
@@ -59,7 +107,19 @@ namespace Hexagon.Model.Models
         public float TransformedHeigth { get; }
 
         public float MaxProportion { get; }
-        
+        public Layout Layout { get; }
+        /*def asRadians(degrees):
+    return degrees * pi / 180
 
+def getXYpos(relativeNullPoint, p):
+    """ Calculates X and Y distances in meters.
+    """
+    deltaLatitude = p.latitude - relativeNullPoint.latitude
+    deltaLongitude = p.longitude - relativeNullPoint.longitude
+    latitudeCircumference = 40075160 * cos(asRadians(relativeNullPoint.latitude))
+    resultX = deltaLongitude * latitudeCircumference / 360
+    resultY = deltaLatitude * 40008000 / 360
+    return resultX, resultY
+        */
     }
 }
