@@ -55,5 +55,17 @@ namespace Average
         {
             return 0;
         }
+        public static float standardDeviation(Dictionary<string, object[]> Values)
+        {
+            float result = 0;
+            var sequence = Values.FirstOrDefault().Value.Select(x => (float)x);
+            if (sequence.Any())
+            {
+                float average = sequence.Average();
+                float sum = sequence.Sum(d => MathF.Pow(d - average, 2));
+                result = MathF.Sqrt((sum) / sequence.Count());
+            }
+            return result;
+        }
     }
 }

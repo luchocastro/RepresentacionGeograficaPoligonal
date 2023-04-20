@@ -8,6 +8,21 @@ namespace Hexagon.Model.Models
 {
     public struct ImageDefinition
     {
+        public float OriginalMinX { get; }
+        public float OriginalMinY { get; }
+        public float OriginalMaxX { get; }
+        public float OriginalMaxY { get; }
+
+        public float OriginalRangeX { get; }
+        public float OriginalRangeY { get; }
+        public float HexagonSize { get; set; }
+        public float ProportationToScale { get; }
+        public float TransformedWidth { get; }
+        public float TransformedHeigth { get; }
+
+        public float MaxProportion { get; }
+        public Layout Layout { get; }
+        public Point Scale { get; set; }
 
         public ImageDefinition(List<Model.Point> PointsToTransform, Layout Layout)
         {
@@ -19,7 +34,7 @@ namespace Hexagon.Model.Models
             this.OriginalRangeX = this.OriginalMaxX - this.OriginalMinX;
             this.OriginalRangeY = this.OriginalMaxY - this.OriginalMinY ;
             this.HexagonSize = 2f;
-
+            this.Scale = new Point(Layout.MaxPictureSizeX, Layout.MaxPictureSizeY);
             if (this.OriginalRangeX > this.OriginalRangeY)
             {
                 if (MathF.Floor(Layout.MaxPictureSizeX / Layout.HexPerLine) > this.HexagonSize)
@@ -43,13 +58,16 @@ namespace Hexagon.Model.Models
                 TransformedWidth = MathF.Ceiling( OriginalRangeX * ProportationToScale);
                 
             }
-            this.Layout = new Layout();
+            this.Layout = Layout;
             MaxProportion = OriginalRangeX > OriginalRangeY ? OriginalRangeX : OriginalRangeY;
         }
 
         public ImageDefinition(List<Model.Point> PointsToTransform, Point Scale = null )
         {
-            if(Scale == null ) Scale= new Point(1000, 1000)  ;
+            if (Scale == null)
+                this.Scale = new Point(1000, 1000);
+            else
+                this.Scale = Scale;
             this.OriginalMinX = PointsToTransform.Min(x => x.X);
             this.OriginalMaxX = PointsToTransform.Max(x => x.X);
             this.OriginalMinY = PointsToTransform.Min(x => x.Y);
@@ -87,39 +105,28 @@ namespace Hexagon.Model.Models
                 Flat = true,
                 HexPerLine = (int)this.TransformedWidth,
                 Origin = new System.Drawing.PointF(0, 0),
-                Size = new System.Drawing.PointF(1, 1)
+                Size = new System.Drawing.PointF(this.HexagonSize, this.HexagonSize)
+                
             }
                 ;
             
 
 
         }
-        public float OriginalMinX { get;  }
-        public float OriginalMinY { get; }
-        public float OriginalMaxX { get;  }
-        public float OriginalMaxY { get; }
-
-        public float OriginalRangeX { get; }
-        public float OriginalRangeY { get  ;  }
-        public float HexagonSize { get; }
-        public float ProportationToScale { get; }
-        public float TransformedWidth { get; }
-        public float TransformedHeigth { get; }
-
-        public float MaxProportion { get; }
-        public Layout Layout { get; }
-        /*def asRadians(degrees):
-    return degrees * pi / 180
+     
+    }
+    /*def asRadians(degrees):
+return degrees * pi / 180
 
 def getXYpos(relativeNullPoint, p):
-    """ Calculates X and Y distances in meters.
-    """
-    deltaLatitude = p.latitude - relativeNullPoint.latitude
-    deltaLongitude = p.longitude - relativeNullPoint.longitude
-    latitudeCircumference = 40075160 * cos(asRadians(relativeNullPoint.latitude))
-    resultX = deltaLongitude * latitudeCircumference / 360
-    resultY = deltaLatitude * 40008000 / 360
-    return resultX, resultY
-        */
-    }
+""" Calculates X and Y distances in meters.
+"""
+deltaLatitude = p.latitude - relativeNullPoint.latitude
+deltaLongitude = p.longitude - relativeNullPoint.longitude
+latitudeCircumference = 40075160 * cos(asRadians(relativeNullPoint.latitude))
+resultX = deltaLongitude * latitudeCircumference / 360
+resultY = deltaLatitude * 40008000 / 360
+return resultX, resultY
+    */
 }
+

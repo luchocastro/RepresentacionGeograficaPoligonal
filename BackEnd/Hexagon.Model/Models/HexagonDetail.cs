@@ -48,6 +48,6 @@ namespace Hexagon.Model.Models
             get; set;
         } = new List<long>();
 
-        public List<HexagonPosition> HexagonPositionForValues { get; set; } = new List<HexagonPosition>();
+        public HexagonPosition HexagonPositionForValues { get; set; } = new HexagonPosition();
     }
 }

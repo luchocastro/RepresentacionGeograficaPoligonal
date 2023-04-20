@@ -132,7 +132,7 @@ namespace Hexagon.Api.Controllers
         /// <param name="ProjectDataPost"></param>
         /// <returns></returns>
         [HttpPost("[action]")]
-        public IActionResult ParseFile(ProjectDataPost ProjectDataPost)
+        public IActionResult ParseFileColumns(ProjectDataPost ProjectDataPost)
         {
             DataFileConfigurationDTO DataFileConfiguration = ProjectDataPost.DataFileConfiguration;
 
@@ -213,9 +213,9 @@ namespace Hexagon.Api.Controllers
         /// <returns></returns>
         [HttpGet]
         [Route("GetColumns")]
-        public IActionResult GetColumns(string path)
+        public IActionResult GetColumns(FileToAnalizePost FileToAnalizePost)
         {
-            return Ok(FileService.GetFileColumsFromFile(path));
+            return Ok(FileService.GetFileColumsFromFile (FileToAnalizePost.DataFileConfiguration, FileToAnalizePost.HexafileID, FileToAnalizePost.NRows));
         }
         /// <summary>
         /// devuelve las fòrmulas y los paràmetros de las mismas
