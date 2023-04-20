@@ -452,8 +452,8 @@ namespace Hexagon.Services
             var json = new JsonHelper<NativeFile>();
             json.ReadLine += Json_ReadLine;
             var b = new NativeFile ();
-            b.Path = @"c:\Users\Usuario\AppData\Hexagon.Api\User\PRUEBA~4\PROYEC~1\Desde0\ANALIZ~1\Alguno\HexFile\SENSOR~1.CSV\NATIVE~1\DELIMI~1.HEX\Layout\7FD4B6~1\HEXAGO~1\08042023081114.Hex.Json";
-            json.ProcesAsync ("IndexLines",    b );
+            b.Path = @"C:\Users\lcastro\AppData\Hexagon.Api\User\PruebaAlgo\ProyectData\PruebaIntegral\AnalizedFile\Prueba\HexFile\world.geojson\NativeFile\GeoJson_7b2f44bd-df4c-427f-9f27-4bab6413768d.FILE.HexJson.Hex.Json";
+            json.ProcesAsync ("Content",    b );
             var  UserDTO = DataUser.Get( User);
 
             return IDataRepository.GetColectionFromParent(UserDTO.ID).ToList();
@@ -490,11 +490,11 @@ namespace Hexagon.Services
                 var Nic = NicName;// Path.GetFileNameWithoutExtension(file.FileName);
 
                 fileDTO = PutFile(User, Project, NicName, FileName, OriginalName);
-            
-            using (var stream = new FileStream(fileDTO.Path, FileMode.Create))
-            {
-                 file.CopyTo  (stream);
-            }
+
+                using (var stream = new FileStream(fileDTO.Path, FileMode.Create))
+                {
+                    file.CopyTo(stream);
+                }
             }
             return fileDTO;
         }

@@ -69,7 +69,7 @@ namespace Hexagon.Services.Helpers
 
             try
             {
-                var jsonElement = jsonDocument.RootElement;
+                var jsonElement = jsonDocument.RootElement.GetProperty(PropertyName);
                 EventArgs E = new EventArgs();
 
                 foreach (var item in jsonElement.EnumerateArray())
