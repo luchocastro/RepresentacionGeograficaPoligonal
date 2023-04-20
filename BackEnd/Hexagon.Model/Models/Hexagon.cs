@@ -25,7 +25,7 @@ namespace Hexagon.Model
             this.PorcentualYaxisPosition = 0;
 
             this.BorderColor = null;
-
+            
             this.BorderType = null;
             this.Opacity = 100;
             this.RGBColor = new int[] { 254, 254, 254 };
@@ -82,7 +82,7 @@ namespace Hexagon.Model
         public override int GetHashCode() => (int)(Q * R * S);
         #endregion
         [JsonIgnore]
-        public List<Line> Lines { get; set; }
+        public List<Line> Lines { get; set; } = new List<Line>();
         public float Value { get; set; }
         public float PorcentualXaxisPosition {
             get; set; }

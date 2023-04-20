@@ -16,6 +16,6 @@ namespace Hexagon.Model
         public List<string> ColumnNamesForFunction { get; set; }
         public List<HexaDetailWithValue> HexaDetailWithValue { get; set; }
         public string LayoutID { get; set; } = "";
-
+        public string ImageDefinitionID { get; set; } = "";
     }
 }

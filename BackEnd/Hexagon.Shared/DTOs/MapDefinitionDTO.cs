@@ -9,10 +9,11 @@ namespace Hexagon.Shared.DTOs
     public class MapDefinitionDTO : BaseDto
     {
 
-        public string ColumnNameForX { get; set; }
-        public string ColumnNameForY { get; set; }
-        public string ColumnForMapGroup { get; set; }
-        
-        
+        public ColumnDTO ColumnForX { get; set; }
+        public ColumnDTO ColumnForY { get; set; }
+        public ColumnDTO ColumnForMapGroup { get; set; }
+        public List<string> ColumnsToDiscard { get; set; }
+        public List<ColumnDTO> DataTypedColumns { get; set; }
+
     }
 }

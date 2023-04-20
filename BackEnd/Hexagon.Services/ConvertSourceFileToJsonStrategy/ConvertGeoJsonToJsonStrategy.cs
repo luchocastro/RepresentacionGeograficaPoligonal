@@ -84,7 +84,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
            NativeJsonFile.Columns = ColumnsForModel;
             return NativeJsonFile;
         }
-        public NativeFile DoFromFile(string PathFileOrigen, DataFileConfiguration FileData)
+        public NativeFile DoFromFile(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0)
         {
             var PolygonToTake = new List<Polygon>();
             var PoitsToTake = new List<GeoJSON.Net.Geometry.Point>();
@@ -209,7 +209,10 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     Values.Add(String.Join(",", Figure.Select(x => x.X.ToString(CultureInfo.InvariantCulture) + ":" + x.Y.ToString(CultureInfo.InvariantCulture)).ToArray()));
                    
                     Lineas.Add(new Line((long)Step, Values.ToArray() ));
-                    Step++;
+                    if (Step == FirstNRows)
+                        break;
+                        Step++;
+                    
                 }
             }
             

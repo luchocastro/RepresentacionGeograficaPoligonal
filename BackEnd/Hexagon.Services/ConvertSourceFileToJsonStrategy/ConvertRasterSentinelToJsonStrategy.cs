@@ -8,16 +8,17 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
 {
     class ConvertRasterSentinelToJsonStrategy : IConvertSourceFileToJsonStrategy
     {
+        public NativeFile DoFromFile(string PathOrigen, DataFileConfiguration FileData, int FirstNRows = 0)
+        {
+            throw new NotImplementedException();
+        }
+
         NativeJsonFile IConvertSourceFileToJsonStrategy.Do(string Base64File, DataFileConfiguration FileData)
         {
 
             throw new NotImplementedException();
         }
-
-        NativeFile IConvertSourceFileToJsonStrategy.DoFromFile(string PathOrigen, DataFileConfiguration FileData)
-        {
-            Vintasoft.Imaging.VintasoftImage vsImage = new Vintasoft.Imaging.VintasoftImage(PathOrigen);
-            throw new NotImplementedException();
-        }
+    
+     
     }
 }

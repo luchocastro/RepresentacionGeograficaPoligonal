@@ -47,9 +47,9 @@ namespace Hexagon.Model
             ToHashed += this.Origin.Y.ToString();
             ToHashed += Convert.ToInt32(this.FillPolygon).ToString();
             ToHashed += Convert.ToInt32(this.PaintLines).ToString();
-            ToHashed += this.MapDefinition.ColumnForMapGroup ;
-            ToHashed += this.MapDefinition.ColumnNameForX;
-            ToHashed += this.MapDefinition.ColumnNameForY;
+            ToHashed += this.MapDefinition.ColumnForMapGroup.Name ;
+            ToHashed += this.MapDefinition.ColumnForX.Name ;
+            ToHashed += this.MapDefinition.ColumnForY.Name;
             string ret = HashHelper.sha256Hashed(ToHashed); 
             return ret ;
 

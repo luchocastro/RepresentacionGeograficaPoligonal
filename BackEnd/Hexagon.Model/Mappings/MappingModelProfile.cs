@@ -65,6 +65,8 @@ namespace Hexagon.Model.Mappings
             CreateMap<EnumPaletteClassDTO, EnumPaletteClass>();
             CreateMap<Point, PointDTO>();
             CreateMap<PointDTO, Point>();
+            CreateMap<ImageDefinition, ImageDefinitionDTO>();
+            CreateMap<ImageDefinitionDTO, ImageDefinition>();
         }
     }
 }

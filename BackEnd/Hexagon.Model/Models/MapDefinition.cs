@@ -7,11 +7,12 @@ namespace Hexagon.Model.Models
 {
     public class MapDefinition : Equatable<MapDefinition>
     { 
-        public string ColumnNameForX { get; set; }
-        public string ColumnNameForY { get; set; }
-        public string ColumnForMapGroup { get; set; }
+        public Column ColumnForX { get; set; }
+        public Column ColumnForY { get; set; }
+        public Column ColumnForMapGroup { get; set; }
+        public List<string> ColumnsToDiscard { get; set; }
+        public List<Column> DataTypedColumns { get; set; }
 
-        
 
     }
 }

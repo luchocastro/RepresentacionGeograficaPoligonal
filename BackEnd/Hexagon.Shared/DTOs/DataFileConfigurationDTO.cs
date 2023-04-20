@@ -12,5 +12,6 @@ namespace Hexagon.Shared.DTOs
         public string DecimalSeparator { get; set; }
         public string DatetimeFormart { get; set; }
         public string TextDelimiter { get; set; }
+        
     }
 }

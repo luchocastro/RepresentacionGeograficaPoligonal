@@ -78,10 +78,12 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                 pos++;
             }
             NativeJsonFile.Content = JSonFileConverted;
-           NativeJsonFile.Columns = ColumnsForModel;
+
             return NativeJsonFile;
         }
-        public NativeFile DoFromFile(string PathFileOrigen, DataFileConfiguration FileData)
+        
+
+        public NativeFile DoFromFile(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0)
         {
             
             object Delimiter = FileData.DecimalSeparator;
@@ -92,7 +94,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             FileData.FileProperties.TryGetValue("HasTitle", out HasTitleInDefinition);
             bool HasTitle = HasTitleInDefinition != null && Convert.ToBoolean(HasTitleInDefinition.ToString());
             string[] Columns = null;
-            int Step = 1;
+            int Step = 0;
             List<Line> Lineas = new List<Line>();
             List<Column> ColumnsForModel = new List<Column>();
             bool SetCols = true;
@@ -132,6 +134,9 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     { 
 
                     Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (long)Step));
+                        
+                        if (Step==FirstNRows)
+                        { break; }
                         Step++;
                     }
                     //if (Step < 100)

@@ -11,12 +11,12 @@ namespace Hexagon.Services.Interfaces
     {
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData);
         public NativeFileDTO ConvertFile(string AbsolutePathFile, DataFileConfigurationDTO FileData, LayoutDto Layout);
-        public NativeFileDTO ConvertFile(DataFileConfigurationDTO FileData, string HexFileID);
+        public NativeFileDTO ConvertFile(DataFileConfigurationDTO DataFileConfiguration, string HexFileID);
         public List<DataFileConfigurationDTO> GetDataFileConfiguration(string Path);
-        List<ColumnDTO> GetFileColumsFromFile(string PathDef);
+        NativeFileDTO GetFileColumsFromFile(DataFileConfigurationDTO DataFileConfiguration, string HexFileID, int FistNRows);
         List<ProyectDataDTO> GetProyects(string User );
-        public ProyectDataDTO GetProyect(string User, string Project = "" );
-        public string GenerateImge(string PaletteClassID, string FuctionID);
+        public ProyectDataDTO GetProyect(string User, string ProjeFileDatact = "" );
+        public string GenerateImge(string PaletteClassID, string FuctionID, float Size = 0);
         public AnalizedFileDTO ConvertFileToHexList(ProyectDataDTO ProyectDataDTO, AnalizedFileDTO AnalizedFileDTO, LayoutDto LayoutDto);
         public HexFileDTO PutFile(string User, string Project  , string NicName, string FileName, string OriginalName);
         public HexFileDTO PutFile(string User, string Project, string NicName, IFormFile IFormFile);
