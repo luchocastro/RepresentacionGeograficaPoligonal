@@ -4,40 +4,37 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO.Compression;
 using System.IO;
-using Newtonsoft.Json;
 using System.Text.Json.Serialization;
 
-using System.Text.Json ;
-using Hexagon.Model.Models;
-
-namespace Hexagon.Services.Helpers
-{
+using System.Text.Json;
+ 
+namespace Hexagon.AsyncRW
+{   
     public delegate void ThresholdReachedEventHandler(object sender, EventArgs e);
-    
-    public class JsonHelper<TEntity> where TEntity : Base
+
+    public class JsonHelper<TEntity>  
     {
-        public Line Line { get; set; } =new Line();
-        public event EventHandler ReadLine;
+         public event EventHandler ReadLine;
         public class LineArgs : EventArgs
-        { 
-            public Line Line { get; set; }
+        {
+ 
         }
         protected virtual void OnReadLine(EventArgs e)
         {
             ReadLine?.Invoke(this, e);
         }
-        public JsonHelper( )
-        { 
+        public JsonHelper()
+        {
         }
         public JsonHelper(TEntity TEntity)
         {
             Task.Run(() =>
             Read(TEntity));
-            }
-        JsonTextReader JSonReader = null;
-        public async Task WriteAsync( TEntity TEntity )
+        }
+
+        public async Task WriteAsync(TEntity TEntity)
         {
-            using var FileStream = new FileStream(TEntity.Path, FileMode.Create, FileAccess.Write );
+            using var FileStream = new FileStream(TEntity.Path, FileMode.Create, FileAccess.Write);
 
             await Task.Run(() =>
             {
@@ -47,24 +44,24 @@ namespace Hexagon.Services.Helpers
                 };
             });
         }
-            public void ProcesAsync(string  PropertyName, TEntity TEntity, Func<bool> func)
+        public void ProcesAsync(string PropertyName, TEntity TEntity, Func<bool> func)
         {
             using var FileStream = new FileStream(TEntity.Path, FileMode.Open, FileAccess.Read);
             using var StreamReader = new StreamReader(FileStream);
 
             using var jsonDocument = JsonDocument.Parse(StreamReader.BaseStream);
-            
+
             var jsonElement = jsonDocument.RootElement.GetProperty(PropertyName);
             if (jsonElement.ValueKind != JsonValueKind.Array) return;
 
-             foreach (JsonElement element in jsonElement.EnumerateArray ())
+            foreach (JsonElement element in jsonElement.EnumerateArray())
             {
 
-                
+
             }
-            
+
         }
-        public async Task<string> ReadArrayAsync(string PropertyName, TEntity TEntity )
+        public async Task<string> ReadArrayAsync(string PropertyName, TEntity TEntity)
         {
             using var FileStream = new FileStream(TEntity.Path, FileMode.Open, FileAccess.Read);
             using var StreamReader = new StreamReader(FileStream);
@@ -100,7 +97,7 @@ namespace Hexagon.Services.Helpers
 
                 throw;
             }
-           
+
             finally
             {
                 jsonDocument.Dispose();
@@ -112,19 +109,19 @@ namespace Hexagon.Services.Helpers
             using var FileStream = new FileStream(TEntity.Path, FileMode.Open, FileAccess.Read);
             using var StreamReader = new StreamReader(FileStream);
             await Task.Run(() =>
-          {
-              using (var reader = new JsonTextReader(StreamReader))
-              {
-                  JSonReader = reader;
-              };
-          });
+            {
+                using (var reader = new JsonTextReader(StreamReader))
+                {
+                    JSonReader = reader;
+                };
+            });
 
         }
-        public async Task<List<object[]>> ProcesAsync(string [] PropertyNames)
+        public async Task<List<object[]>> ProcesAsync(string[] PropertyNames)
         {
             var ret = new List<object[]>();
             // make sure we are looking at the correct json element
-            
+
 
             await JSonReader.ReadAsync().ConfigureAwait(false);
             if (JSonReader.TokenType == JsonToken.PropertyName)
@@ -148,7 +145,7 @@ namespace Hexagon.Services.Helpers
                             ret.Add(prop);
                         }
                         QProperties++;
-                        
+
                     }
                     if (PropertyNames.Length == QProperties)
                         break;
@@ -172,7 +169,7 @@ namespace Hexagon.Services.Helpers
                     while (await JSonReader.ReadAsync().ConfigureAwait(false) &&
                        JSonReader.TokenType != JsonToken.EndArray)
                     {
-                        
+
                         Function();
                     }
                     break;
@@ -181,9 +178,9 @@ namespace Hexagon.Services.Helpers
         }
 
 
-        }
-        
-    
+    }
+
+
     public static class JsonHelpers
     {
         /// <summary>

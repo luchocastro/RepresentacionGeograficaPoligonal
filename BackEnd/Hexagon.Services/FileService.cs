@@ -22,6 +22,8 @@ using System.Drawing;
 using System.Globalization;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json.Serialization;
+using Hexagon.AsyncIO;
+
 namespace Hexagon.Services
 {
     public class FileService : IFileService
@@ -38,9 +40,9 @@ namespace Hexagon.Services
         private readonly IFileDataManagerOptions FileDataManagerOptions;
         private readonly IDataRepository<UserDTO, User> DataUser;
         private IDataRepository<AnalizedFileDTO, AnalizedFile> AnalizedFileDataManager;
-        private IDataRepository<NativeFileDTO , NativeFile> NativeFileDataManager;
+        private IDataRepository<NativeFileDTO, NativeFile> NativeFileDataManager;
 
-        private readonly IDataRepository<HexFileDTO , HexFile> FileRepository;
+        private readonly IDataRepository<HexFileDTO, HexFile> FileRepository;
         private IDataRepository<LayoutDto, Layout> LayoutDataManager;
         private IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager;
         private IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsManager;
@@ -50,19 +52,19 @@ namespace Hexagon.Services
         private IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager;
         private IDataRepository<PaletteClassDTO, PaletteClass> PaletteClassManager;
         private readonly User User = null;
-        public FileService(IConfiguration Configuration,IMapper Mapper, 
+        public FileService(IConfiguration Configuration, IMapper Mapper,
             IDataRepository<ProyectDataDTO, ProyectData> IDataRepository,
             IDataRepository<HexFileDTO, HexFile> FileRepository,
             IDataRepository<AnalizedFileDTO, AnalizedFile> AnalizedFileDataManager,
-            IDataRepository<UserDTO, User>  DataUser,
-            IFileDataManagerOptions IFileDataManagerOptions ,
+            IDataRepository<UserDTO, User> DataUser,
+            IFileDataManagerOptions IFileDataManagerOptions,
             IDataRepository<NativeFileDTO, NativeFile> NativeFileDataManager,
             IDataRepository<LayoutDto, Layout> LayoutDataManager,
             IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager,
             IDataRepository<HexagonDetailsDTO, HexagonDetails> HexagonDetailsDataManager,
             IDataRepository<FunctionDTO, Function> FunctionManager,
             IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager,
-            
+
             IDataRepository<CalculatedHexagonDTO, CalculatedHexagon> CalculatedHexagonManager,
         IDataRepository<ColumnDTO, Column> ColumnManager,
         IDataRepository<PaletteClassDTO, PaletteClass> PaletteClassManager
@@ -72,7 +74,7 @@ namespace Hexagon.Services
             this.DataUser = DataUser;
             this.IDataRepository = IDataRepository;
             this.AnalizedFileDataManager = AnalizedFileDataManager;
-            this.FileRepository  = FileRepository;
+            this.FileRepository = FileRepository;
             _Configuration = Configuration;
             FileDataManagerOptions = IFileDataManagerOptions;
             _Mapper = Mapper;
@@ -85,41 +87,93 @@ namespace Hexagon.Services
             this.ColumnManager = ColumnManager;
             this.CalculatedHexagonManager = CalculatedHexagonManager;
             this.PaletteClassManager = PaletteClassManager;
-         }
-        public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData )
+        }
+        public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData)
         {
             NativeJsonFile NativeJsonFile = new NativeJsonFile();
 
             NativeJsonFile = GetJsonSerializedFile(Base64File, FileData);
             //return new NativeJsonFileDTO { Content = NativeJsonFile.Content, Columns = NativeJsonFile.Columns };
 
-            var columns = NativeJsonFile.Columns.Select(x => new ColumnDTO(x.Name, x.OriginalPosition, 
-                (EnumActionToDoWithUncastedDTO) Enum.Parse(typeof(EnumActionToDoWithUncasted),  x.ActionToDoWithUncasted.ToString()),
-                (EnumAlowedDataTypeDTO) Enum.Parse(typeof(EnumAlowedDataType), x.DataTypeSelected.ToString()) ));
+            var columns = NativeJsonFile.Columns.Select(x => new ColumnDTO(x.Name, x.OriginalPosition,
+                (EnumActionToDoWithUncastedDTO)Enum.Parse(typeof(EnumActionToDoWithUncasted), x.ActionToDoWithUncasted.ToString()),
+                (EnumAlowedDataTypeDTO)Enum.Parse(typeof(EnumAlowedDataType), x.DataTypeSelected.ToString())));
 
 
-            return new NativeJsonFileDTO { Content = NativeJsonFile.Content, Columns = columns.ToList()};
+            return new NativeJsonFileDTO { Content = NativeJsonFile.Content, Columns = columns.ToList() };
 
         }
-        public NativeFileDTO ConvertFile(string PathFile, DataFileConfigurationDTO FileData, LayoutDto Layout )
+        public NativeFileDTO ConvertFile(string PathFile, DataFileConfigurationDTO FileData, LayoutDto Layout)
         {
             NativeFileDTO NativeFile = new NativeFileDTO();
 
-         
+
 
 
 
             return NativeFile;
 
         }
-        
-        public NativeFileDTO ConvertFile (  DataFileConfigurationDTO FileData,  string  HexFileID )
+        public async Task<NativeFileDTO> ConvertFileAsync(DataFileConfigurationDTO FileData, string HexFileID)
         {
             NativeFileDTO NativeFileDto = new NativeFileDTO();
             var File = FileRepository.Get(HexFileID);
-            
-            
-            NativeFileDto.FileName = FileData.FileType +"_"+  File.FileName + ".HexJson";
+
+
+            NativeFileDto.FileName = FileData.FileType + "_" + File.FileName + ".HexJson";
+            NativeFileDto.ParentID = File.ID;
+            var NativeFile = NativeFileDataManager.Get(NativeFileDto);
+            //var PathFile = Path.Combine(ProyectDataDTO.Location.ProyectFolder, NicData, ProyectDataDTO.Location.FileFolder, ProyectDataDTO.AnalizedFiles.FirstOrDefault(x => x.NicName == NicData).FileName);
+            if (NativeFile == null)
+            {
+                Task<NativeFile>.Run(() => { NativeFile = GetJsonSerializedFileFromFileAsync(File, FileData).Result; }).Wait(); ;
+                NativeFile.ParentID = HexFileID;
+                NativeFile.FileName = FileData.FileType + "_" + File.FileName + ".HexJson";
+                NativeFile.DataFileConfiguration = _Mapper.Map<DataFileConfiguration>(FileData);
+                var Natid = NativeFileDataManager.GenerateFullID(NativeFile);
+                NativeFile.PathFile = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), NativeFile.FileName);
+                NativeFile.ContentID 
+                await NativeFileDataManager.AddAsync(NativeFile) ;
+                foreach (var item in NativeFile.Columns)
+                {
+
+                    item.ParentID = NativeFileDto.ParentID;
+
+                    ;
+                    item.Fields = NativeFile.Content.Select(x => new Field { Value = x.Fieds[item.OriginalPosition], Index = x.Number }).ToList();
+                    Natid = ColumnManager.GenerateFullID(item);
+                    //item.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), "Column_" + item.OriginalPosition.ToString() + "_" + NativeFile.FileName + ".HexJson");
+                    await ColumnManager.AddAsync(item) ;
+                    
+                }
+        }
+
+            //return new NativeJsonFileDTO { Content = NativeJsonFile.Content, Columns = NativeJsonFile.Columns };
+
+
+
+            var max = NativeFile.Content.Count() > 100 ? 100 : NativeFile.Content.Count();
+                NativeFile =new NativeFile()
+            {
+                FileName = NativeFile.FileName,
+                Columns = NativeFile.Columns,
+                ParentID = NativeFile.ParentID,
+                PathFile = NativeFile.PathFile,
+                DataFileConfiguration = NativeFile.DataFileConfiguration,
+                Content = NativeFile.Content.GetRange(0, max),
+                ID = NativeFile.ID
+            };
+            return _Mapper.Map<NativeFileDTO>(NativeFile);
+
+        }
+        
+        public  NativeFileDTO ConvertFile(DataFileConfigurationDTO FileData, string HexFileID)
+        {
+            NativeFileDTO NativeFileDto = new NativeFileDTO();
+            var File = FileRepository.Get(HexFileID);
+
+
+            NativeFileDto.FileName = FileData.FileType + "_" + File.FileName + ".HexJson";
             NativeFileDto.ParentID = File.ID;
             var NativeFile = NativeFileDataManager.Get(NativeFileDto);
             //var PathFile = Path.Combine(ProyectDataDTO.Location.ProyectFolder, NicData, ProyectDataDTO.Location.FileFolder, ProyectDataDTO.AnalizedFiles.FirstOrDefault(x => x.NicName == NicData).FileName);
@@ -127,7 +181,7 @@ namespace Hexagon.Services
             {
                 NativeFile = GetJsonSerializedFileFromFile(File, FileData);
                 NativeFile.ParentID = HexFileID;
-                NativeFile.FileName = FileData.FileType + "_" +  File.FileName  + ".HexJson";
+                NativeFile.FileName = FileData.FileType + "_" + File.FileName + ".HexJson";
                 NativeFile.DataFileConfiguration = _Mapper.Map<DataFileConfiguration>(FileData);
                 var Natid = NativeFileDataManager.GenerateFullID(NativeFile);
                 NativeFile.PathFile = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), NativeFile.FileName);
@@ -136,19 +190,19 @@ namespace Hexagon.Services
                 {
 
                     item.ParentID = NativeFileDto.ParentID;
-                    
+
                     ;
-                    item.Fields = NativeFile.Content.Select(x => new Field { Value  = x.Fieds[item.OriginalPosition] , Index = x.Number }).ToList();
+                    item.Fields = NativeFile.Content.Select(x => new Field { Value = x.Fieds[item.OriginalPosition], Index = x.Number }).ToList();
                     Natid = ColumnManager.GenerateFullID(item);
                     //item.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), "Column_" + item.OriginalPosition.ToString() + "_" + NativeFile.FileName + ".HexJson");
                     ColumnManager.Add(item);
-                    
+
                 }
                 NativeFileDto = _Mapper.Map<NativeFileDTO>(NativeFile);
 
             }
             else
-            { 
+            {
                 NativeFileDto = _Mapper.Map<NativeFileDTO>(NativeFile);
             }
 
@@ -157,16 +211,22 @@ namespace Hexagon.Services
 
 
             var max = NativeFile.Content.Count() > 100 ? 100 : NativeFile.Content.Count();
-            return new NativeFileDTO ()  {FileName=NativeFileDto.FileName, Columns=NativeFileDto.Columns, 
-                ParentID = NativeFileDto.ParentID, PathFile= NativeFileDto.PathFile, 
-                DataFileConfigurationDTO= NativeFileDto.DataFileConfigurationDTO, Content=NativeFileDto.Content.GetRange(0, max),
-                ID = NativeFileDto.ID};
+            return new NativeFileDTO()
+            {
+                FileName = NativeFileDto.FileName,
+                Columns = NativeFileDto.Columns,
+                ParentID = NativeFileDto.ParentID,
+                PathFile = NativeFileDto.PathFile,
+                DataFileConfigurationDTO = NativeFileDto.DataFileConfigurationDTO,
+                Content = NativeFileDto.Content.GetRange(0, max),
+                ID = NativeFileDto.ID
+            };
 
         }
         public List<DataFileConfigurationDTO> GetDataFileConfiguration(string Path)
         {
             return DataFileConfigurationManager.GetColectionFromParent("").ToList();
-            
+
         }
 
         public NativeFileDTO GetFileColumsFromFile(DataFileConfigurationDTO FileData, string HexFileID, int FirstNRows)
@@ -200,7 +260,7 @@ namespace Hexagon.Services
         }
         public AnalizedFileDTO GetAnalizedFile(string PathFile, DataFileConfigurationDTO DataFileConfigurationDTO)
         {
-            return new AnalizedFileDTO( ) ;
+            return new AnalizedFileDTO();
         }
 
         public NativeFile GetJsonSerializedFileFromFile(HexFileDTO HexFile, DataFileConfigurationDTO DataFileConfigurationDTO)
@@ -210,14 +270,35 @@ namespace Hexagon.Services
                 object FileType = new object();
                 object FileProperties = new object();
                 NativeFile NativeFile = new NativeFile();
-                
-                    var clazz = Type.GetType("Hexagon.Services.ConvertSourceFileToJsonStrategy.Convert" + DataFileConfigurationDTO.FileType + "ToJsonStrategy");
-                    var Strategy = (IConvertSourceFileToJsonStrategy)Activator.CreateInstance(clazz);
-                var FileData = _Mapper.Map<DataFileConfiguration> (DataFileConfigurationDTO);
-                    return Strategy.DoFromFile(Path.Combine(HexFile.Path ), FileData);
-                
-                
 
+                var clazz = Type.GetType("Hexagon.Services.ConvertSourceFileToJsonStrategy.Convert" + DataFileConfigurationDTO.FileType + "ToJsonStrategy");
+                var Strategy = (IConvertSourceFileToJsonStrategy)Activator.CreateInstance(clazz);
+                var FileData = _Mapper.Map<DataFileConfiguration>(DataFileConfigurationDTO);
+                return Strategy.DoFromFile(Path.Combine(HexFile.Path), FileData);
+
+
+
+            }
+            catch (Exception Exception)
+            {
+                throw Exception;
+            }
+        }
+        public async Task<NativeFile> GetJsonSerializedFileFromFileAsync(HexFileDTO HexFile, DataFileConfigurationDTO DataFileConfigurationDTO)
+        {
+            try
+            {
+                object FileType = new object();
+                object FileProperties = new object();
+                NativeFile NativeFile = new NativeFile();
+                var clazz = Type.GetType("Hexagon.Services.ConvertSourceFileToJsonStrategy.Convert" + DataFileConfigurationDTO.FileType + "ToJsonStrategy");
+                var Strategy = (IConvertSourceFileToJsonStrategy)Activator.CreateInstance(clazz);
+                var FileData = _Mapper.Map<DataFileConfiguration>(DataFileConfigurationDTO);
+                await Task.Run<NativeFile>(
+                    ()=>  {  return  Strategy.DoFromFileAsync(Path.Combine(HexFile.Path), FileData); });
+
+
+                return NativeFile ;
             }
             catch (Exception Exception)
             {
@@ -231,27 +312,29 @@ namespace Hexagon.Services
                 object FileType = new object();
                 object FileProperties = new object();
                 NativeJsonFile NativeJsonFile = new NativeJsonFile();
-            var clazz = Type.GetType("Hexagon.Services.ConvertSourceFileToJsonStrategy.Convert" + DataFileConfigurationDTO.FileType + "ToJsonStrategy");
+                var clazz = Type.GetType("Hexagon.Services.ConvertSourceFileToJsonStrategy.Convert" + DataFileConfigurationDTO.FileType + "ToJsonStrategy");
                 var Strategy = (IConvertSourceFileToJsonStrategy)Activator.CreateInstance(clazz);
                 var FileData = new DataFileConfiguration() { FileType = DataFileConfigurationDTO.FileType, FileProperties = DataFileConfigurationDTO.FileProperties };
                 return Strategy.Do(Base64File, FileData);
             }
-            catch (Exception Exception) 
+            catch (Exception Exception)
             {
                 throw Exception;
             }
         }
-        public async Task<string> GenerateLayout( PointDTO Scale , string NativeFileID)
+        public async Task<string> GenerateLayout(PointDTO Scale, string NativeFileID)
         {
-            JsonHelper<NativeFile> Native = new JsonHelper<NativeFile>();
-            Native.ReadLine += Native_ReadLine;
+            string path = NativeFileID;
+            var AsyncIO = new AsyncIO<Line>(path);
+            AsyncIO.ReadArrayElement += Native_ReadLine;
             return "";
 
         }
 
-        private void Native_ReadLine(object sender, EventArgs e)
+        private void Native_ReadLine(object sender,
+            AsyncIO.AsyncIO<Line>.EventReadArray e)
         {
-            throw new NotImplementedException();
+        
         }
 
         public string GenerateLayout(LayoutDto Layout, string NativeFileID)
@@ -308,7 +391,7 @@ namespace Hexagon.Services
                         var XOriginal = float.Parse(item[i].Split(":")[0], CultureInfo.InvariantCulture);
 
                         var YOriginal = float.Parse(item[i].Split(":")[1], CultureInfo.InvariantCulture);
-                         var X = (XOriginal - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
+                        var X = (XOriginal - ImageDifinition.OriginalMinX) * ImageDifinition.ProportationToScale;
                         var Y = (ImageDifinition.OriginalMaxY - YOriginal) * ImageDifinition.ProportationToScale;
                         var hexPosition1 = HexagonFunction.PixelToHexagon(
                                                 new Model.Point(X, Y));
@@ -372,13 +455,13 @@ namespace Hexagon.Services
                 hex.Lines = NumLines.Distinct().Select(x => new Line(x, null)).ToList();
                 hex.Corners = HexagonFunction.PolygonCorners(layout, hex);
                 RetGroup.Add(hex);
-                HexDetailList.Add(new HexagonDetail { IndexLines = NumLinesDistinct, NumOrder = NumLine, HexagonPositionForValues = new HexagonPosition { Corners = hex.Corners.ToList(), R = hex.R, Q = hex.Q, S = hex.S }});
+                HexDetailList.Add(new HexagonDetail { IndexLines = NumLinesDistinct, NumOrder = NumLine, HexagonPositionForValues = new HexagonPosition { Corners = hex.Corners.ToList(), R = hex.R, Q = hex.Q, S = hex.S } });
             }
-             
+
 
             HexagonDetails.List = HexDetailList;
-        
-            
+
+
             layout.ParentID = NativeFile.ID;
             layout.ID = layout.Name;
             var lay = LayoutDataManager.Add(layout);
@@ -389,7 +472,7 @@ namespace Hexagon.Services
             HexagonDetailsManager.Add(HexagonDetails);
             return HexagonDetails.ID;
         }
-        public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns =null)
+        public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns = null)
         {
             var Function = FunctionManager.Get(FunctionID);
             var HexagonDetails = HexagonDetailsManager.Get(Function.ParentID);
@@ -417,11 +500,11 @@ namespace Hexagon.Services
                     foreach (var OrderCol in Columns)
                     {
                         i++;
-                        var Data = ListaColumns.Where (x => x.Name == OrderCol).Single().Fields.Where(x => lista.IndexLines.Contains(x.Index)).Select(x => x.Value).ToArray();
+                        var Data = ListaColumns.Where(x => x.Name == OrderCol).Single().Fields.Where(x => lista.IndexLines.Contains(x.Index)).Select(x => x.Value).ToArray();
                         DataForFunction.Add(i.ToString(), Data);
 
                     }
-                     value = CalcStrategy.DoCalc.Do(new Object[] { DataForFunction } , Function.Path, Function.FullClassName, Function.FunctionName);
+                    value = CalcStrategy.DoCalc.Do(new Object[] { DataForFunction }, Function.Path, Function.FullClassName, Function.FunctionName);
 
                 }
                 else
@@ -437,47 +520,125 @@ namespace Hexagon.Services
             }
             else
             {
-                CalculatedHexagon.Name = "WithoutCol" ;
+                CalculatedHexagon.Name = "WithoutCol";
             }
             CalculatedHexagon.ParentID = Function.ID;
             CalculatedHexagon.LayoutID = Layout.ID;
             CalculatedHexagonManager.Add(_Mapper.Map<CalculatedHexagon>(CalculatedHexagon));
-            
+
 
             return CalculatedHexagon;
 
         }
-        public List<ProyectDataDTO> GetProyects(string User )
+        public List<ProyectDataDTO> GetProyects(string User)
         {
-            var json = new JsonHelper<NativeFile>();
-            json.ReadLine += Json_ReadLine;
-            var b = new NativeFile ();
-            b.Path = @"C:\Users\lcastro\AppData\Hexagon.Api\User\PruebaAlgo\ProyectData\PruebaIntegral\AnalizedFile\Prueba\HexFile\world.geojson\NativeFile\GeoJson_7b2f44bd-df4c-427f-9f27-4bab6413768d.FILE.HexJson.Hex.Json";
-            json.ProcesAsync ("Content",    b );
-            var  UserDTO = DataUser.Get( User);
+            string Path = @"C:\Users\Usuario\AppData\Hexagon.Api\User\PruebaJSON\ProyectData\Desde0\AnalizedFile\Alguno\HexFile\SensoresCada10.csv\NativeFile\DelimitedFile_4dd45987-a392-4938-b07d-51c63c1271c3.FILE.HexJson.Hex.Json";
+            var json = new AsyncIO<Line>(Path);
+            json.ReadArrayElement += Native_ReadLine;
+            var b = new Line();
+             json.ReadJsonArrayAsync("Content");
+            var UserDTO = DataUser.Get(User);
 
             return IDataRepository.GetColectionFromParent(UserDTO.ID).ToList();
 
         }
-
-        private void Json_ReadLine(object sender, EventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         public List<AnalizedFileDTO> GetAnalizedFiles(string ProyectDataID)
         {
-            
+
 
             return AnalizedFileDataManager.GetColectionFromParent(ProyectDataID).ToList();
 
         }
         public List<HexFileDTO> GetHexFiles(string AnalizedFileID)
         {
-             
+
             return FileRepository.GetColectionFromParent(AnalizedFileID).ToList();
 
         }
+        public async Task<HexFileDTO> PutFileAsync(string User, string Project, string NicName, string FileName, string OriginalName)
+        {
+
+
+            var Proyect = GetProyect(User, Project);
+            var AnalizedFile = new AnalizedFile();
+            AnalizedFile.ParentID = Proyect.ID;
+            AnalizedFile.NicName = NicName;
+
+
+            AnalizedFile.ID = AnalizedFileDataManager.GenerateFullID(AnalizedFile);
+            var AnalizedFileDTO = _Mapper.Map<AnalizedFileDTO>(AnalizedFile);
+
+            await Task<AnalizedFile>.Run(() =>
+            {
+                AnalizedFile  = AnalizedFileDataManager.GetAsync(AnalizedFileDTO).Result;
+            });
+            //AnalizedFileDTO = AnalizedFileDataManager.FindByCondition (NicName );
+            if (AnalizedFile == null)
+            {
+                AnalizedFileDTO = new AnalizedFileDTO();
+                //AnalizedFileDTO.ID = Path.Combine(Proyect.Name, NicName, typeof(AnalizedFile).Name);
+                AnalizedFileDTO.ParentID = Proyect.ID;
+                AnalizedFileDTO.NicName = NicName;
+                AnalizedFile=this._Mapper.Map<AnalizedFile>(AnalizedFileDTO);
+                await Task<AnalizedFileDTO>.Run(() =>
+                {
+                    AnalizedFileDTO = AnalizedFileDataManager.AddAsync(AnalizedFile).Result;
+                });
+            }
+
+            var fileDTO = new HexFileDTO();
+
+            fileDTO = new HexFileDTO();
+            fileDTO.OriginalFileName = OriginalName;
+            fileDTO.FileName = FileName;
+            fileDTO.ParentID = AnalizedFileDTO.ID;
+            fileDTO.TypeFile = Enum.GetName(typeof(EnumFileType), EnumFileType.Original);
+
+            var File = new HexFile();
+
+
+            await Task<HexFile>.Run(() =>
+            {
+                File = FileRepository.GetAsync(fileDTO).Result;
+            });
+            if (File == null)
+            {
+                var id = FileRepository.GenerateFullID(_Mapper.Map<HexFile>(fileDTO));
+                fileDTO.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), id)), FileName);
+                await Task<HexFile>.Run(() =>
+                {
+                    fileDTO = FileRepository.AddAsync(_Mapper.Map<HexFile>(fileDTO)).Result;
+                });
+            }
+
+
+            return fileDTO;
+        }
+
+        public async Task<HexFileDTO> PutFileAsync(string User, string Project, string NicName, IFormFile IFormFile)
+        {
+
+            ;
+            var file = IFormFile;
+            HexFileDTO fileDTO = new HexFileDTO();
+            if (file.Length > 0)
+            {
+                var FileName = Guid.NewGuid().ToString() + ".FILE";
+                var OriginalName = file.FileName;
+                var Nic = NicName;// Path.GetFileNameWithoutExtension(file.FileName);
+                Task<HexFileDTO>.Run(() => { fileDTO = PutFileAsync(User, Project, NicName, FileName, OriginalName).Result; }).Wait();
+                
+                 using var FileStream = new FileStream(fileDTO.Path, FileMode.Create,FileAccess.Write);
+
+                await using (var stream = new StreamWriter(FileStream))
+                {
+                    
+                    await file.CopyToAsync(stream.BaseStream);
+                }
+            }
+            return fileDTO;
+        }
+
         public HexFileDTO PutFile(string User, string Project, string NicName, IFormFile IFormFile)
         {
             ;
@@ -499,11 +660,11 @@ namespace Hexagon.Services
             return fileDTO;
         }
         public HexFileDTO PutFile(string User, string Project, string NicName, string FileName, string OriginalName)
-            {
+        {
 
-            
+
             var Proyect = GetProyect(User, Project);
-            var AnalizedFileId=AnalizedFileDataManager.GetID(NicName, Proyect.ID, typeof(AnalizedFile));
+            var AnalizedFileId = AnalizedFileDataManager.GetID(NicName, Proyect.ID, typeof(AnalizedFile));
             AnalizedFileDTO AnalizedFileDTO = AnalizedFileDataManager.Get(AnalizedFileId);
             //AnalizedFileDTO = AnalizedFileDataManager.FindByCondition (NicName );
             if (AnalizedFileDTO == null)
@@ -516,39 +677,39 @@ namespace Hexagon.Services
             }
 
             var fileDTO = new HexFileDTO();
-            
+
             fileDTO = new HexFileDTO();
-            fileDTO.OriginalFileName =  OriginalName;
+            fileDTO.OriginalFileName = OriginalName;
             fileDTO.FileName = FileName;
             fileDTO.ParentID = AnalizedFileDTO.ID;
             fileDTO.TypeFile = Enum.GetName(typeof(EnumFileType), EnumFileType.Original);
-            var File = FileRepository.Get (fileDTO);
+            var File = FileRepository.Get(fileDTO);
 
             if (File == null)
             {
                 var id = FileRepository.GenerateFullID(_Mapper.Map<HexFile>(fileDTO));
-                fileDTO.Path = Path.Combine( Path.GetDirectoryName( Path.Combine(FileRepository.ParentDirectory() , id)), FileName);
-                 fileDTO = FileRepository.Add(_Mapper.Map<HexFile> (fileDTO));
+                fileDTO.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), id)), FileName);
+                fileDTO = FileRepository.Add(_Mapper.Map<HexFile>(fileDTO));
             }
 
 
             return fileDTO;
         }
-        public  ProyectDataDTO GetProyect(string  User, string Name )
+        public ProyectDataDTO GetProyect(string User, string Name)
         {
             var UserDT = DataUser.Get(User);
             var ID = IDataRepository.GetID(Name, UserDT.ID, typeof(ProyectData));
-            var ProyectDataDTO = IDataRepository.Get( ID);
+            var ProyectDataDTO = IDataRepository.Get(ID);
 
             if (ProyectDataDTO == null)
             {
-                
+
                 var Location = new Location(Name, ServicesConstants.MapsDirectory, ServicesConstants.FilesDirectory, ServicesConstants.NativesDirectory);
 
-                ProyectDataDTO = IDataRepository.Add(new ProyectData { ID=Name , Name = Name, Location = Location, ParentID=UserDT.ID });
-;
+                ProyectDataDTO = IDataRepository.Add(new ProyectData { ID = Name, Name = Name, Location = Location, ParentID = UserDT.ID });
+                ;
                 //FileRepository.Add()
-            } 
+            }
 
 
             return ProyectDataDTO;
@@ -558,7 +719,7 @@ namespace Hexagon.Services
 
             //var Project = FilesHelper.ReadProject(Path, Name, DataName).Where(x=>x.Name==Name).FirstOrDefault();
             //var files = Project.AnalizedFiles.Where(x=>x.NicName==DataName.NicName).First();
-            
+
             return null;
         }
 
@@ -571,7 +732,7 @@ namespace Hexagon.Services
         {
             try
             {
-                
+
                 var FunctionExist = FunctionManager.GetColectionFromParent(HexagonDetailstID).Where(x => x == Function).FirstOrDefault();
                 if (FunctionExist != null)
                     Function = FunctionExist;
@@ -587,33 +748,33 @@ namespace Hexagon.Services
             {
                 Function.ParentID = HexagonDetailstID;
                 Function = FunctionManager.Add(_Mapper.Map<Function>(Function));
-                 
+
             }
-            
+
             return Function;
 
-;
+            ;
         }
 
         public string GenerateImge(string PaletteClassID, string CalculatedHexagonID, float Size = 0)
         {
 
-            var paletteClass = PaletteClassManager.Get( PaletteClassID );
-             
-            var CalculatedHexagon = CalculatedHexagonManager.Get(  CalculatedHexagonID  );
-            var Max =CalculatedHexagon.HexaDetailWithValue.Select(x => x.Value).Max();
+            var paletteClass = PaletteClassManager.Get(PaletteClassID);
+
+            var CalculatedHexagon = CalculatedHexagonManager.Get(CalculatedHexagonID);
+            var Max = CalculatedHexagon.HexaDetailWithValue.Select(x => x.Value).Max();
             var Min = CalculatedHexagon.HexaDetailWithValue.Select(x => x.Value).Min();
-            var Layout =_Mapper.Map<Layout>( LayoutDataManager.Get( CalculatedHexagon.LayoutID));
-            
+            var Layout = _Mapper.Map<Layout>(LayoutDataManager.Get(CalculatedHexagon.LayoutID));
+
             var dif = Max - Min;
             var NumClass = paletteClass.MemberNumber;
-            var Graf = new string("<svg xmlns='http://www.w3.org/2000/svg' version='1.1'  height='" + Layout.MaxPictureSizeY.ToString () + "' width='" + Layout.MaxPictureSizeX.ToString() +"' >");
+            var Graf = new string("<svg xmlns='http://www.w3.org/2000/svg' version='1.1'  height='" + Layout.MaxPictureSizeY.ToString() + "' width='" + Layout.MaxPictureSizeX.ToString() + "' >");
             var Rango = dif / NumClass;
-             foreach (var item in CalculatedHexagon.HexaDetailWithValue)
+            foreach (var item in CalculatedHexagon.HexaDetailWithValue)
             {
                 var Hex = new Hex(item.HexagonPosition.Q, item.HexagonPosition.R, item.HexagonPosition.S);
-                var Points = Hex.Corners; 
-                
+                var Points = Hex.Corners;
+
                 Graf += "<polygon points= '";
                 foreach (var point in Points)
                 {
@@ -621,25 +782,25 @@ namespace Hexagon.Services
                     Graf += " ";
 
                 }
-                Graf += Points[0].X.ToString(CultureInfo.InvariantCulture) + "," + Points[0].Y.ToString(CultureInfo.InvariantCulture) ;
-                var index = ((int)(Math.Floor(item.Value - Min) / Rango))+1;
-                var Color = paletteClass.RGBS.GetValueOrDefault((NumClass-index)+1); 
+                Graf += Points[0].X.ToString(CultureInfo.InvariantCulture) + "," + Points[0].Y.ToString(CultureInfo.InvariantCulture);
+                var index = ((int)(Math.Floor(item.Value - Min) / Rango)) + 1;
+                var Color = paletteClass.RGBS.GetValueOrDefault((NumClass - index) + 1);
                 var col = ColorTranslator.ToHtml(Color);
 
                 Graf += "' style = 'fill:" + col + ";stroke:purple;stroke-width:1'/> ";
-                 }
+            }
             Graf += "</svg>";
-             
-            var file = Path.Combine(CalculatedHexagonManager.ParentDirectory(), CalculatedHexagonID) +paletteClass.Palette + "_" + paletteClass.EnumPaletteClass.ToString() + "_" + paletteClass.MemberNumber.ToString() + ".SVG";
-            using (StreamWriter StreamWriter = new StreamWriter(file) )
+
+            var file = Path.Combine(CalculatedHexagonManager.ParentDirectory(), CalculatedHexagonID) + paletteClass.Palette + "_" + paletteClass.EnumPaletteClass.ToString() + "_" + paletteClass.MemberNumber.ToString() + ".SVG";
+            using (StreamWriter StreamWriter = new StreamWriter(file))
             {
                 StreamWriter.Write(Graf);
             }
-                return "";
+            return "";
         }
         public List<PaletteClass> GetPaletteClasses(string Name, string Enumj, int Q)
         {
-           var Bewer = Path.Combine(FileRepository.ParentDirectory() , "Bewer.txt");
+            var Bewer = Path.Combine(FileRepository.ParentDirectory(), "Bewer.txt");
 
 
             using (StreamReader file = File.OpenText(Bewer))
@@ -659,7 +820,7 @@ namespace Hexagon.Services
                     var col = item.Split(",");
 
                     var color = Color.FromArgb(Convert.ToInt32(col[0]), Convert.ToInt32(col[1]), Convert.ToInt32(col[2]));
-                    paleta.RGBS.Add(Convert.ToInt32(col[8]), color); 
+                    paleta.RGBS.Add(Convert.ToInt32(col[8]), color);
 
 
                     if (Convert.ToInt32(col[8]) == Convert.ToInt32(col[5]))
@@ -684,8 +845,8 @@ namespace Hexagon.Services
                 }
             }
             return null;
-            
+
         }
-        
+
     }
 }
