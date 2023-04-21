@@ -132,8 +132,8 @@ namespace Hexagon.Services
                 NativeFile.DataFileConfiguration = _Mapper.Map<DataFileConfiguration>(FileData);
                 var Natid = NativeFileDataManager.GenerateFullID(NativeFile);
                 NativeFile.PathFile = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), NativeFile.FileName);
-                NativeFile.ContentID 
-                await NativeFileDataManager.AddAsync(NativeFile) ;
+                NativeFile.ContentID = 
+                await NativeFileDataManager.AddAsync(NativeFile). ;
                 foreach (var item in NativeFile.Columns)
                 {
 

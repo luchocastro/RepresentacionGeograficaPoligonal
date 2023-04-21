@@ -28,7 +28,7 @@ namespace Hexagon.Model
         [JsonIgnore]
         public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
         public List<Field> Fields { get; set; }
-        public string PathContentID { get; set; }
+        public string PathFields { get; set; }
 
     }
 }
