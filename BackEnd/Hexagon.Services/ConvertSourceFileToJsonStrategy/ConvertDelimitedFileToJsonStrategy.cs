@@ -99,24 +99,23 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             List<Column> ColumnsForModel = new List<Column>();
             bool SetCols = true;
             var Coma = "";
-             using (StreamReader StreamReader = new StreamReader(PathFileOrigen))
+           using (StreamReader StreamReader = new StreamReader(PathFileOrigen))
             {
                 bool Continue = true;
                 var ActualLine = "";
-                
+                var ColumnsBegin = "";
+
                 while ((ActualLine = await StreamReader.ReadLineAsync().ConfigureAwait(false)) != null)
                 {
 
                     string[] DataInLine = ActualLine.Split(Delimiter.ToString());
                     int ColumnsQuantity = DataInLine.Length;
-                    var ColumnsBegin = "";
                     var Line = new Line();
                     
 
                     if (SetCols)
                     {
                         
-                        ColumnsBegin = "[";
                         if (HasTitle)
                         {
 
@@ -139,7 +138,9 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                                 Directory.CreateDirectory(PathColums);
                             }
                             PathColums += Columns[i] + ".Hex.Json";
-                            ColumnsForModel.Add(new Column { Name = Columns[i], OriginalPosition = i, PathFields= PathColums });
+                            await using var ColumnToAdd = new Column() { Name = Columns[i], OriginalPosition = i, PathFields = PathColums };
+                            { ColumnsForModel.Add(ColumnToAdd); }
+                            
                         }
                         
                     }
@@ -169,38 +170,12 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     }
 
                     SetCols = false;
-                    //if (Step < 100)
-                    //{
-                    //    for (int i = 0; i < ColumnsQuantity; i++)
-                    //    {
-                    //        var Parsed = FindTypesAllowed.GetTypesAllows(DataInLine[i], FileData);
-
-                    //        ColumnsArray[i].DataTypeFinded.AddRange(Parsed);
-                    //    }
-
-                    //}
-
                 }
-                for (int i = 0; i < ColumnsForModel.Count(); i++)
-                {
-                    using (var StreamWriter = new StreamWriter(ColumnsForModel[i].PathFields, true, Encoding.UTF8))
-                    {
-                        var FieldText = "]";
-                        await StreamWriter.WriteAsync(FieldText).ConfigureAwait(false);
-                    }
-
-                }
+                
             }
 
             NativeFile NativeFile = new NativeFile();
-            //for (int i = 0; i < ColumnsForModel.Count(); i++)
-            //{
-            //    var col = ColumnsForModel[i];
-            //    var FieldsEv = Step > 100 ? 100 : Step;
-            //    var datatypes = FindTypesAllowed.TypesPrincipals(ColumnsArray[i].DataTypeFinded, FieldsEv);
-            //    ColumnsForModel[i].DataTypeFinded.AddRange(  datatypes);
-            //}
-
+           
             NativeFile.Columns = ColumnsForModel;
             NativeFile.DataFileConfiguration = FileData;
 
