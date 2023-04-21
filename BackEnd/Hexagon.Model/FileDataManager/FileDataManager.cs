@@ -13,6 +13,7 @@ using System.Reflection;
 using Newtonsoft.Json;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Hexagon.AsyncIO;
 
 namespace Hexagon.Model.FileDataManager
 {
@@ -58,6 +59,19 @@ namespace Hexagon.Model.FileDataManager
         {
             return Path.Combine(Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, AppDomain.CurrentDomain.FriendlyName  );
         }
+        public virtual async Task<G> AddAsync(TEntity entity)
+        {
+            var ID = GenerateFullID(entity);
+            entity.ID = ID;
+            var FileToWrite = Path.Combine(this.ParentDirectory(), entity.ID + DefaultExtension);
+            if (!Directory.Exists(Path.GetDirectoryName(FileToWrite)))
+                Directory.CreateDirectory(Path.GetDirectoryName(FileToWrite));
+            entity.Path = FileToWrite;
+            var AsyncIO = new AsyncIO<TEntity>(FileToWrite);
+            await AsyncIO.WriteJsonAsync(entity);
+            return Mapper.Map<G>(entity);
+        }
+
         public virtual G Add(TEntity entity)
         {
             var ID = GenerateFullID(entity);
@@ -158,6 +172,19 @@ namespace Hexagon.Model.FileDataManager
             return   Read(PathToRead);
 
             return Mapper.Map<TEntity>(Get(id));
+
+        }
+        public async Task<TEntity> GetAsync(G EntityDTO)
+        {
+            var id = GenerateFullID(Mapper.Map<TEntity>(EntityDTO));
+            TEntity entity = null;
+            var PathToRead = Path.Combine(this.ParentDirectory(), id + DefaultExtension);
+            if (!File.Exists(PathToRead))
+                return default(TEntity);
+            
+            await Task<TEntity>.Run(() => { entity = new AsyncIO<TEntity>(PathToRead).ReadJsonAsync()  ; })  ;
+
+            return entity;
 
         }
         public string GenerateFullID (TEntity Entity)

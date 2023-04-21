@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Hexagon.Model
 {
-    public struct  Field
+    public class  Field
     {
       
         public object Value { get; set; }

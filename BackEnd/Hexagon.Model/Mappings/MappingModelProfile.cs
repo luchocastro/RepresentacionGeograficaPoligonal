@@ -67,6 +67,12 @@ namespace Hexagon.Model.Mappings
             CreateMap<PointDTO, Point>();
             CreateMap<ImageDefinition, ImageDefinitionDTO>();
             CreateMap<ImageDefinitionDTO, ImageDefinition>();
+            CreateMap<Line , LineDTO>();
+            CreateMap<LineDTO, Line>();
+            CreateMap<Field, FieldDTO>();
+            CreateMap<FieldDTO, Field>();
+            CreateMap<Content, ContentDTO>();
+            CreateMap<ContentDTO, Content>();
         }
     }
 }

@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hexagon.Core", "Hexagon.Cor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LectorFormulas", "LectorFormulas\LectorFormulas.csproj", "{6E2AEB20-DD7E-4F29-B95F-CF343F316125}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Average", "Average\Average.csproj", "{78185D44-5AB2-4601-B475-C018EE746410}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Average", "Average\Average.csproj", "{78185D44-5AB2-4601-B475-C018EE746410}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hexagon.AsyncIO", "Hexagon.AsyncIO\Hexagon.AsyncIO.csproj", "{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -66,6 +68,12 @@ Global
 		{78185D44-5AB2-4601-B475-C018EE746410}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78185D44-5AB2-4601-B475-C018EE746410}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78185D44-5AB2-4601-B475-C018EE746410}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}.Checked|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}.Checked|Any CPU.Build.0 = Debug|Any CPU
+		{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

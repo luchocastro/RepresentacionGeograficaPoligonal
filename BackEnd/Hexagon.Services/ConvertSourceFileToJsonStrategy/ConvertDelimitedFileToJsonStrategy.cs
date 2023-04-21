@@ -8,6 +8,7 @@ using System.Linq;
 using Newtonsoft.Json.Linq;
 using Hexagon.Shared.CommonFunctions;
 using Hexagon.Model;
+using System.Threading.Tasks;
 
 namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
 {
@@ -81,7 +82,94 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
 
             return NativeJsonFile;
         }
-        
+
+        public async  Task<NativeFile> DoFromFileAsync(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0)
+        {
+
+            object Delimiter = FileData.DecimalSeparator;
+            FileData.FileProperties.TryGetValue("Delimiter", out Delimiter);
+            if (Delimiter == null)
+                throw new Exception(ServicesConstants.DelimiterMissing);
+            object HasTitleInDefinition = null;
+            FileData.FileProperties.TryGetValue("HasTitle", out HasTitleInDefinition);
+            bool HasTitle = HasTitleInDefinition != null && Convert.ToBoolean(HasTitleInDefinition.ToString());
+            string[] Columns = null;
+            int Step = 0;
+            List<Line> Lineas = new List<Line>();
+            List<Column> ColumnsForModel = new List<Column>();
+            bool SetCols = true;
+             using (StreamReader StreamReader = new StreamReader(PathFileOrigen))
+            {
+                bool Continue = true;
+                while(!StreamReader.EndOfStream)
+                {
+                    
+                    String ActualLine = await StreamReader.ReadLineAsync();
+                    string[] DataInLine = ActualLine.Split(Delimiter.ToString());
+                    int ColumnsQuantity = DataInLine.Length;
+
+
+                    if (SetCols)
+                    {
+                        if (HasTitle)
+                        {
+
+                            Columns = DataInLine;
+                        }
+                        else
+                        {
+                            Columns = new string[ColumnsQuantity];
+                            for (int i = 0; i < ColumnsQuantity; i++)
+                            {
+                                Columns[i] = "Column-" + i.ToString();
+                            }
+                            Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (long)Step));
+                            Step++;
+                        }
+                        for (int i = 0; i < ColumnsQuantity; i++)
+                        {
+                            ColumnsForModel.Add(new Column { Name = Columns[i], OriginalPosition = i });
+                        }
+                        SetCols = false;
+                    }
+                    else
+                    {
+
+                        Lineas.Add(Helpers.FilesHelper.LineToField(DataInLine, (long)Step));
+
+                        if (Step == FirstNRows)
+                        { break; }
+                        Step++;
+                    }
+                    //if (Step < 100)
+                    //{
+                    //    for (int i = 0; i < ColumnsQuantity; i++)
+                    //    {
+                    //        var Parsed = FindTypesAllowed.GetTypesAllows(DataInLine[i], FileData);
+
+                    //        ColumnsArray[i].DataTypeFinded.AddRange(Parsed);
+                    //    }
+
+                    //}
+
+                }
+            }
+
+            NativeFile NativeFile = new NativeFile();
+            NativeFile.Content = Lineas;
+            //for (int i = 0; i < ColumnsForModel.Count(); i++)
+            //{
+            //    var col = ColumnsForModel[i];
+            //    var FieldsEv = Step > 100 ? 100 : Step;
+            //    var datatypes = FindTypesAllowed.TypesPrincipals(ColumnsArray[i].DataTypeFinded, FieldsEv);
+            //    ColumnsForModel[i].DataTypeFinded.AddRange(  datatypes);
+            //}
+
+            NativeFile.Columns = ColumnsForModel;
+            NativeFile.DataFileConfiguration = FileData;
+
+            return  NativeFile;
+        }
 
         public NativeFile DoFromFile(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0)
         {

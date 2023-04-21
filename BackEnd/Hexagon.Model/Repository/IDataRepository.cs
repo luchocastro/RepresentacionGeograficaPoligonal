@@ -20,6 +20,8 @@ namespace Hexagon.Model.Repository
         string GetID(string ParametersForMak, string PararentID, Type EntityType);
         string ParentDirectory();
         G Add(TEntity entity);
+        Task<G> AddAsync(TEntity entity);
+        Task<TEntity > GetAsync(G EntityPersisted); 
         string ClassLocation(G DTOEntity);
         G Update(TEntity dbEntity, TEntity entity);
         Task UpdateAsync(TEntity dbEntity, TEntity entity);

@@ -8,8 +8,8 @@ namespace Hexagon.Model.Models
     public class NativeFile : Base
     {
         private bool IsPolygonDef = false;
-        [JsonProperty("Content")]
-        public List<Line> Content { get; set; } = new List<Line>();
+
+        public string ContentID { get; set; }
         public List<Column> Columns { get; set; } = new List<Column>();
         public string PathFile { get; set; }
         public DataFileConfiguration DataFileConfiguration { get; set; } = null;

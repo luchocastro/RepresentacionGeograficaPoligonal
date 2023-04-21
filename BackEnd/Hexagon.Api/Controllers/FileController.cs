@@ -80,7 +80,7 @@ namespace Hexagon.Api.Controllers
                     var originaName = file.FileName;
                     var Nic =DataSetName==""? originaName:DataSetName ;// Path.GetFileNameWithoutExtension(file.FileName);
                      
-                    var fileDTO = FileService.PutFile(UserName,ProjectName,Nic, file) ;
+                    var fileDTO = FileService.PutFileAsync(UserName,ProjectName,Nic, file) ;
 
                     
 
@@ -137,7 +137,7 @@ namespace Hexagon.Api.Controllers
             DataFileConfigurationDTO DataFileConfiguration = ProjectDataPost.DataFileConfiguration;
 
                 
-                var ret = FileService.ConvertFile(DataFileConfiguration , ProjectDataPost.HexFileID);
+                var ret = FileService.ConvertFileAsync  (DataFileConfiguration , ProjectDataPost.HexFileID);
 
             return Ok(ret);
           }
