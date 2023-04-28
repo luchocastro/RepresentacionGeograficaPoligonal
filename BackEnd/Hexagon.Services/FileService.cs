@@ -23,7 +23,8 @@ using System.Globalization;
 using System.Text.Json.Serialization;
 using Newtonsoft.Json.Serialization;
 using Hexagon.AsyncIO;
-
+using System.ComponentModel;
+using System.Text;
 namespace Hexagon.Services
 {
     public class FileService : IFileService
@@ -37,11 +38,9 @@ namespace Hexagon.Services
         private IConfiguration _Configuration;
         private IMapper _Mapper;
         private readonly IDataRepository<ProyectDataDTO, ProyectData> IDataRepository;
-        private readonly IFileDataManagerOptions FileDataManagerOptions;
         private readonly IDataRepository<UserDTO, User> DataUser;
         private IDataRepository<AnalizedFileDTO, AnalizedFile> AnalizedFileDataManager;
         private IDataRepository<NativeFileDTO, NativeFile> NativeFileDataManager;
-
         private readonly IDataRepository<HexFileDTO, HexFile> FileRepository;
         private IDataRepository<LayoutDto, Layout> LayoutDataManager;
         private IDataRepository<MapDefinitionDTO, MapDefinition> MapDefinitionDataManager;
@@ -52,6 +51,7 @@ namespace Hexagon.Services
         private IDataRepository<DataFileConfigurationDTO, DataFileConfiguration> DataFileConfigurationManager;
         private IDataRepository<PaletteClassDTO, PaletteClass> PaletteClassManager;
         private readonly User User = null;
+        private readonly FileDataManagerOptions FileDataManagerOptions;
         public FileService(IConfiguration Configuration, IMapper Mapper,
             IDataRepository<ProyectDataDTO, ProyectData> IDataRepository,
             IDataRepository<HexFileDTO, HexFile> FileRepository,
@@ -76,7 +76,7 @@ namespace Hexagon.Services
             this.AnalizedFileDataManager = AnalizedFileDataManager;
             this.FileRepository = FileRepository;
             _Configuration = Configuration;
-            FileDataManagerOptions = IFileDataManagerOptions;
+            FileDataManagerOptions = IFileDataManagerOptions.Get();
             _Mapper = Mapper;
             this.NativeFileDataManager = NativeFileDataManager;
             this.LayoutDataManager = LayoutDataManager;
@@ -87,6 +87,7 @@ namespace Hexagon.Services
             this.ColumnManager = ColumnManager;
             this.CalculatedHexagonManager = CalculatedHexagonManager;
             this.PaletteClassManager = PaletteClassManager;
+            
         }
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData)
         {
@@ -532,88 +533,39 @@ namespace Hexagon.Services
             return FileRepository.GetColectionFromParent(AnalizedFileID).ToList();
 
         }
-        public async Task<HexFileDTO> PutFileAsync(string User, string Project, string NicName, string FileName, string OriginalName)
+        public HexFileDTO PutFileAsync(string User, string Project, string NicName, string FileName, string OriginalName)
         {
 
 
-            var Proyect = GetProyect(User, Project);
-            var AnalizedFile = new AnalizedFile();
-            AnalizedFile.ParentID = Proyect.ID;
-            AnalizedFile.NicName = NicName;
-
-
-            AnalizedFile.ID = AnalizedFileDataManager.GenerateFullID(AnalizedFile);
-            var AnalizedFileDTO = _Mapper.Map<AnalizedFileDTO>(AnalizedFile);
-
-            await Task<AnalizedFile>.Run(() =>
-            {
-                AnalizedFile  = AnalizedFileDataManager.GetAsync(AnalizedFileDTO).Result;
-            });
-            //AnalizedFileDTO = AnalizedFileDataManager.FindByCondition (NicName );
-            if (AnalizedFile == null)
-            {
-                AnalizedFileDTO = new AnalizedFileDTO();
-                //AnalizedFileDTO.ID = Path.Combine(Proyect.Name, NicName, typeof(AnalizedFile).Name);
-                AnalizedFileDTO.ParentID = Proyect.ID;
-                AnalizedFileDTO.NicName = NicName;
-                AnalizedFile=this._Mapper.Map<AnalizedFile>(AnalizedFileDTO);
-                await Task<AnalizedFileDTO>.Run(() =>
-                {
-                    AnalizedFileDTO = AnalizedFileDataManager.AddAsync(AnalizedFile).Result;
-                });
-            }
-
-            var fileDTO = new HexFileDTO();
-
-            fileDTO = new HexFileDTO();
-            fileDTO.OriginalFileName = OriginalName;
-            fileDTO.FileName = FileName;
-            fileDTO.ParentID = AnalizedFileDTO.ID;
-            fileDTO.TypeFile = Enum.GetName(typeof(EnumFileType), EnumFileType.Original);
-
-            var File = new HexFile();
-
-
-            await Task<HexFile>.Run(() =>
-            {
-                File = FileRepository.GetAsync(fileDTO).Result;
-            });
-            if (File == null)
-            {
-                var id = FileRepository.GenerateFullID(_Mapper.Map<HexFile>(fileDTO));
-                fileDTO.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), id)), FileName);
-                await Task<HexFile>.Run(() =>
-                {
-                    fileDTO = FileRepository.AddAsync(_Mapper.Map<HexFile>(fileDTO)).Result;
-                });
-            }
-
-
-            return fileDTO;
+            return PutFile(User, Project, NicName, FileName, OriginalName);
         }
 
         public async Task<HexFileDTO> PutFileAsync(string User, string Project, string NicName, IFormFile IFormFile)
         {
 
-            ;
+
+
             var file = IFormFile;
+
             HexFileDTO fileDTO = new HexFileDTO();
             if (file.Length > 0)
             {
                 var FileName = Guid.NewGuid().ToString() + ".FILE";
                 var OriginalName = file.FileName;
                 var Nic = NicName;// Path.GetFileNameWithoutExtension(file.FileName);
-                Task<HexFileDTO>.Run(() => { fileDTO = PutFileAsync(User, Project, NicName, FileName, OriginalName).Result; }).Wait();
-                
-                 using var FileStream = new FileStream(fileDTO.Path, FileMode.Create,FileAccess.Write);
 
-                await using (var stream = new StreamWriter(FileStream))
-                {
-                    
-                    await file.CopyToAsync(stream.BaseStream);
-                }
+                fileDTO = PutFile(User, Project, NicName, FileName, OriginalName);
+
+                if (!Directory.Exists(Path.GetDirectoryName(fileDTO.PahtFile)))
+                    Directory.CreateDirectory(Path.GetDirectoryName(fileDTO.PahtFile));
+
+                using var source = IFormFile.OpenReadStream();
+                using var Stream = File.OpenWrite(fileDTO.PahtFile);
+                await source.CopyToAsync(Stream);
+                
+
             }
-            return fileDTO;
+            return fileDTO; ;
         }
 
         public HexFileDTO PutFile(string User, string Project, string NicName, IFormFile IFormFile)
@@ -629,10 +581,19 @@ namespace Hexagon.Services
 
                 fileDTO = PutFile(User, Project, NicName, FileName, OriginalName);
 
-                using (var stream = new FileStream(fileDTO.Path, FileMode.Create))
+                var T = Task.Run(() =>
                 {
-                    file.CopyTo(stream);
-                }
+
+                    using (Stream source = file.OpenReadStream())
+                    {
+                        if (!Directory.Exists(Path.GetDirectoryName(fileDTO.PahtFile)))
+                            Directory.CreateDirectory(Path.GetDirectoryName(fileDTO.PahtFile));
+                        using (Stream destination = File.Create(fileDTO.PahtFile))
+                        {
+                            source.CopyToAsync(destination);
+                        }
+                    }
+                }).ConfigureAwait(false);
             }
             return fileDTO;
         }
@@ -641,34 +602,41 @@ namespace Hexagon.Services
 
 
             var Proyect = GetProyect(User, Project);
-            var AnalizedFileId = AnalizedFileDataManager.GetID(NicName, Proyect.ID, typeof(AnalizedFile));
-            AnalizedFileDTO AnalizedFileDTO = AnalizedFileDataManager.Get(AnalizedFileId);
+            var AnalizedFileDTO = new AnalizedFileDTO() { Name = NicName, ParentID = Proyect.ID };
+            var AnalizedFile = AnalizedFileDataManager.Get(AnalizedFileDTO);
             //AnalizedFileDTO = AnalizedFileDataManager.FindByCondition (NicName );
-            if (AnalizedFileDTO == null)
+            if (AnalizedFile == null)
             {
-                AnalizedFileDTO = new AnalizedFileDTO();
-                //AnalizedFileDTO.ID = Path.Combine(Proyect.Name, NicName, typeof(AnalizedFile).Name);
-                AnalizedFileDTO.ParentID = Proyect.ID;
-                AnalizedFileDTO.NicName = NicName;
+
                 AnalizedFileDTO = AnalizedFileDataManager.Add(this._Mapper.Map<AnalizedFile>(AnalizedFileDTO));
             }
-
+            else
+                AnalizedFileDTO = this._Mapper.Map<AnalizedFileDTO>(AnalizedFile);
             var fileDTO = new HexFileDTO();
 
             fileDTO = new HexFileDTO();
-            fileDTO.OriginalFileName = OriginalName;
-            fileDTO.FileName = FileName;
+            fileDTO.Name = OriginalName;
             fileDTO.ParentID = AnalizedFileDTO.ID;
-            fileDTO.TypeFile = Enum.GetName(typeof(EnumFileType), EnumFileType.Original);
+
             var File = FileRepository.Get(fileDTO);
 
             if (File == null)
             {
-                var id = FileRepository.GenerateFullID(_Mapper.Map<HexFile>(fileDTO));
-                fileDTO.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), id)), FileName);
+                fileDTO.FileName = FileName;
+
+                fileDTO.TypeFile = Enum.GetName(typeof(EnumFileType), EnumFileType.Original);
+
+                fileDTO.ID = FileRepository.GenerateFullID(_Mapper.Map<HexFile>(fileDTO));
+
+                fileDTO.PahtFile = (Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), fileDTO.ID + FileDataManagerOptions.DefaultExtension)), FileName));
+
                 fileDTO = FileRepository.Add(_Mapper.Map<HexFile>(fileDTO));
             }
-
+            else
+            {
+                fileDTO = _Mapper.Map<HexFileDTO>(File);
+               
+            }
 
             return fileDTO;
         }
