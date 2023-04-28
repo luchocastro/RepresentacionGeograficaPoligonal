@@ -7,19 +7,20 @@ using System.Threading.Tasks;
 namespace Hexagon.Model.Models
 {
 
-    public class Base : IModelPersistible, IDisposable, IAsyncDisposable
+    public abstract   class Base : IModelPersistible, IDisposable, IAsyncDisposable 
     {
-#pragma warning disable CS8632 // La anotación para tipos de referencia que aceptan valores NULL solo debe usarse en el código dentro de un contexto de anotaciones "#nullable".
+
+        
         IDisposable? _disposableResource = new MemoryStream();
         IAsyncDisposable? _asyncDisposableResource = new MemoryStream();
-#pragma warning restore CS8632 // La anotación para tipos de referencia que aceptan valores NULL solo debe usarse en el código dentro de un contexto de anotaciones "#nullable".
+
 
         public string ID { get ; set ; }
         public string ParentID { get; set; }
         public string Path { get; set; }
-    
-        
-        public void Dispose()
+        public virtual bool IdTraslated { get; set; } 
+        public virtual string Name { get; set; }  
+    public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);

@@ -24,7 +24,6 @@ namespace Hexagon.Shared.DTOs
         public float MaxPictureSizeY { get; set; }
         public bool  FillPolygon { get; set; }
         public MapDefinitionDTO MapDefinition { get; set; }
-        public string Name { get; set; }
 
     }
 }

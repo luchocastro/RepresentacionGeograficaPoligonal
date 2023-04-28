@@ -17,7 +17,12 @@ namespace Hexagon.Model.FileDataManager
     {
         public static string Position { get { return "FileDataManager"; } }
         public Mask Mask { get; set; }
+        public string DefaultMask { get; set; }
         public Dictionary<string, string> Settings { get; set; }
+        public string  DefaultExtension  { get; set; }
+        public string ParentDictionaryClass { get; set; }
+        
+        
     }
     
 }

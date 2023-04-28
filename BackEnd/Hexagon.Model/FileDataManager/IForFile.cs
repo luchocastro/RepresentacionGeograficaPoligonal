@@ -1,12 +1,23 @@
-﻿using System;
+﻿using Hexagon.Model.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Hexagon.Model.FileDataManager
 {
-    public interface IForFile<Entity>
+    public interface IPersistEntity<TEntity> where TEntity : Base
     {
-        public Entity GetFromFile(string Path);
-        public string SetToFile(Entity Entity);
+        
+        public TEntity GetFromFile();
+        public TEntity SetToFile();
+        public TEntity Entity { get; set; }
+
+        public string DefaultExtention { get;  }
+        public string ParentDirectory { get;  }
+        public string DictionaryParentDirectory { get;  }
+        public string PathToSave();
+
     }
+
 }
+

@@ -9,7 +9,7 @@ using System.IO;
 
 namespace Hexagon.Model.FileDataManager
 {
-    public class DataFileConfigurationFileDataManager<G, T> : FileDataManager<G, T>, IForFile<T> where T : DataFileConfiguration where G : DataFileConfigurationDTO
+    public class DataFileConfigurationFileDataManager<G, T> : FileDataManager<G, T> where T : DataFileConfiguration where G : DataFileConfigurationDTO
     {
 
         public DataFileConfigurationFileDataManager(IMapper Mapper, IConfiguration IConfiguration, IFileDataManagerOptions IFileDataManagerOptions) : base(Mapper, IConfiguration, IFileDataManagerOptions)

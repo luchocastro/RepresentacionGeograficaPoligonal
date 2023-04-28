@@ -180,7 +180,7 @@ namespace Hexagon.Api.Controllers
         {
 
                 var settings = Configuration.Get<Settings>();
-            return Ok( FileService.GetDataFileConfiguration(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, settings.ConfigurationFilesName)));
+            return Ok( FileService.GetDataFileConfiguration(""));
         }
         /// <summary>
         /// Devuelve los proyectos del usuario logueado

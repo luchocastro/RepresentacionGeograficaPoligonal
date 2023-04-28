@@ -11,7 +11,6 @@ namespace Hexagon.Model.Models
 {
     public class ProyectData : Equatable<ProyectData>  
     {
-        public string Name { get; set; }
         public Location Location { get; set; }
         [JsonIgnore]
         public List<AnalizedFile> AnalizedFiles { get; set; }

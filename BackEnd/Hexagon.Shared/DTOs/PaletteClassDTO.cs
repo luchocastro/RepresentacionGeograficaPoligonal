@@ -14,9 +14,6 @@ namespace Hexagon.Shared.DTOs
         public Dictionary<int , Color> RGBS { get; set; }  
         public string Palette { get; set; }
 
-        public string Name
-        {
-            get; set;
-        }
+
     }
 }

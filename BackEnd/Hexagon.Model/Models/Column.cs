@@ -7,12 +7,12 @@ using System.Text.Json.Serialization;
 
 namespace Hexagon.Model
 {
-    public class Column :Base
+    public class Column : Base
     {
         public Column()
         { }
-            public Column(string Name, int OriginalPosition, EnumActionToDoWithUncasted ActionToDoWithUncasted,
-            EnumAlowedDataType DataTypeSelected)
+        public Column(string Name, int OriginalPosition, EnumActionToDoWithUncasted ActionToDoWithUncasted,
+        EnumAlowedDataType DataTypeSelected)
         {
             this.ActionToDoWithUncasted = ActionToDoWithUncasted;
             this.Name = Name;
@@ -23,12 +23,16 @@ namespace Hexagon.Model
         public List<EnumAlowedDataType> DataTypeFinded { get; set; } = (new EnumAlowedDataType[] { EnumAlowedDataType.Character }).ToList();
         [JsonIgnore]
         public EnumAlowedDataType DataTypeSelected { get; set; }
-        public string Name { get; set; }
+
         public int OriginalPosition { get; set; }
+        public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; } = EnumActionToDoWithUncasted.DeleteData;
+        [ModelSaveAtributes(IsBlob = true)]
         [JsonIgnore]
-        public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
         public List<Field> Fields { get; set; }
         public string PathFields { get; set; }
-
+        public Dictionary<EnumAlowedDataType, int> DictionaryEnumAlowedDataType { get; set; }
+        public object MaxValue { get; set; } = null;
+        public object MinValue { get; set; } = null;
+        public long NumberOfRows{ get; set; } = 0;
     }
 }

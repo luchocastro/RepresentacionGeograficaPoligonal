@@ -20,7 +20,7 @@ namespace Hexagon.Shared.DTOs
 
         public List<EnumAlowedDataTypeDTO> DataTypeFinded { get; set; }
         public EnumAlowedDataTypeDTO DataTypeSelected { get; set; }
-        public string Name { get; set; }
+        
         public int OriginalPosition { get; set; }
         public EnumActionToDoWithUncastedDTO ActionToDoWithUncasted { get; set; }
         

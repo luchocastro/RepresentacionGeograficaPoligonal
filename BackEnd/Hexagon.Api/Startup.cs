@@ -52,25 +52,7 @@ namespace Hexagon.Api
             services.AddSingleton(mapper);
             services.AddDependencies(Configuration);
             services.AddSwaggerOptions();
-            services.Configure <RequestLocalizationOptions>(options =>
-            {
-                var supportedCultures = new[]
-                {
-        new CultureInfo(enUSCulture),
-        new CultureInfo("fr")
-    };
-
-                options.DefaultRequestCulture = new RequestCulture(culture: enUSCulture, uiCulture: enUSCulture);
-                options.SupportedCultures = supportedCultures;
-                options.SupportedUICultures = supportedCultures;
-
-                options.AddInitialRequestCultureProvider(new CustomRequestCultureProvider(async context =>
-                {
-                    // My custom request culture logic
-                    return await Task.FromResult(new ProviderCultureResult("en"));
-                }));
-            });
-
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

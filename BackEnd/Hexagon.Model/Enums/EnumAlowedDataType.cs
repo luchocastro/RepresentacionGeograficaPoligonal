@@ -14,6 +14,8 @@ namespace Hexagon.Model
         [Description("Fecha y hora")]
         DataTime,
         [Description("Posición")]
-        ParadeNumeros
+        Position,
+        [Description("Vacios")]
+        NullOrEmpty
     }
 }

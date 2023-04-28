@@ -15,7 +15,7 @@ using System.Threading;
 
 namespace Hexagon.Model.FileDataManager
 {
-    public class ProyectDataFileDataManager<G, T> : FileDataManager<G, T>, IForFile<T> where T : ProyectData where G : ProyectDataDTO
+    public class ProyectDataFileDataManager<G, T> : FileDataManager<G, T>  where T : ProyectData where G : ProyectDataDTO
     {
         private string DefProyectDataName = "";
         public ProyectDataFileDataManager(IMapper Mapper,IConfiguration IConfiguration, 

@@ -8,6 +8,7 @@ namespace Hexagon.Model.Models
 {
     public class AnalizedFile :  Equatable<AnalizedFile>  
     {
+
         public AnalizedFile()
         {
             Files = new List<HexFile>();
@@ -17,8 +18,8 @@ namespace Hexagon.Model.Models
         public string PathNatives   { get; set; }
         public string PathMaps  { get; set; }
         public string PathFiles { get; set; }
-
-        public string NicName { get; set; }
+        
+        public string NicName { get { return base.Name; } set { base.Name = value; } }
         [JsonIgnore]
         public List<HexFile> NativeFiles { get; set; }
         [JsonIgnore]

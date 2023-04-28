@@ -7,7 +7,8 @@ namespace Hexagon.Model
 {
     public class DataFileConfiguration :Base
     {
-        public string FileType { get; set; }
+        string _FileType;
+        public string FileType { get { return _FileType; } set { _FileType = value; base.Name = value; }}
         public string DecimalSeparator { get; set; }
         public string DatetimeFormart { get; set; }
         public string TextDelimiter { get; set; }

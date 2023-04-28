@@ -35,7 +35,7 @@ namespace Hexagon.Model
         public bool FillPolygon { get; set; }
         public bool PaintLines { get; set; }
         public MapDefinition MapDefinition { get; set; }
-        public string Name { get { return this.ToString(); } }
+
         public override string ToString()
         {
             var ToHashed = Convert.ToInt32(this.Flat).ToString();

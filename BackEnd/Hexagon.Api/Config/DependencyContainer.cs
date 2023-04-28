@@ -58,6 +58,7 @@ namespace Hexagon.Api.Config
             services.AddScoped<IFormulasResumen, FormulasResumenService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped < IAuthenticated, HexAuthenticationService>();
+
             //services.AddScoped< IAuthenticationService , HexAuthentication > ();
             services.Configure<FileDataManagerOptions>(configuration.GetSection(IFileDataManagerOptions.Position));
             services.AddOptions();
