@@ -11,8 +11,7 @@ namespace Hexagon.Shared.DTOs
 
 
         public List<HexagonDetailDTO> List { get; set; }
-        public string Name { get; set; }
-    }
+     }
     public struct HexagonPositionDTO
     {
         public float Q { get; set; }

@@ -4,9 +4,7 @@ using System.Text;
 
 namespace Hexagon.Model.Models
 {
-    public class Graphic :Base
+    class IBlob
     {
-
-        public string GraphPath { get; set; }
     }
 }

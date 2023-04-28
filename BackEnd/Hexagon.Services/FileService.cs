@@ -126,41 +126,31 @@ namespace Hexagon.Services
             //var PathFile = Path.Combine(ProyectDataDTO.Location.ProyectFolder, NicData, ProyectDataDTO.Location.FileFolder, ProyectDataDTO.AnalizedFiles.FirstOrDefault(x => x.NicName == NicData).FileName);
             if (NativeFile == null)
             {
-                Task<NativeFile>.Run(() => { NativeFile = GetJsonSerializedFileFromFileAsync(File, FileData).Result; }).Wait(); ;
+                NativeFile = new NativeFile();
                 NativeFile.ParentID = HexFileID;
                 NativeFile.FileName = FileData.FileType + "_" + File.FileName + ".HexJson";
                 NativeFile.DataFileConfiguration = _Mapper.Map<DataFileConfiguration>(FileData);
                 var Natid = NativeFileDataManager.GenerateFullID(NativeFile);
                 NativeFile.PathFile = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), NativeFile.FileName);
-                NativeFile.ContentID = 
-                await NativeFileDataManager.AddAsync(NativeFile). ;
-                foreach (var item in NativeFile.Columns)
-                {
 
-                    item.ParentID = NativeFileDto.ParentID;
-
-                    ;
-                    item.Fields = NativeFile.Content.Select(x => new Field { Value = x.Fieds[item.OriginalPosition], Index = x.Number }).ToList();
-                    Natid = ColumnManager.GenerateFullID(item);
-                    //item.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), "Column_" + item.OriginalPosition.ToString() + "_" + NativeFile.FileName + ".HexJson");
-                    await ColumnManager.AddAsync(item) ;
-                    
-                }
-        }
+                NativeFile = GetJsonSerializedFileFromFileAsync(File, FileData,NativeFile).Result ;
+            
+                await NativeFileDataManager.AddAsync(NativeFile);
+            }
+        
 
             //return new NativeJsonFileDTO { Content = NativeJsonFile.Content, Columns = NativeJsonFile.Columns };
 
 
 
-            var max = NativeFile.Content.Count() > 100 ? 100 : NativeFile.Content.Count();
-                NativeFile =new NativeFile()
+            NativeFile =new NativeFile()
             {
                 FileName = NativeFile.FileName,
                 Columns = NativeFile.Columns,
                 ParentID = NativeFile.ParentID,
                 PathFile = NativeFile.PathFile,
                 DataFileConfiguration = NativeFile.DataFileConfiguration,
-                Content = NativeFile.Content.GetRange(0, max),
+
                 ID = NativeFile.ID
             };
             return _Mapper.Map<NativeFileDTO>(NativeFile);
@@ -186,18 +176,6 @@ namespace Hexagon.Services
                 var Natid = NativeFileDataManager.GenerateFullID(NativeFile);
                 NativeFile.PathFile = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), NativeFile.FileName);
                 NativeFileDto = NativeFileDataManager.Add(NativeFile);
-                foreach (var item in NativeFile.Columns)
-                {
-
-                    item.ParentID = NativeFileDto.ParentID;
-
-                    ;
-                    item.Fields = NativeFile.Content.Select(x => new Field { Value = x.Fieds[item.OriginalPosition], Index = x.Number }).ToList();
-                    Natid = ColumnManager.GenerateFullID(item);
-                    //item.Path = Path.Combine(Path.GetDirectoryName(Path.Combine(FileRepository.ParentDirectory(), Natid)), "Column_" + item.OriginalPosition.ToString() + "_" + NativeFile.FileName + ".HexJson");
-                    ColumnManager.Add(item);
-
-                }
                 NativeFileDto = _Mapper.Map<NativeFileDTO>(NativeFile);
 
             }
@@ -210,7 +188,6 @@ namespace Hexagon.Services
 
 
 
-            var max = NativeFile.Content.Count() > 100 ? 100 : NativeFile.Content.Count();
             return new NativeFileDTO()
             {
                 FileName = NativeFileDto.FileName,
@@ -218,7 +195,6 @@ namespace Hexagon.Services
                 ParentID = NativeFileDto.ParentID,
                 PathFile = NativeFileDto.PathFile,
                 DataFileConfigurationDTO = NativeFileDto.DataFileConfigurationDTO,
-                Content = NativeFileDto.Content.GetRange(0, max),
                 ID = NativeFileDto.ID
             };
 
@@ -284,18 +260,18 @@ namespace Hexagon.Services
                 throw Exception;
             }
         }
-        public async Task<NativeFile> GetJsonSerializedFileFromFileAsync(HexFileDTO HexFile, DataFileConfigurationDTO DataFileConfigurationDTO)
+        public async Task<NativeFile> GetJsonSerializedFileFromFileAsync(HexFileDTO HexFile, DataFileConfigurationDTO DataFileConfigurationDTO, NativeFile NativeFile)
         {
             try
             {
                 object FileType = new object();
                 object FileProperties = new object();
-                NativeFile NativeFile = new NativeFile();
                 var clazz = Type.GetType("Hexagon.Services.ConvertSourceFileToJsonStrategy.Convert" + DataFileConfigurationDTO.FileType + "ToJsonStrategy");
                 var Strategy = (IConvertSourceFileToJsonStrategy)Activator.CreateInstance(clazz);
+                Strategy.ColumnRepository = this.ColumnManager;
                 var FileData = _Mapper.Map<DataFileConfiguration>(DataFileConfigurationDTO);
-                await Task.Run<NativeFile>(
-                    ()=>  {  return  Strategy.DoFromFileAsync(Path.Combine(HexFile.Path), FileData); });
+                await  Task.Run (
+                    ()=>  { NativeFile = Strategy.DoFromFileAsync(Path.Combine(HexFile.Path), FileData,-1, NativeFile).Result; });
 
 
                 return NativeFile ;
@@ -530,14 +506,15 @@ namespace Hexagon.Services
             return CalculatedHexagon;
 
         }
-        public List<ProyectDataDTO> GetProyects(string User)
+        public List<ProyectDataDTO> GetProyects(string UserID)
         {
-            string Path = @"C:\Users\Usuario\AppData\Hexagon.Api\User\PruebaJSON\ProyectData\Desde0\AnalizedFile\Alguno\HexFile\SensoresCada10.csv\NativeFile\DelimitedFile_4dd45987-a392-4938-b07d-51c63c1271c3.FILE.HexJson.Hex.Json";
-            var json = new AsyncIO<Line>(Path);
-            json.ReadArrayElement += Native_ReadLine;
-            var b = new Line();
-             json.ReadJsonArrayAsync("Content");
-            var UserDTO = DataUser.Get(User);
+            //string Path = @"C:\Users\Usuario\AppData\Hexagon.Api\User\PruebaJSON\ProyectData\Desde0\AnalizedFile\Alguno\HexFile\SensoresCada10.csv\NativeFile\DelimitedFile_4dd45987-a392-4938-b07d-51c63c1271c3.FILE.HexJson.Hex.Json";
+            //var json = new AsyncIO<Line>(Path);
+            //json.ReadArrayElement += Native_ReadLine;
+            //var b = new Line();
+            // json.ReadJsonArrayAsync("Content");
+            var UserDTO = DataUser.Get(UserID);
+
 
             return IDataRepository.GetColectionFromParent(UserDTO.ID).ToList();
 

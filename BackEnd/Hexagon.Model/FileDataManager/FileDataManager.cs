@@ -19,19 +19,36 @@ namespace Hexagon.Model.FileDataManager
 {
     public class contextFactoryFile  
     { }
-    public class FileDataManager<G, TEntity>: IForFile<TEntity>, IDataRepository<G, TEntity> where TEntity : Base
+    public class FileDataManager<G, TEntity>:  IDataRepository<G, TEntity> where TEntity : Base
     {
         private readonly IMapper Mapper;
         private readonly IConfiguration  IConfiguration;
         private readonly IFileDataManagerOptions FileDataManagerOptions;
         private readonly string User;
-        public string DefaultExtension { get { return ".Hex.Json"; } }
+        private PersistEntity<TEntity> persistEntity =null;
+        string parentDirectory;
+        string _DefaultExtension;
+        public string DefaultExtension { get { return _DefaultExtension; } }
         public FileDataManager(IMapper Mapper, IConfiguration Configuration, IFileDataManagerOptions IFileDataManagerOptions )
         {
             this.Mapper = Mapper;
             this.IConfiguration = Configuration;
             this.FileDataManagerOptions = IFileDataManagerOptions;
-    }
+            persistEntity = new PersistEntity<TEntity>(this.FileDataManagerOptions);
+            parentDirectory = persistEntity.ParentDirectory;
+            _DefaultExtension = persistEntity.DefaultExtention;
+
+        }
+        public  PersistEntity<TEntity> PersistEntity
+        {
+            get
+            {
+                if (persistEntity == null)
+                    persistEntity = new PersistEntity<TEntity>(this.FileDataManagerOptions);
+                parentDirectory = persistEntity.ParentDirectory;
+                return persistEntity;
+            }
+        }
         public string Head { get; set; }
         public bool Open(string Head)
         {
@@ -42,7 +59,7 @@ namespace Hexagon.Model.FileDataManager
         }
         public  string DefaultMaskID { get { 
                 return
-                    "ParentID/Type/Name"; 
+                    persistEntity.DefaultMaskID ; 
             } }
         public virtual IFileDataManagerOptions IFileDataManagerOptions
         {
@@ -57,18 +74,16 @@ namespace Hexagon.Model.FileDataManager
         
         public string ParentDirectory()
         {
-            return Path.Combine(Directory.GetParent(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)).FullName, AppDomain.CurrentDomain.FriendlyName  );
+            return parentDirectory;
         }
         public virtual async Task<G> AddAsync(TEntity entity)
         {
             var ID = GenerateFullID(entity);
             entity.ID = ID;
-            var FileToWrite = Path.Combine(this.ParentDirectory(), entity.ID + DefaultExtension);
-            if (!Directory.Exists(Path.GetDirectoryName(FileToWrite)))
-                Directory.CreateDirectory(Path.GetDirectoryName(FileToWrite));
-            entity.Path = FileToWrite;
-            var AsyncIO = new AsyncIO<TEntity>(FileToWrite);
-            await AsyncIO.WriteJsonAsync(entity);
+            PersistEntity.Entity = entity;
+
+            await Task<TEntity>.Run(() => { entity =  persistEntity.Save().Result; });
+            
             return Mapper.Map<G>(entity);
         }
 
@@ -79,8 +94,9 @@ namespace Hexagon.Model.FileDataManager
             var FileToWrite = Path.Combine(this.ParentDirectory(), entity.ID + DefaultExtension);
             if (!Directory.Exists(Path.GetDirectoryName  (FileToWrite)))
                 Directory.CreateDirectory(Path.GetDirectoryName(FileToWrite));
-            var ToWrite = JsonConvert.SerializeObject (entity);
             entity.Path = FileToWrite;
+
+            var ToWrite = JsonConvert.SerializeObject (entity);
             Write(FileToWrite, ToWrite);
             return Mapper.Map<G>(entity);
         }
@@ -102,6 +118,7 @@ namespace Hexagon.Model.FileDataManager
 
         public virtual string GetID(string Name, string PararentID, Type EntityType)
         {
+
             string Mask = "";
             FileDataManagerOptions.Get().Settings.TryGetValue("Mask" + EntityType.Name, out Mask);
             return GetID(Name, PararentID, EntityType, Mask);
@@ -139,8 +156,9 @@ namespace Hexagon.Model.FileDataManager
             var PathToRead = Path.Combine(this.ParentDirectory(), id + DefaultExtension);
             if (!File.Exists(PathToRead))
                 return default(G);
-            
-            return Mapper.Map<G>( Read (PathToRead));
+            var Ret = Read(PathToRead);
+
+            return Mapper.Map<G>( Ret);
             
 
         }
@@ -182,7 +200,7 @@ namespace Hexagon.Model.FileDataManager
             if (!File.Exists(PathToRead))
                 return default(TEntity);
             
-            await Task<TEntity>.Run(() => { entity = new AsyncIO<TEntity>(PathToRead).ReadJsonAsync()  ; })  ;
+            await Task<TEntity>.Run(() => { entity = new AsyncIO<TEntity>(PathToRead).ReadJsonAsync().Result  ; })  ;
 
             return entity;
 
@@ -233,15 +251,21 @@ namespace Hexagon.Model.FileDataManager
         {
              string Mask = "";
             FileDataManagerOptions.Get().Settings.TryGetValue("Mask" + typeof(TEntity).Name, out Mask);
+            Mask = (Mask != "" ? Mask : this.DefaultMaskID);
+            Mask = Mask.Substring(0, Mask.LastIndexOf("/")); ;
 
-             Mask= Mask.Substring(0,  Mask.LastIndexOf("/"));
+
             
             string PathToRead = Path.Combine(ParentDirectory(), GetID("",ParentID, typeof(TEntity ),Mask));
             var ret = new List<G>();
             foreach (var File in Directory.GetFiles(PathToRead, "*"+ DefaultExtension))
             {
-                var Entity= Read(File);
-                ret.Add(Mapper.Map<G>( Entity));
+                var enti= Read(File);
+                this.PersistEntity.Entity = enti;
+                
+                enti.IdTraslated = true;
+
+                ret.Add(Mapper.Map<G>(enti));
             }
             return ret;
 
@@ -275,13 +299,14 @@ namespace Hexagon.Model.FileDataManager
         public TEntity Read(string Path)
         {
 
-            TEntity ret  ;
+            
             using (StreamReader file = File.OpenText(Path))
             {
-                ret =JsonConvert.DeserializeObject<TEntity>(file.ReadToEnd());
+                var Tclass = file.ReadToEnd();
+                file.Dispose();
+                return System.Text.Json.JsonSerializer.Deserialize<TEntity>(Tclass);
                 
-            }
-            return ret;
+            }  
         }
         
 

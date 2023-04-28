@@ -13,11 +13,16 @@ using GeoJSON.Net.Geometry;
 using System.Globalization;
 using System.Threading.Tasks;
 using Hexagon.AsyncIO;
+using Hexagon.Model.FileDataManager;
+using Hexagon.Shared.DTOs;
+using Hexagon.Model.Repository;
 
 namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
 {
     public class ConvertGeoJsonToJsonStrategy : IConvertSourceFileToJsonStrategy
     {
+        public IDataRepository<ColumnDTO, Column> ColumnRepository { get; set; }
+
         public NativeJsonFile Do(string Base64File, DataFileConfiguration FileData )
         {            
             var Base64EncodedBytes = System.Convert.FromBase64String(Base64File);
@@ -98,7 +103,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
         List<string> Columns = new List<string>();
         List<Column> ColumnsForModel = new List<Column>();
         int FirstNRows = 50;
-        public async Task<NativeFile> DoFromFileAsync(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0)
+        public async Task<NativeFile> DoFromFileAsync(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0, NativeFile NativeFile = null)
 
         {
         
@@ -107,7 +112,6 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             await AsyncIO.ReadJsonArrayAsync("features");
 
 
-            NativeFile.Content = Lineas;
             //for (int i = 0; i < ColumnsForModel.Count(); i++)
             //{
             //    var col = ColumnsForModel[i];
@@ -371,7 +375,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                 }
             }
             
-            NativeFile.Content = Lineas;
+
             //for (int i = 0; i < ColumnsForModel.Count(); i++)
             //{
             //    var col = ColumnsForModel[i];

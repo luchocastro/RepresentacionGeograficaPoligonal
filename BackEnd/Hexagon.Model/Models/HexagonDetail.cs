@@ -14,7 +14,6 @@ namespace Hexagon.Model.Models
             
         }
         public List<HexagonDetail>  List { get; set; } 
-        public string Name { get;  set; }
         public HexagonDetails OrderList()
         {
             var ListToOrder =new List<HexagonDetail>();

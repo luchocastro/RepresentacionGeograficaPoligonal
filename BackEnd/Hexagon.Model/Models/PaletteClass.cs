@@ -19,7 +19,7 @@ namespace Hexagon.Model
         public Dictionary<int, Color> RGBS { get; set; } = new Dictionary<int, Color>();
         public string Palette { get; set; }
         
-        public string Name { get { return Palette + "_" + this.EnumPaletteClass.ToString() + "_" + MemberNumber.ToString(); }  set { }  } 
+        public override string Name { get { return Palette + "_" + this.EnumPaletteClass.ToString() + "_" + MemberNumber.ToString(); }  set { }  } 
         
 
     }

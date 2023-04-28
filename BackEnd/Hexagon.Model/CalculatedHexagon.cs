@@ -12,10 +12,11 @@ namespace Hexagon.Model
     }
     public class CalculatedHexagon :Base
     {
-        public string Name { get; set; }
+
         public List<string> ColumnNamesForFunction { get; set; }
         public List<HexaDetailWithValue> HexaDetailWithValue { get; set; }
         public string LayoutID { get; set; } = "";
         public string ImageDefinitionID { get; set; } = "";
+         
     }
 }

@@ -7,7 +7,7 @@ namespace Hexagon.Shared.DTOs
 {
     public class ProyectDataDTO : BaseDto
     {
-        public string Name { get; set; }
+
         public LocationDTO Location { get; set; }
         public List<AnalizedFileDTO> AnalizedFiles { get; set; }
     }
