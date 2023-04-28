@@ -80,6 +80,7 @@ namespace Hexagon.Model.FileDataManager
         {
             var ID = GenerateFullID(entity);
             entity.ID = ID;
+            entity.Path = Path.Combine(this.ParentDirectory(), entity.ID + DefaultExtension);
             PersistEntity.Entity = entity;
 
             await Task<TEntity>.Run(() => { entity =  persistEntity.Save().Result; });

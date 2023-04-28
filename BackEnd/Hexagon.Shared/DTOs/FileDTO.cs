@@ -9,9 +9,7 @@ namespace Hexagon.Shared.DTOs
     {
 
         public string FileName { get; set; }
-        public string OriginalFileName { get; set; }
-        public string Path { get; set; }
-
+        public string PahtFile { get; set; }
         public string TypeFile { get; set; }
     }
 }

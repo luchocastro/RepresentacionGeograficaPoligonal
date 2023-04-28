@@ -80,7 +80,7 @@ namespace Hexagon.Api.Controllers
                     var originaName = file.FileName;
                     var Nic =DataSetName==""? originaName:DataSetName ;// Path.GetFileNameWithoutExtension(file.FileName);
                      
-                    var fileDTO = FileService.PutFileAsync(UserName,ProjectName,Nic, file) ;
+                    var fileDTO = FileService.PutFileAsync (UserName,ProjectName,Nic, file) ;
 
                     
 
@@ -89,7 +89,7 @@ namespace Hexagon.Api.Controllers
                     //
                     ;
                     
-                    return Ok(Newtonsoft.Json.JsonConvert.SerializeObject(fileDTO));
+                    return Ok(fileDTO);
                 }
                 else
                 {

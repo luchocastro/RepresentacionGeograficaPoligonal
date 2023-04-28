@@ -1,4 +1,5 @@
 ﻿using Hexagon.Model;
+using Hexagon.Model.Models;
 using Hexagon.Shared.DTOs;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -27,7 +28,7 @@ namespace Hexagon.Services.Interfaces
         public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns = null);
         List<PaletteClass> GetPaletteClasses(string Name, string Enum, int Q);
         public string GenerateLayout(LayoutDto layout, string PathFile);
-        public  Task <HexFileDTO> PutFileAsync(string User, string Project, string NicName, string FileName, string OriginalName);
+        public  HexFileDTO PutFileAsync(string User, string Project, string NicName, string FileName, string OriginalName);
         public Task<HexFileDTO> PutFileAsync(string User, string Project, string NicName, IFormFile IFormFile);
         public Task<NativeFileDTO> ConvertFileAsync(DataFileConfigurationDTO FileData, string HexFileID);
 
