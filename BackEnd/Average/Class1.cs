@@ -7,7 +7,7 @@ namespace Average
 {
     public class Statistics
     {
-        public  float Average2(Dictionary<string, object[]> Values)
+        public static float Average2(Dictionary<string, object[]> Values)
         {
             var ToCalc = Values.FirstOrDefault().Value;
 

@@ -23,6 +23,15 @@ namespace Hexagon.Shared.DTOs
         
         public int OriginalPosition { get; set; }
         public EnumActionToDoWithUncastedDTO ActionToDoWithUncasted { get; set; }
-        
+        public string DirectoryOfColumns { get; set; }
+        public bool IsPolygon { get; set; } = false;
+
+        public string FileName { get; set; }
+        public string PathFields { get; set; }
+        public string PathSampleFields { get; set; }
+        public Dictionary<EnumAlowedDataTypeDTO, int> DictionaryEnumAlowedDataType { get; set; }
+        public object MaxValue { get; set; } = null;
+        public object MinValue { get; set; } = null;
+        public long NumberOfRows { get; set; } = 0;
     }
 }

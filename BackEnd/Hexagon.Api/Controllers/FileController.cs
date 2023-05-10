@@ -139,7 +139,7 @@ namespace Hexagon.Api.Controllers
                 
                 var ret = FileService.ConvertFileAsync  (DataFileConfiguration , ProjectDataPost.HexFileID);
 
-            return Ok(ret);
+            return Ok(ret.Result);
           }
         /// <summary>
         /// Esta es magia pura, aunque eso de los vectores me tiene loco
@@ -150,7 +150,17 @@ namespace Hexagon.Api.Controllers
         public IActionResult GetImageFile(DatosMapaPost DatosMapaPost)
         {
 
-            var ret = FileService.GenerateLayout (DatosMapaPost.LayoutDto, DatosMapaPost.PathWithData);
+            var ret = "";// FileService.GenerateLayout (DatosMapaPost.LayoutDto, DatosMapaPost.PathWithData);
+                ;
+
+            return Ok(ret);
+        }
+        [HttpPost("[action]")]
+        public IActionResult PrepareFile(string ColumnX, string ColumnY,string HexID)
+        {
+            FileService.PrepareMap(new string[] { ColumnX, ColumnY }, HexID); ;
+
+            var ret = ""; 
                 ;
 
             return Ok(ret);
@@ -225,8 +235,8 @@ namespace Hexagon.Api.Controllers
         [Route("Formulas")]
         public IActionResult GetFormulas()
         {
-            var settings = Configuration.Get<Settings>();
-            return Ok( FormulasResumen.FormulasDisponibles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, settings.PathFunctions)));
+            
+            return Ok( FormulasResumen.FormulasDisponibles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory , "Functions")));
         }
          
     }

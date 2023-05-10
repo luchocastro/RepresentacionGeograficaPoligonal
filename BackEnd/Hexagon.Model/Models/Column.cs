@@ -30,6 +30,7 @@ namespace Hexagon.Model
         [JsonIgnore]
         public List<Field> Fields { get; set; }
         public string PathFields { get; set; }
+        public string PathSampleFields { get; set; }
         public Dictionary<EnumAlowedDataType, int> DictionaryEnumAlowedDataType { get; set; }
         public object MaxValue { get; set; } = null;
         public object MinValue { get; set; } = null;

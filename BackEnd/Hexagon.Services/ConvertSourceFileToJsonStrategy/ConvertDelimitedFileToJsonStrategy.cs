@@ -88,7 +88,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             return NativeJsonFile;
         }
 
-        public async  Task<NativeFile> DoFromFileAsync(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0, NativeFile NativeFile= null)
+        public async Task<NativeFile> DoFromFileAsync(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0, NativeFile NativeFile = null)
         {
 
             object Delimiter = FileData.DecimalSeparator;
@@ -101,21 +101,22 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             FileData.FileProperties.TryGetValue("NumberConcatenator", out NumberConcatenator);
             bool HasTitle = HasTitleInDefinition != null && Convert.ToBoolean(HasTitleInDefinition.ToString());
             string[] Columns = null;
-            int Step = 0;
+            long Step = 0;
             List<Line> Lineas = new List<Line>();
             List<Column> ColumnsForModel = new List<Column>();
-            List<Column> ColumnsForPersist= new List<Column>();
+
             bool SetCols = true;
             var Coma = "";
-            bool Continue = true;
             var ActualLine = "";
             var ColumnsBegin = "";
-            string[] DataInLine = null;  ActualLine.Split(Delimiter.ToString());
+            string[] DataInLine = null;
+
             int ColumnsQuantity = 0;
             var Line = new Line();
             var TieneFecha = (FileData.DatetimeFormart != null && FileData.DatetimeFormart != "");
             var TieneParDenumeros = NumberConcatenator != null;
             var TiposPermitidosColumas = new Dictionary<int, Dictionary<EnumAlowedDataType, int>>();
+            var PathColums = ColumnRepository.ClassLocation(new ColumnDTO() { ParentID = NativeFile.ParentID });
 
             using (StreamReader StreamReader = new StreamReader(PathFileOrigen))
             {
@@ -142,71 +143,113 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                 for (int i = 0; i < ColumnsQuantity; i++)
                 {
 
-                    var PathColums = Path.Combine(Path.GetDirectoryName(NativeFile.Path));
 
-                    var PathColumsInfo = Path.Combine(Path.GetDirectoryName(NativeFile.Path), "Columns", Columns[i] + ".Hex.Json");
-                    if (!Directory.Exists(PathColums))
+                    var PathColumsInfo = Path.Combine(PathColums, Columns[i] + ".Hex.Json");
+                    var PathColumsField = Path.Combine(PathColums, typeof(Field).Name, Columns[i] + ".Hex.Json");
+
+                    if (!Directory.Exists(Path.GetDirectoryName(PathColumsField)))
                     {
-                        Directory.CreateDirectory(PathColums);
+                        Directory.CreateDirectory(Path.GetDirectoryName(PathColumsField));
                     }
-                    PathColums = Path.Combine(PathColums, Columns[i] + ".Hex.Json");
 
                     var TiposPermitidos = new Dictionary<EnumAlowedDataType, int>();
+                    TiposPermitidos.Add(EnumAlowedDataType.Character, 0);
                     TiposPermitidos.Add(EnumAlowedDataType.Position, 0);
                     TiposPermitidos.Add(EnumAlowedDataType.DataTime, 0);
                     TiposPermitidos.Add(EnumAlowedDataType.GenericNumber, 0);
                     TiposPermitidos.Add(EnumAlowedDataType.NullOrEmpty, 0);
                     TiposPermitidosColumas.Add(i, TiposPermitidos);
 
-                    var ColumnToAdd = new Column() { Name = Columns[i], OriginalPosition = i, PathFields = PathColums };
 
-                    ColumnsForModel.Add(ColumnToAdd);
                     var ColumnToPersist = new Column()
                     {
                         Name = Columns[i],
                         OriginalPosition = i,
-                        PathFields = PathColums,
+                        PathFields = PathColumsField,
                         ParentID = NativeFile.ParentID,
                         IdTraslated = false
                     };
                     ColumnToPersist.ID = ColumnRepository.GenerateFullID(ColumnToPersist);
-                    ColumnsForPersist.Add(ColumnToPersist);
+                    ColumnsForModel.Add(ColumnToPersist);
 
+                    NativeFile.Columns.Add(Columns[i]);
 
                 }
                 StreamReader.Dispose();
             }
 
-            NativeFile.Columns = ColumnsForModel;
-            NativeFile.DataFileConfiguration = FileData;
             var Cols = ColumnsForModel;
-             var t =  Task.Run(() =>
+            var t = Task.Run(() =>
             {
-                using (StreamReader StreamReader = new StreamReader(PathFileOrigen))
-                {
-                    while (true)
-                    {
+              for (int i = 0; i < ColumnsForModel.Count(); i++)
+              {
+                  using StreamReader StreamReader = new StreamReader(PathFileOrigen);
+                  ColumnsBegin = "";
+                  bool Last = false;
+                  SetCols = true;
+                  Step = 0;
+                    var Muestra = 0;
+                  using var StreamWriter = new StreamWriter(ColumnsForModel[i].PathFields, true, Encoding.UTF8);
+                    var rand = new Random();
+                   
+                  while (true)
+                  {
+                      var ActualLine = StreamReader.ReadLineAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+                      if (ActualLine == null) Last = true;
+                      
+                      if ( (!HasTitle || !SetCols))
+                      {
+                          string value = null;
+                          if (!Last)
+                          {
+                              DataInLine = ActualLine.Split(Delimiter.ToString());
 
-                        var ActualLine = StreamReader.ReadLineAsync().ConfigureAwait(false).GetAwaiter().GetResult(); 
-                        if (ActualLine == null) break;
-                        if (NativeFile.Path != "" && (!HasTitle || !SetCols))
-                        {
-                            DataInLine = ActualLine.Split(Delimiter.ToString());
+                              if (i < DataInLine.Count())
+                              {
 
-                            Line = Helpers.FilesHelper.LineToField(DataInLine, (long)Step);
+                                  value = DataInLine[i];
 
-                            for (int i = 0; i < ColumnsForModel.Count(); i++)
+                              }
+                          }
+                          else
+                          { ColumnsBegin = ""; }
+                          var Field = new Field();
+                          Field.Index = Step;
+                          Field.Value = value;
+                            
+                          var FieldText = ColumnsBegin;
+                            if (!Last)
                             {
-                                using (var StreamWriter = new StreamWriter(ColumnsForModel[i].PathFields, true, Encoding.UTF8))
-                                {
 
-                                    if (Line.Fieds[i] == null || Line.Fieds[i].ToString() == "")
+                                FieldText += Field.ToString();
+                                StreamWriter.WriteAsync(FieldText);
+                                StreamWriter.Flush();
+                                var num = 0d  ;
+                                var numrnd = 0 ;
+                                long rem = 0;
+                                if (Step >1)
+                                {
+                                    num = Math.Ceiling( (Math.Log((double ) Step  , 2d)));
+                                    numrnd = rand.Next(1, (int)num+1);
+                                    Math.DivRem( (long)numrnd, (long)num, out rem);
+                                    
+                                }
+                                if (num < 1 || rem == 0 )
+                                {
+                                    Muestra++; 
+                                    if (value!=null)
+                                    {
+                                        var str = TiposPermitidosColumas[i][EnumAlowedDataType.Character];
+                                        str++;
+                                        TiposPermitidosColumas[i][EnumAlowedDataType.Character] = str;
+                                    }
+                                    if (value == null || value.ToString() == "")
                                     {
                                         var vacio = TiposPermitidosColumas[i][EnumAlowedDataType.NullOrEmpty];
                                         vacio++;
                                         TiposPermitidosColumas[i][EnumAlowedDataType.NullOrEmpty] = vacio;
                                     }
-                                    else if (FindTypesAllowed.IsNumber(Line.Fieds[i], FileData.DecimalSeparator))
+                                    else if (FindTypesAllowed.IsNumber(value, FileData.DecimalSeparator))
                                     {
                                         var q = TiposPermitidosColumas[i][EnumAlowedDataType.GenericNumber];
                                         q++;
@@ -217,7 +260,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                                         var EncontroFecha = false;
                                         if (TieneFecha)
                                         {
-                                            if (FindTypesAllowed.IsDate(Line.Fieds[i], FileData.DatetimeFormart))
+                                            if (FindTypesAllowed.IsDate(value, FileData.DatetimeFormart))
                                             {
                                                 EncontroFecha = true;
                                                 var Esfecha = TiposPermitidosColumas[i][EnumAlowedDataType.DataTime];
@@ -228,7 +271,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
 
                                         if (TieneParDenumeros && !EncontroFecha)
                                         {
-                                            if (FindTypesAllowed.IsManyNumber(Line.Fieds[i], FileData.DecimalSeparator, NumberConcatenator.ToString()))
+                                            if (FindTypesAllowed.IsManyNumber(value, FileData.DecimalSeparator, NumberConcatenator.ToString()))
                                             {
                                                 var q = TiposPermitidosColumas[i][EnumAlowedDataType.Position];
                                                 q++;
@@ -236,45 +279,49 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                                             }
                                         }
                                     }
-                                     
-
-                                    
-                                    var FieldText = ColumnsBegin;
-                                    FieldText += System.Text.Json.JsonSerializer.Serialize(new Field() { Index = Line.Number, Value = Line.Fieds[i] });
-
-                                     StreamWriter.WriteAsync(FieldText);
-                                    StreamWriter.Close();
                                 }
-
                             }
 
-                            if (Step == FirstNRows)
-                            {
-                                break;
-                            }
+                      }
+
+                      if (Step == FirstNRows)
+                      {
+                          break;
+                      }
+                        if (SetCols && HasTitle)
+                            Step = -1;
+                      if (!SetCols)
+                          ColumnsBegin = "\n";
+                      else
+                          SetCols = false;
+                      if (Last)
+                          break;
+                      
                             Step++;
-                            ColumnsBegin = ",";
-                        }
 
-                        SetCols = false;
+
                     }
 
-                }
-                for (int i = 0; i < TiposPermitidosColumas.Count(); i++)
-                {
-                    var col = ColumnsForPersist[i];
-                    col.DictionaryEnumAlowedDataType = TiposPermitidosColumas[i];
-                    col.NumberOfRows = Step;
-                    ColumnRepository.Add(col);
+
+
+              }
+
+              for (int i = 0; i < TiposPermitidosColumas.Count(); i++)
+              {
+                  var col = ColumnsForModel[i];
+                  col.DictionaryEnumAlowedDataType = TiposPermitidosColumas[i];
+                  col.NumberOfRows = Step +1;
+                  ColumnRepository.Add(col);
 
 
 
-                }
-            }).ConfigureAwait(false);
-            
-           
+              }
+          }).ConfigureAwait(false);
 
-            return  NativeFile;
+
+            NativeFile.DataFileConfiguration = FileData;
+
+            return NativeFile;
         }
 
         public NativeFile DoFromFile(string PathFileOrigen, DataFileConfiguration FileData, int FirstNRows = 0)
@@ -357,10 +404,9 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             //    ColumnsForModel[i].DataTypeFinded.AddRange(  datatypes);
             //}
 
-            NativeFile.Columns = ColumnsForModel;
             NativeFile.DataFileConfiguration = FileData;
 
-            return NativeFile;
+            return  NativeFile ;
         }
     }
 }

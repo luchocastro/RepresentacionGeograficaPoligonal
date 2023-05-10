@@ -10,7 +10,7 @@ namespace Hexagon.Model.Models
         public string FileName { get; set; }
         
         public string TypeFile { get; set; }
-        public string PahtFile { get; set; }
+        public string PathFile { get; set; }
 
     }
 }

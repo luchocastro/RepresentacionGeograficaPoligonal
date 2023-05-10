@@ -32,6 +32,7 @@ namespace Hexagon.Services.Interfaces
         public Task<HexFileDTO> PutFileAsync(string User, string Project, string NicName, IFormFile IFormFile);
         public Task<NativeFileDTO> ConvertFileAsync(DataFileConfigurationDTO FileData, string HexFileID);
 
+        public string PrepareMap(string[] ColumnForXY, string HexID);
 
     }
 }

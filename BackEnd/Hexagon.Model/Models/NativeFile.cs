@@ -9,14 +9,17 @@ namespace Hexagon.Model.Models
     {
         string _FileName;
         string _PathFile;
+        string _DirectoryOfColumns;
         public string ContentID { get; set; }
-        public List<Column> Columns { get; set; } = new List<Column>();
-        public string PathFile { get { return _PathFile; }  set { _PathFile = value;base.Path = value; } }
-        public DataFileConfiguration DataFileConfiguration { get; set; } = null;
-        
+        public List<String> Columns { get; set; } = new List<String>();
+        public string PathFile { get { return _PathFile; }  set { _PathFile = value; } }
+        public DataFileConfiguration DataFileConfiguration { get; set; }  
+        public string DirectoryOfColumns { get { return _DirectoryOfColumns; } set { _DirectoryOfColumns = value; } }
         public bool IsPolygon { get; set; } = false;
 
-        public string FileName { get { return _FileName; } set { _FileName = value; base.Name = value; } }
-
+        public string ColumnXY { get; set; }
+        public string FileName { get { return _FileName; } set { _FileName = value;  } }
+        //public override string Name { get => _FileName; set => _FileName = value; }
+        
     }
 }
