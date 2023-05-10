@@ -173,7 +173,7 @@ namespace Hexagon.Model.FileDataManager
         {
             var  ID = GenerateFullID(Mapper.Map<TEntity>(DTOEntity));
 
-            return Path.Combine( ID.Substring(0, ID.LastIndexOf("\\")));
+            return Path.Combine(ParentDirectory(), ID.Substring(0, ID.LastIndexOf("\\")));
 
         }
         public virtual IEnumerable<G> GetAllDTO()
@@ -215,27 +215,38 @@ namespace Hexagon.Model.FileDataManager
             var ret = "";
             foreach (var item in MaskSplited)
             {
-                var toDo = "";
-                switch (item )
-                {
-                    case "ID":
-                        toDo = Entity.ID;
-                        break;
-                    case "Type":
-                        toDo = Entity.GetType().Name;
-                        break;
-                    default:
-                        Type objtype = Entity.GetType();
 
-                        PropertyInfo prop = objtype.GetProperty(item);
-                        if (prop != null)
-                        {
-                            object list = prop.GetValue(Entity);
-                            toDo = list.ToString();
-                        }
-                        break;
+                var toDo = "";
+                try
+                {
+
+
+                    switch (item)
+                    {
+                        case "ID":
+                            toDo = Entity.ID;
+                            break;
+                        case "Type":
+                            toDo = Entity.GetType().Name;
+                            break;
+                        default:
+                            Type objtype = Entity.GetType();
+
+                            PropertyInfo prop = objtype.GetProperty(item);
+                            if (prop != null)
+                            {
+                                object list = prop.GetValue(Entity);
+                                toDo = list.ToString();
+                            }
+                            break;
+                    }
                 }
-                if(toDo!="")
+                catch (Exception)
+                {
+                    toDo = "NotFound";
+
+                }
+                if (toDo!="")
                 ret = Path.Combine(ret, toDo);
             }
                 return ret;
@@ -289,7 +300,7 @@ namespace Hexagon.Model.FileDataManager
         }
         public void Write(string Path, string ToSave)
         {
-            using (StreamWriter StreamWriter = new StreamWriter(Path))
+            using (StreamWriter StreamWriter = new StreamWriter(Path,false))
             {
                 StreamWriter.Write(ToSave);
                 StreamWriter.Close();

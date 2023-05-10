@@ -11,7 +11,46 @@ namespace Hexagon.Services.Helpers
 {
     public class FindTypesAllowed
     {
-        public static int TypesAllows(string[] values, string Mask, EnumAlowedDataType DataTypeToTest)
+
+        /*
+                                            if (Line.Fieds[i] == null || Line.Fieds[i].ToString() == "")
+                                    {
+                                        var vacio = TiposPermitidosColumas[i][EnumAlowedDataType.NullOrEmpty];
+        vacio++;
+                                        TiposPermitidosColumas[i][EnumAlowedDataType.NullOrEmpty] = vacio;
+                                    }
+                                    else if (FindTypesAllowed.IsNumber(Line.Fieds[i], FileData.DecimalSeparator))
+                                    {
+                                        var q = TiposPermitidosColumas[i][EnumAlowedDataType.GenericNumber];
+    q++;
+                                        TiposPermitidosColumas[i][EnumAlowedDataType.GenericNumber] = q;
+                                    }
+                                    else
+{
+    var EncontroFecha = false;
+    if (TieneFecha)
+    {
+        if (FindTypesAllowed.IsDate(Line.Fieds[i], FileData.DatetimeFormart))
+        {
+            EncontroFecha = true;
+            var Esfecha = TiposPermitidosColumas[i][EnumAlowedDataType.DataTime];
+            Esfecha++;
+            TiposPermitidosColumas[i][EnumAlowedDataType.DataTime] = Esfecha;
+        }
+    }
+
+    if (TieneParDenumeros && !EncontroFecha)
+    {
+        if (FindTypesAllowed.IsManyNumber(Line.Fieds[i], FileData.DecimalSeparator, NumberConcatenator.ToString()))
+        {
+            var q = TiposPermitidosColumas[i][EnumAlowedDataType.Position];
+            q++;
+            TiposPermitidosColumas[i][EnumAlowedDataType.Position] = q;
+        }
+    }
+}
+*/
+public static int TypesAllows(string[] values, string Mask, EnumAlowedDataType DataTypeToTest)
         {
             List<string> MaskParts = new List<string>();
             string Actual = Mask.Substring(0, 1);

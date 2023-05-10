@@ -120,7 +120,6 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             //    ColumnsForModel[i].DataTypeFinded=datatypes;
             //}
             NativeFile.DataFileConfiguration = FileData;
-            NativeFile.Columns = ColumnsForModel;
             NativeFile.IsPolygon = true;
             return NativeFile;
 
@@ -384,7 +383,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             //    ColumnsForModel[i].DataTypeFinded=datatypes;
             //}
             NativeFile.DataFileConfiguration = FileData;
-            NativeFile.Columns = ColumnsForModel;
+            //NativeFile.Columns = ColumnsForModel;
             NativeFile.IsPolygon = true;
             return NativeFile;
 

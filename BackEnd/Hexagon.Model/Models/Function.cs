@@ -8,7 +8,7 @@ namespace Hexagon.Model
     public class Function : Base
     {
         public Function() { }
-        
+        string _FunctionName;
         public Function(string PathFunctionDLL, string FullClassName, string FunctionName, Dictionary<string, string> Types)
         {
             this.PathFunctionDLL = PathFunctionDLL;
@@ -19,7 +19,7 @@ namespace Hexagon.Model
         }
         public string PathFunctionDLL { get; set; }
         public string FullClassName { get; set; }
-        public string FunctionName { get { return this.FunctionName; } set { this.FunctionName = value; base.Name = value; } }
+        public string FunctionName { get { return _FunctionName; } set { _FunctionName = value; base.Name = _FunctionName; } }
         public Dictionary<string, string> Types { get; set; }
 
     }
