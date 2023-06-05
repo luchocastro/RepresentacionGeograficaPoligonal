@@ -97,7 +97,7 @@ namespace Hexagon.Model.FileDataManager
                 Directory.CreateDirectory(Path.GetDirectoryName(FileToWrite));
             entity.Path = FileToWrite;
 
-            var ToWrite = JsonConvert.SerializeObject (entity);
+            var ToWrite = System.Text.Json.JsonSerializer.Serialize  (entity);
             Write(FileToWrite, ToWrite);
             return Mapper.Map<G>(entity);
         }
@@ -169,9 +169,9 @@ namespace Hexagon.Model.FileDataManager
             throw new NotImplementedException();
         }
 
-        public string ClassLocation (G DTOEntity)
+        public string ClassLocation (TEntity Entity)
         {
-            var  ID = GenerateFullID(Mapper.Map<TEntity>(DTOEntity));
+            var  ID = GenerateFullID( Entity);
 
             return Path.Combine(ParentDirectory(), ID.Substring(0, ID.LastIndexOf("\\")));
 
