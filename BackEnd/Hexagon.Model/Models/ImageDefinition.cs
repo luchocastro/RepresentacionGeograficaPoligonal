@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -20,13 +21,20 @@ namespace Hexagon.Model.Models
         public float TransformedWidth { get; }
         public float TransformedHeigth { get; }
 
+        public float TransformedMinX { get; }
+        public float TransformedMinY { get; }
+        public float TransformedMaxX { get; }
+        public float TransformedMaxY { get; }
+
+        public float TransformedRangeX { get; }
+        public float TransformedRangeY { get; }
+        
         public float MaxProportion { get; }
         public Layout Layout { get; }
         public Point Scale { get; set; }
 
         public ImageDefinition(List<Model.Point> PointsToTransform, Layout Layout)
-        {
-
+        { 
             this.OriginalMinX = PointsToTransform.Min(x => x.X);
             this.OriginalMaxX = PointsToTransform.Max(x => x.X);
             this.OriginalMinY = PointsToTransform.Min(x => x.Y);
@@ -43,7 +51,7 @@ namespace Hexagon.Model.Models
                 }
 
                 this.TransformedWidth = Layout.MaxPictureSizeX;
-                this.ProportationToScale = MathF.Floor(TransformedWidth / OriginalRangeX);
+                this.ProportationToScale =  TransformedWidth / OriginalRangeX;
                 TransformedHeigth = MathF.Ceiling(this.OriginalRangeY * ProportationToScale) ;
 
             }
@@ -54,24 +62,35 @@ namespace Hexagon.Model.Models
                     this.HexagonSize = MathF.Floor(Layout.MaxPictureSizeY / Layout.HexPerLine);
                 }
                 TransformedHeigth   = Layout.MaxPictureSizeY;
-                ProportationToScale = MathF.Floor(TransformedHeigth / (OriginalMaxY - OriginalMinY));
+                ProportationToScale =  TransformedHeigth / (OriginalMaxY - OriginalMinY);
                 TransformedWidth = MathF.Ceiling( OriginalRangeX * ProportationToScale);
-                
+
             }
+            this.TransformedRangeX = this.OriginalRangeX * ProportationToScale;
+            this.TransformedRangeY = this.OriginalRangeY * ProportationToScale;
+            this.TransformedMaxX = this.OriginalMaxX * ProportationToScale;
+            this.TransformedMaxY = this.OriginalMaxY * ProportationToScale;
+            this.TransformedMinX = this.OriginalMinX * ProportationToScale;
+            this.TransformedMinY = this.OriginalMinY * ProportationToScale;
+
             this.Layout = Layout;
             MaxProportion = OriginalRangeX > OriginalRangeY ? OriginalRangeX : OriginalRangeY;
         }
-
-        public ImageDefinition(List<Model.Point> PointsToTransform, Point Scale = null )
+        private void SetTransformed()
+        {
+            
+        }
+        public ImageDefinition(Column ColumnX, Column ColumnY, Column ColumnDistance, Column ColumnXYDistinct, Point Scale = null)
         {
             if (Scale == null)
-                this.Scale = new Point(1000, 1000);
-            else
-                this.Scale = Scale;
-            this.OriginalMinX = PointsToTransform.Min(x => x.X);
-            this.OriginalMaxX = PointsToTransform.Max(x => x.X);
-            this.OriginalMinY = PointsToTransform.Min(x => x.Y);
-            this.OriginalMaxY = PointsToTransform.Max(x => x.Y);
+                Scale = new Point(10000, 10000);
+             this.Scale = Scale;
+            this.OriginalMinX = float.Parse(ColumnX.MinValue.ToString(), CultureInfo.InvariantCulture);
+            
+            this.OriginalMaxX = float.Parse( ColumnX.MaxValue .ToString(),CultureInfo.InvariantCulture); ;
+            this.OriginalMinY = float.Parse(ColumnY.MinValue.ToString(), CultureInfo.InvariantCulture); ;
+            this.OriginalMaxY = float.Parse(ColumnY.MaxValue.ToString(), CultureInfo.InvariantCulture); ;
+            
             this.OriginalRangeX = this.OriginalMaxX - this.OriginalMinX;
             this.OriginalRangeY = this.OriginalMaxY - this.OriginalMinY;
             
@@ -80,8 +99,6 @@ namespace Hexagon.Model.Models
             if (this.OriginalRangeX > this.OriginalRangeY)
             {
 
-                    this.HexagonSize = 1;
-                
 
                 this.TransformedWidth = Scale.X ;
                 this.ProportationToScale = MathF.Floor(TransformedWidth / OriginalRangeX);
@@ -92,18 +109,25 @@ namespace Hexagon.Model.Models
             {
                 
 
-                    this.HexagonSize = 1;
                 
                 TransformedHeigth = Scale.Y;
                 ProportationToScale = MathF.Floor(TransformedHeigth / OriginalRangeY);
                 TransformedWidth = MathF.Ceiling(OriginalRangeX * ProportationToScale);
 
             }
+            this.TransformedRangeX = this.OriginalRangeX * ProportationToScale;
+            this.TransformedRangeY = this.OriginalRangeY * ProportationToScale;
+            this.TransformedMaxX = this.OriginalMaxX * ProportationToScale;
+            this.TransformedMaxY = this.OriginalMaxY * ProportationToScale;
+            this.TransformedMinX = this.OriginalMinX * ProportationToScale;
+            this.TransformedMinY = this.OriginalMinY * ProportationToScale;
+
+            this.HexagonSize = (int)(TransformedRangeX * TransformedRangeY) / ColumnXYDistinct.NumberOfRows; ;
             this.Layout = new Layout
             {
                 FillPolygon = false,
                 Flat = true,
-                HexPerLine = (int)this.TransformedWidth,
+                HexPerLine = (int)(this.TransformedWidth * this.TransformedHeigth / ColumnX.NumberOfRows),
                 Origin = new System.Drawing.PointF(0, 0),
                 Size = new System.Drawing.PointF(this.HexagonSize, this.HexagonSize)
                 

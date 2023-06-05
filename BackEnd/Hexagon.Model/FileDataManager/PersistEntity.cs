@@ -206,7 +206,7 @@ namespace Hexagon.Model.FileDataManager
                 var ListBlob = new List<PropertyInfo>();
                 foreach(var prop in Entity.GetType().GetProperties())
                 {
-                    if (ModelSaveAtributes.ProperIsBlobs(prop))
+                    //if (ModelSaveAtributes.ProperIsBlobs(prop))
                     { 
                         prop.SetValue (Entity, null);
                         ListBlob.Add(prop);

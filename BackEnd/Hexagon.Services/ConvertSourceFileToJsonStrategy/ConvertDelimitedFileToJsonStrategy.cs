@@ -13,6 +13,7 @@ using Hexagon.Services.Helpers;
 using Hexagon.Model.FileDataManager;
 using Hexagon.Shared.DTOs;
 using Hexagon.Model.Repository;
+using System.Reflection;
 
 namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
 {
@@ -116,7 +117,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             var TieneFecha = (FileData.DatetimeFormart != null && FileData.DatetimeFormart != "");
             var TieneParDenumeros = NumberConcatenator != null;
             var TiposPermitidosColumas = new Dictionary<int, Dictionary<EnumAlowedDataType, int>>();
-            var PathColums = ColumnRepository.ClassLocation(new ColumnDTO() { ParentID = NativeFile.ParentID });
+            var PathColums = ColumnRepository.ClassLocation(new Column {Name= "J", ParentID = NativeFile.ParentID });
 
             using (StreamReader StreamReader = new StreamReader(PathFileOrigen))
             {
@@ -159,8 +160,9 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     TiposPermitidos.Add(EnumAlowedDataType.GenericNumber, 0);
                     TiposPermitidos.Add(EnumAlowedDataType.NullOrEmpty, 0);
                     TiposPermitidosColumas.Add(i, TiposPermitidos);
-
-
+                    var FieldProps = new Package<Field>().PorpertiesList () ;
+                    var Field = new KeyValuePair<string, List<KeyValuePair<string, string>>>(typeof(Field).FullName,FieldProps);
+                     
                     var ColumnToPersist = new Column()
                     {
                         Name = Columns[i],
@@ -168,7 +170,8 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                         PathFields = PathColumsField,
                         ParentID = NativeFile.ParentID,
                         IdTraslated = false
-                    };
+                     };
+                    //ColumnToPersist.ReadFieldPorperties("I");
                     ColumnToPersist.ID = ColumnRepository.GenerateFullID(ColumnToPersist);
                     ColumnsForModel.Add(ColumnToPersist);
 

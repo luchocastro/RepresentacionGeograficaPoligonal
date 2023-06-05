@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace Hexagon.Model.Models
 {
-
-    public abstract   class Base : IModelPersistible, IDisposable, IAsyncDisposable 
+    [Serializable]
+    public class Base : Serializable<Base>, IModelPersistible, IDisposable, IAsyncDisposable 
     {
 
         
@@ -19,13 +19,14 @@ namespace Hexagon.Model.Models
         public string ParentID { get; set; }
         public string Path { get; set; }
         public virtual bool IdTraslated { get; set; } 
-        public virtual string Name { get; set; }  
-    public void Dispose()
+        public virtual string Name { get; set; }
+        public void Dispose()
         {
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
 
+        public virtual T ForPack<T>( T ForPAck) { return ForPAck; }
         public async ValueTask DisposeAsync()
         {
             await DisposeAsyncCore().ConfigureAwait(false);
@@ -34,6 +35,8 @@ namespace Hexagon.Model.Models
             GC.SuppressFinalize(this);
         }
 
+
+        
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)

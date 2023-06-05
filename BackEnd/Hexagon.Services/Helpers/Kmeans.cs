@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using LanguageExt;
 
 namespace Hexagon.Cluster
 {
@@ -1158,7 +1159,7 @@ namespace Hexagon.Cluster
             return region;
         }
         static bool ExpandCluster(List<Point> points, Point p, int clusterId, double eps, int minPts)
-        {
+        { 
             List<Point> seeds = GetRegion(points, p, eps);
             if (seeds.Count < minPts) // no core point
             {

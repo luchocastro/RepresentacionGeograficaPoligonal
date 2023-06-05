@@ -22,7 +22,7 @@ namespace Hexagon.Model.Repository
         G Add(TEntity entity);
         Task<G> AddAsync(TEntity entity);
         Task<TEntity > GetAsync(G EntityPersisted); 
-        string ClassLocation(G DTOEntity);
+        string ClassLocation(TEntity entity);
         G Update(TEntity dbEntity, TEntity entity);
         Task UpdateAsync(TEntity dbEntity, TEntity entity);
         void Delete(TEntity entity);

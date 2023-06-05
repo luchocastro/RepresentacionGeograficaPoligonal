@@ -72,28 +72,38 @@ namespace Hexagon.Services.Helpers
                 return ret;
             }
         }
-        public static void GenerateXY(Column ColumnX, Column ColumnY, Column ColumnXY, IDataRepository<ColumnDTO, Column> dataRepository  , string decimalSepar=".")
+        public static void GenerateXY(Column ColumnX, Column ColumnY, Column ColumnXY, IDataRepository<ColumnDTO, Column> dataRepository  , string decimalSepar=".", bool DeleteIfExist=true)
         {
             var t = Task.Run(() =>
             {
                 bool merge = true;
-                var points = new List<Point>();
+                bool Exist = false;
                 if (File.Exists(ColumnXY.PathFields))
-                    File.Delete(ColumnXY.PathFields);
+                    if (DeleteIfExist)
+                        File.Delete(ColumnXY.PathFields);
+                    else
+                        return;
+                var ColumnPointDistance = new Column {ParentID= ColumnXY.ParentID, Name = "MAE", NumberOfRows = ColumnY.NumberOfRows, ActionToDoWithUncasted = EnumActionToDoWithUncasted.DeleteData }  ;
+                ColumnPointDistance.ID = dataRepository.GenerateFullID(ColumnPointDistance);
+                ColumnPointDistance.Path = Path.Combine( dataRepository.ClassLocation(ColumnPointDistance), ColumnPointDistance.Name + ".Hex.Json");
+                ColumnPointDistance.PathFields = Path.Combine(dataRepository.ClassLocation(ColumnPointDistance), typeof(Field).Name, ColumnPointDistance.Name + ".Hex.Json");  
+
+
                 using StreamReader StreamReaderX = new StreamReader(ColumnX.PathFields);
                 using StreamReader StreamReaderY = new StreamReader(ColumnY.PathFields);
                 using StreamWriter StreamWriter = new StreamWriter(ColumnXY.PathFields, true);
-            try
+                using StreamWriter StreamWriterPoints = new StreamWriter(ColumnPointDistance.PathFields, true);
+                try
             {
 
-                float minX = float.MaxValue, minY = float.MaxValue, maxX = float.MinValue, maxY = float.MinValue;
+
 
                 ColumnX.MinValue = double.MaxValue;
                 ColumnX.MaxValue = double.MinValue;
 
                 ColumnY.MinValue = double.MaxValue;
                 ColumnY.MaxValue = double.MinValue;
-
+                
                 while (merge)
                 {
                     var x = "";
@@ -125,32 +135,70 @@ namespace Hexagon.Services.Helpers
                         ColumnY.MaxValue = (double)ColumnY.MaxValue < yNum ? yNum : ColumnX.MaxValue;
                         var Point = new Model.Point((float)xNum,
                             (float)yNum);
-                        points.Add(Point);
-                        var fieldXY = new Field() { Index = fieldY.Index, Value = "(" + fieldX.Value.ToString() + ":" + fieldY.Value.ToString() + ")" };
+                        var fieldXY = new Field() { Index = fieldY.Index, Value = "(" + xNum.ToString(CultureInfo.InvariantCulture) + ":" + yNum.ToString(CultureInfo.InvariantCulture) + ")" };
                         StreamWriter.WriteLine(fieldXY.ToString());
                     }
                 }
-
-                    double eps = Hexagon.Cluster.Point.DistanceSquared(new Hexagon.Cluster.Point(points[0].X, points[0].Y),
-                        new Hexagon.Cluster.Point(points[1].X, points[1].Y));
-
-
-                    eps = 0.1;
+                    StreamWriter.Dispose();
+                    using StreamReader StreamReaderXY = new StreamReader(ColumnXY.PathFields);
  
-                    int minPts = (int)( Math.Sqrt(points.Count()/2.0));
-                    var clusters = Hexagon.Cluster.DBSCAN.Get(points, eps, minPts);
+                    var ColumnXMinValue = (Double)ColumnX.MinValue  ;
+                    var ColumnXMaxValue = (Double)ColumnX.MaxValue ;
+                    var ColumnYMinValue = (Double)ColumnY.MinValue  ;
+                        var ColumnYMaxValue = (Double)ColumnY.MaxValue  ;
+                    ColumnPointDistance.MinValue = Double.MaxValue;
+                    ColumnPointDistance.MaxValue= Double.MinValue;
+                    if (File.Exists(ColumnPointDistance.PathFields))
+                         File.Delete(ColumnPointDistance.PathFields);
+                     merge = true;
+                    var SUMMAE = 0f;
+                    try
+                    {
+                        while (merge)
+                        {
+                            var ActualRead = "";
+                            ActualRead = StreamReaderXY.ReadLine();
+
+                            if (ActualRead == null)
+                                merge = false;
+                            else
+                            {
+                                var fieldXY = new Field().FromString(ActualRead);
+                                var Point = new Point( );
+
+                                var Xs = new double[] { Point.X, ColumnXMaxValue, ColumnXMinValue };
+                                var Ys = new double[] { Point.Y, ColumnYMinValue, ColumnYMaxValue };
+                                var Points = new Point[] { new Point(ColumnXMaxValue, ColumnYMaxValue),
+                                new Point(ColumnXMaxValue, ColumnYMinValue), new Point(ColumnXMinValue, ColumnYMaxValue),
+                                new Point(ColumnXMinValue, ColumnYMinValue)  };
+                                var MAE = (double)Points.Select(x => Math.Sqrt(Math.Pow(Point.X - x.X, 2) + Math.Pow(Point.Y - x.Y, 2))).Min();
+                                var fieldMAE = new Field { Index = fieldXY.Index, Value = MAE };
+                                ColumnPointDistance.MinValue = (double)ColumnPointDistance.MinValue > MAE ? MAE : ColumnPointDistance.MinValue;
+                                ColumnPointDistance.MaxValue = (double)ColumnPointDistance.MaxValue < MAE ? MAE : ColumnPointDistance.MaxValue;
+
+                                StreamWriterPoints.WriteLine(fieldMAE.ToString());
+
+                            }
+
+                        }
+                    }
+                    finally { StreamReaderXY.Dispose(); }
+                    //var clusters = Hexagon.Cluster.DBSCAN.Get(points, eps, minPts);
                 }
                 finally
                 {
                     StreamReaderX.Dispose();
                     StreamReaderY.Dispose();
                     StreamWriter.Dispose();
+                    StreamWriterPoints.Dispose();
                 }
-            });
-            dataRepository.Add(ColumnY);
-            dataRepository.Add(ColumnX);
-            dataRepository.Add(ColumnXY);
+                dataRepository.Add(ColumnY);
+                dataRepository.Add(ColumnX);
+                dataRepository.Add(ColumnXY);
 
+                dataRepository.Add(ColumnPointDistance);
+                 
+            });
 
 
             //GetClusters(points, eps, minPts)
