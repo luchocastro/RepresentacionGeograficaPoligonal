@@ -20,6 +20,11 @@ namespace Hexagon.Model.Models
                 return default;
             }
         }
+        public static List<MemberInfo> GetAttributes(Type type )
+        {
+            var ret = type.GetMembers().Where(z => z.CustomAttributes.ToList().Count() > 0).ToList();
+            return ret;
+        }
 
         public static List< MemberInfo>  GetAttributes <T>( )
         {
@@ -31,6 +36,10 @@ namespace Hexagon.Model.Models
             var ret = typeof(T).GetMembers().Select(x => new KeyValuePair<MemberInfo, List<Attribute>>(x, x.GetCustomAttributes().Select(z => z).Where(z=>z.GetType() == typeAtt).ToList()) ) .ToList();
             return ret;
         }
-
+        public static List<KeyValuePair<MemberInfo, List<Attribute>>> GetAttribute(Type typeAtt, Type type)
+        {
+            var ret = type.GetMembers().Select(x => new KeyValuePair<MemberInfo, List<Attribute>>(x, x.GetCustomAttributes().Select(z => z).Where(z => z.GetType() == typeAtt).ToList())).ToList();
+            return ret;
+        }
     }
 }

@@ -8,7 +8,7 @@ using System.Text.Json.Serialization;
 
 namespace Hexagon.Model
 {
-    public  class Packing<TEntity>  where TEntity :  Package<TEntity>
+    public  class Packing<TEntity>  where TEntity :  Package 
     {
 
             public Point Point { get; private set; }

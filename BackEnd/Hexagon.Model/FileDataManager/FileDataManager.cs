@@ -87,7 +87,6 @@ namespace Hexagon.Model.FileDataManager
             
             return Mapper.Map<G>(entity);
         }
-
         public virtual G Add(TEntity entity)
         {
             var ID = GenerateFullID(entity);

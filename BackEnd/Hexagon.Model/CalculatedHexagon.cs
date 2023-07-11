@@ -9,7 +9,9 @@ namespace Hexagon.Model
     {
         public HexagonPosition HexagonPosition { get;set;}
         public float Value { get; set; }
+
     }
+
     public class CalculatedHexagon :Base
     {
 

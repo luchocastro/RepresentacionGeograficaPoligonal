@@ -160,9 +160,8 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
                     TiposPermitidos.Add(EnumAlowedDataType.GenericNumber, 0);
                     TiposPermitidos.Add(EnumAlowedDataType.NullOrEmpty, 0);
                     TiposPermitidosColumas.Add(i, TiposPermitidos);
-                    var FieldProps = new Package<Field>().PorpertiesList () ;
-                    var Field = new KeyValuePair<string, List<KeyValuePair<string, string>>>(typeof(Field).FullName,FieldProps);
-                     
+
+                    
                     var ColumnToPersist = new Column()
                     {
                         Name = Columns[i],
@@ -182,7 +181,7 @@ namespace Hexagon.Services.ConvertSourceFileToJsonStrategy
             }
 
             var Cols = ColumnsForModel;
-            var t = Task.Run(() =>
+            var t = Task.Run(() =>  
             {
               for (int i = 0; i < ColumnsForModel.Count(); i++)
               {

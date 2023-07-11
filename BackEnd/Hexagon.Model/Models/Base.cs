@@ -26,7 +26,7 @@ namespace Hexagon.Model.Models
             GC.SuppressFinalize(this);
         }
 
-        public virtual T ForPack<T>( T ForPAck) { return ForPAck; }
+
         public async ValueTask DisposeAsync()
         {
             await DisposeAsyncCore().ConfigureAwait(false);

@@ -52,6 +52,7 @@ namespace Hexagon.Api.Config
             services.AddScoped<IDataRepository<ColumnDTO, Column>, FileDataManager<ColumnDTO , Column >>();
             services.AddScoped<IDataRepository<PaletteClassDTO, PaletteClass>, FileDataManager<PaletteClassDTO, PaletteClass>>();
             services.AddScoped<IDataRepository<ContentDTO, Content>, FileDataManager<ContentDTO, Content>>();
+
             services.AddHttpContextAccessor();
             services.AddScoped<IFileService, FileService>();
             services.AddScoped<Hexagon.Services.Interfaces.IHexAuthenticationService, HexAuthenticationService>();
