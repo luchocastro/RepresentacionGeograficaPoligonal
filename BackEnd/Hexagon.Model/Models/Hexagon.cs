@@ -1,20 +1,22 @@
 ﻿using Hexagon.Model.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Hexagon.Model
 {
 
-    public class Hex : IEquatable<Hex>
+    public class Hex : IEquatable<Hex>, IComparable<Hex>, IPackable  
     {
 
 
         public Hex(float q = 0, float r = 0, float s = 0)
         {
             if (Math.Round(q + r + s) != 0) throw new Exception("q + r + s must be 0");
-            this.Lines = new List<Line>();
+            
             R = r;
             S = s;
             Q = q;
@@ -34,7 +36,7 @@ namespace Hexagon.Model
             this.HexagonDetailsID = "";
         }
 
-
+        
         public float Q { get; set; }
         public float R { get; set; }
         public float S { get; set; }
@@ -59,7 +61,7 @@ namespace Hexagon.Model
                 return ret; } }
 
         public List<Hex> Hexagonos { get; }
-        public override string ToString() => $"({Q}, {R} , {S}  )";
+        
         public float Length()
         {
             return (Math.Abs(this.Q) + Math.Abs(this.R) + Math.Abs(this.S)) / 2;
@@ -80,9 +82,84 @@ namespace Hexagon.Model
         public static bool operator ==(Hex lhs, Hex rhs) => lhs.Equals(rhs);
 
         public override int GetHashCode() => (int)(Q * R * S);
+
+        public int CompareTo([AllowNull] Hex other)
+        {
+            if (this == other)
+                return 0;
+            if (this.Q<other.Q)
+            {
+                if (this.R < other.R)
+                {
+                    if (this.S < other.S)
+                        return -1;
+                    else
+                        return 1;
+                }
+                else
+                    return 1;
+            }
+            else
+                return 1;
+
+
+        }
+        public override string ToString()
+        {
+            return ObjectToString();
+        }
+
+
+        public string ObjectToString()
+        {
+            Dictionary<string, string> ret = new Dictionary<string, string>();
+                
+                var values = JsonSerializer.Serialize(new float[] { this.Q, this.R, this.S, this.Value });
+            ret.Add("H", values);
+            var Corners = "";
+            if (this.Corners!=null && this.Corners.Length > 0)
+            {
+
+                ret.Add("C", JsonSerializer.Serialize(this.Corners));
+            }
+            if (this.Rows != null && this.Rows.Count  > 0)
+            {
+
+                ret.Add("R", JsonSerializer.Serialize(this.Rows.Distinct() ));
+            }
+            return JsonSerializer.Serialize(ret);
+
+        }
+            public object FromString(string ToUnPackaged )
+        {
+            var retall = JsonSerializer.Deserialize<Dictionary<string, string>>(ToUnPackaged);
+            var ret  = JsonSerializer.Deserialize <float[]>(retall ["H"]);
+            
+
+            this.Q = ret[0];
+            this.R = ret[1];
+            this.S   = ret[2];
+            this.Value = ret[3];
+            if (retall.ContainsKey("C"))
+            {
+                this.Corners = JsonSerializer.Deserialize<System.Drawing.PointF[]>(retall["C"]) ;
+            }
+            if (retall.ContainsKey("R"))
+            {
+                this.Rows = JsonSerializer.Deserialize<long[]>(retall["R"]).ToList() ;
+            }
+            return this;
+        }
+
+        public string Properties()
+        {
+            throw new NotImplementedException();
+        }
+
+
         #endregion
         [JsonIgnore]
-        public List<Line> Lines { get; set; } = new List<Line>();
+        public List<long> Rows{ get; set; } = new List<long>();
         public float Value { get; set; }
         public float PorcentualXaxisPosition {
             get; set; }
@@ -102,8 +179,9 @@ namespace Hexagon.Model
         public float Opacity { get; set; }
         public string BorderColor { get; set; }
         public string BorderType { get; set; }
-        public Point[] Corners { get; set; }  
+        public System.Drawing.PointF[] Corners { get; set; }  
         [JsonIgnore]
         public string HexagonDetailsID { get; set; }
+
     }
 }

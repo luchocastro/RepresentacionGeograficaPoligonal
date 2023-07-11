@@ -11,7 +11,7 @@ namespace Hexagon.Model.Models
     {
         private int _PropertyOrder = 0;
         private bool _InPackage = false;
-
+        private bool _OutPackage = false;
         public int PropertyOrder { get { return _PropertyOrder; } set { _PropertyOrder=value; } }
         public bool InPackage { get { return _InPackage; }  set { _InPackage = value; } }
 
@@ -22,4 +22,5 @@ namespace Hexagon.Model.Models
 
 
     }
+
 }

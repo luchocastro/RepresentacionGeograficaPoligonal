@@ -25,7 +25,11 @@ namespace Hexagon.Shared.DTOs
         public EnumActionToDoWithUncastedDTO ActionToDoWithUncasted { get; set; }
         public string DirectoryOfColumns { get; set; }
         public bool IsPolygon { get; set; } = false;
-        public string FieldPorpertiesInValue { get; set; } = "";
+        public FieldTypeDTO FieldType
+        {
+            get;
+            set;
+        }
         public string FileName { get; set; }
         public string PathFields { get; set; }
         public string PathSampleFields { get; set; }

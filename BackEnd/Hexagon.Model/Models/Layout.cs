@@ -38,18 +38,13 @@ namespace Hexagon.Model
 
         public override string ToString()
         {
-            var ToHashed = Convert.ToInt32(this.Flat).ToString();
-            ToHashed += this.MaxPictureSizeX.ToString();
+            var ToHashed =  this.MaxPictureSizeX.ToString();
             ToHashed += this.MaxPictureSizeY.ToString();
             ToHashed += this.Size.X.ToString();
-            ToHashed += this.Size.Y.ToString();
-            ToHashed += this.Origin.X.ToString();
-            ToHashed += this.Origin.Y.ToString();
+            
             ToHashed += Convert.ToInt32(this.FillPolygon).ToString();
             ToHashed += Convert.ToInt32(this.PaintLines).ToString();
-            ToHashed += this.MapDefinition.ColumnForMapGroup.Name ;
-            ToHashed += this.MapDefinition.ColumnForX.Name ;
-            ToHashed += this.MapDefinition.ColumnForY.Name;
+            
             string ret = HashHelper.sha256Hashed(ToHashed); 
             return ret ;
 

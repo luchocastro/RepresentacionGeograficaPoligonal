@@ -202,8 +202,24 @@ namespace Hexagon.Services.Helpers
 
             
             var hex = HexagonRound(new Hex(q, r, -q - r));
-            hex.Corners = PolygonCorners(LayoutBasic, hex);
+            //hex.Corners = PolygonCorners(LayoutBasic, hex);
             return hex;
+        }
+        public static Point CubeCoordsHexagonFlat(Point p )
+        {
+
+            var q = LayoutFlat.B0 * p.X;
+            var r = LayoutFlat.B2 * p.X + LayoutFlat.B3 * p.Y;
+
+            return new Point(q,r);
+        }
+        public static Hex PixelToHexagonFlat(Point point, float size = 1f)
+        {
+
+            var q = (2f / 3f * point.X) / size;
+            var r = (-1f / 3f * point.X + MathF.Sqrt(3) / 3f * point.Y) / size;
+
+            return HexagonRound(new Hex(q, r, -q - r));
         }
         public static Hex PixelToHexagon(Layout layout, Point p)
         {

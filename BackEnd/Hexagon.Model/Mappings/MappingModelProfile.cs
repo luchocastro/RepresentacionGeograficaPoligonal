@@ -71,8 +71,11 @@ namespace Hexagon.Model.Mappings
             CreateMap<LineDTO, Line>();
             CreateMap<Field, FieldDTO>();
             CreateMap<FieldDTO, Field>();
-            CreateMap<Content, ContentDTO>();
-            CreateMap<ContentDTO, Content>();
+            CreateMap<FieldType , FieldTypeDTO> ();
+            CreateMap<FieldTypeDTO, FieldType>();
+            CreateMap<FieldData , FieldDataDTO>();
+            CreateMap<FieldDataDTO, FieldData>();
+
         }
     }
 }

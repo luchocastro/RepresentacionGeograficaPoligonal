@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Hexagon.Model
 {
-    public class Pack<T> where T:IForPack<T>
+    public class Pack<T> where T:IForPack
     {
         public static string StringPack ( )    
         {
@@ -36,16 +36,17 @@ namespace Hexagon.Model
         }
 
     }
-    public interface IForPack<Y>  where Y : IForPack<Y>
+    public interface IForPack
 
     {
 
-
-        public string ToString( );
-        public Dictionary<string, string> ValuesPackeged(Y ForPackaged);
-        public Y FromString (string ToUnPackaged);
-        public string DoMask( );
-        public Y GetValue ( )  ; 
-}
+        public string ToString();
+        public string[] ValuesPackaged(object  ForPackaged);
+        public IForPack FromString(string ToUnPackaged, string Properties = "");
+        public string Properties();
+        public String GetValue (IForPack Father, IForPack Child, string Data);
+        public object Pack { get; set; }
+        public Type TypeOfPack { get; set; }
+    }
 }
 
