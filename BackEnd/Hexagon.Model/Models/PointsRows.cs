@@ -6,6 +6,7 @@ using System.Text.Json;
 
 namespace Hexagon.Model.Models
 {
+    using Hexagon.IO;
     public class PointsRows : IPackable 
     {
         private List<Point> _Points = new List<Point>();
@@ -46,7 +47,7 @@ namespace Hexagon.Model.Models
 
         }
 
-        public List<ToPack> ProperyList { get; }
+
         public object FromString  (string ObjectPackaged)
         {
             var dic = JsonSerializer.Deserialize<Dictionary<string, string>>(ObjectPackaged);

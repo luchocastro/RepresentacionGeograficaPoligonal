@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
+using Hexagon.IO;
 namespace Hexagon.Model.Models
 {
     public class HexagonDetails : Base,  IPackable 

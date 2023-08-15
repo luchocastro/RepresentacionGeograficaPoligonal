@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Hexagon.AsyncIO\Hexagon.AsyncIO.csproj" />
+    <ProjectReference Include="..\Hexagon.AsyncIO\Hexagon.IO.csproj" />
     <ProjectReference Include="..\Hexagon.Core\Hexagon.Core.csproj" />
     <ProjectReference Include="..\Hexagon.Shared\Hexagon.Shared.csproj" />
   </ItemGroup>

@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Hexagon.Services.Helpers;
 using Microsoft.AspNetCore.Http;
 using Hexagon.Model;
-
+using Hexagon.IO;  
 namespace Hexagon.Api.Config
 {
     public static class DependencyContainer
@@ -62,8 +62,13 @@ namespace Hexagon.Api.Config
 
             //services.AddScoped< IAuthenticationService , HexAuthentication > ();
             services.Configure<FileDataManagerOptions>(configuration.GetSection(IFileDataManagerOptions.Position));
+            services.Configure<FileServiceOptions>(configuration.GetSection(IFileServiceOptions.Position));
+            services.Configure<SplitOptions>(configuration.GetSection(ISplitOptions.Position));
             services.AddOptions();
-            services.AddSingleton<IFileDataManagerOptions, PseudoServiceFileDataManagerOption>();
+            services.AddSingleton<IFileDataManagerOptions, FileDataManagerOption>();
+            services.AddSingleton<IFileServiceOptions, GetFileServiceOptions>();
+
+            services.AddSingleton<ISplitOptions, GetSplitOptions>();
         }
     }
     

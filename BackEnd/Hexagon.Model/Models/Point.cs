@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
+using Hexagon.IO;
 namespace Hexagon.Model
 {
     public class Point  : IPackable, IComparable<Point>, IComparer<Point> 
@@ -19,6 +19,7 @@ namespace Hexagon.Model
 
         private float _X, _Y;
         private long _Row =-1;
+        private ColumnValueShortedList  _Values= new ColumnValueShortedList();
         public Point()  
         {
 
@@ -39,19 +40,28 @@ namespace Hexagon.Model
         public long Row { get { return _Row; } 
             set { _Row = value; } }
         public float Y { get { return _Y; }  set { _Y = value; } }
-        
+
+        public ColumnValueShortedList Values { get { return _Values; } set { _Values = value; } }
 
 
         public object FromString(string Point)
         {
             if (Point == null || Point == "")
                 return null;
-            var Parsed = JsonSerializer.Deserialize<float []>(Point);
+            var Parsed = JsonSerializer.Deserialize<string  []>(Point);
+           
+
+            X = Utils.FloatFromString(Parsed[0]);
+            Y = Utils.FloatFromString(Parsed[1]);
+
+            if (Parsed.Length > 2)
+                Row = long.Parse(Parsed[2]);
+            if (Parsed.Length > 3)
+            {
+                _Values.Values = JsonSerializer.Deserialize<List<short[]>>(Parsed[3]);
+            }
+
             
-            X = Parsed[0] ;
-            Y = Parsed[1];
-            if (Parsed.Length==3)
-                Row =  (long)(Parsed[2]);
             return this;
 
         }
@@ -61,8 +71,14 @@ namespace Hexagon.Model
         }
         public string ObjectToString()
         {
+            var ret = new List<string>();
+            ret.Add(Utils.FloatFromFloat(X));
+            ret.Add(Utils.FloatFromFloat(Y ));
+            ret.Add(Row.ToString () );
+            ret.Add(JsonSerializer.Serialize(_Values.Values)) ; 
 
-            return JsonSerializer.Serialize(new float[] { this.X, this.Y, this.Row });
+
+            return JsonSerializer.Serialize(ret );
         }
 
         public Point(string x, string y)
@@ -688,22 +704,33 @@ namespace Hexagon.Model
         /// ASume que la columena va a estar ordena x Y R
         /// </summary>
         /// <param name="ColumnXY"></param>
-        public void Add(Column ColumnXY)
+        public Column  Add(Column Source, Column Dest, Column WithValue, string FolderDestination, string FileName, ref SplitFile splitFile)
         {
+
+            var ret = Dest;
             XWithYRows ActuallineWRV = null;
             var FileToWrite = Path.GetTempFileName();
-            using var Writer = new StreamWriter(ColumnPoints.PathFields, true);
+            
+            using var Writer = new StreamWriter(Dest.PathFields, true);
+
+            //using var WriterWv = new StreamWriter(WithValue.PathFields, true);
             var Xact = float.MinValue;
             var yact = float.MinValue;
             var first = true;
             ActuallineWRV = new XWithYRows();
             var YRows = new  YRows ();
+            long index = 0;
             while (true)
             {
-                var line = ColumnXY.RWDataColumn.GetNextString; 
+                var line = "";
+                splitFile.ReadFromChunk(ref line);
+
                 if (line == null)
                 {
-                    Writer.WriteLine(JsonSerializer.Serialize(ActuallineWRV));
+                    var tofile = ActuallineWRV.ObjectToString();
+                    splitFile.WriteChunk(FolderDestination, FileName, tofile);
+                    //Writer.WriteLine( tofile);
+                    ret.MaxValue = tofile;
                     break;
                 }
 
@@ -715,39 +742,39 @@ namespace Hexagon.Model
                 {
                     if (!first)
                     {
-                        Writer.WriteLine(JsonSerializer.Serialize(ActuallineWRV));
+                        splitFile.WriteChunk(FolderDestination, FileName, ActuallineWRV.ObjectToString());
+
+                        //Writer.WriteLine(ActuallineWRV.ObjectToString());
+                        if (index == 0)
+                            ret.MinValue = ActuallineWRV.ObjectToString();
                     }
                     else
                     {
                         first = false ;
                     } 
                         
-                    ActuallineWRV = new XWithYRows(point.X);
+                    ActuallineWRV = new XWithYRows(point.X, index);
+                    index++;
                 }
-                if(yact!=point.Y || Xact != point.X)
-                {
+                
 
-                    YRows = new YRows(point.Y) ;
-                }
 
-                    YRows.Add(point.Row);
                 
                 Xact = point.X;
                 yact = point.Y;
 
 
 
-                ActuallineWRV.AddYSetOFRow(point.Y, point.Row);
+                ActuallineWRV.AddYSetOFRow(point.Y, point.Row,  point.Values);
 
 
 
             }
 
 
-            ColumnXY.RWDataColumn.CloseReader();
 
-            Writer.Flush();
-            Writer.Close();
+
+            return ret;
         }
 
 
@@ -780,7 +807,7 @@ namespace Hexagon.Model
 
                                 XExists = true;
 
-                                Writer.WriteLine(JsonSerializer.Serialize(ActuallineWRV));
+                                Writer.WriteLine(ActuallineWRV.ObjectToString());
                             }
                             else
                                 Writer.WriteLine(line);
@@ -788,8 +815,9 @@ namespace Hexagon.Model
                         if (!XExists)
                         {
                             ActuallineWRV = new XWithYRows(X);
+
                             ActuallineWRV.AddYSetOFRow(Y, row);
-                            Writer.WriteLine(JsonSerializer.Serialize(ActuallineWRV));
+                            Writer.WriteLine( ActuallineWRV.ObjectToString());
 
                         }
                     }
@@ -805,7 +833,7 @@ namespace Hexagon.Model
                     ActuallineWRV = new XWithYRows(X);
                     ActuallineWRV.AddYSetOFRow(Y, row);
 
-                    Writer.WriteLine(JsonSerializer.Serialize(ActuallineWRV));
+                    Writer.WriteLine(ActuallineWRV.ObjectToString());
                 }
                 Writer.Flush();
                 Writer.Close();

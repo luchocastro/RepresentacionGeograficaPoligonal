@@ -17,7 +17,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LectorFormulas", "LectorFor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Average", "Average\Average.csproj", "{78185D44-5AB2-4601-B475-C018EE746410}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hexagon.AsyncIO", "Hexagon.AsyncIO\Hexagon.AsyncIO.csproj", "{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Hexagon.IO", "Hexagon.AsyncIO\Hexagon.IO.csproj", "{A5520A2E-5950-4A9F-AA0C-7055DC34A39A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

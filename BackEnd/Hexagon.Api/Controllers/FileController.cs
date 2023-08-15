@@ -122,7 +122,7 @@ namespace Hexagon.Api.Controllers
 
 
 
-            var ret = FileService.DoCalc(DoCalcDataPost.FunctionID, DoCalcDataPost.Columns);
+            var ret = FileService.DoCalc(DoCalcDataPost.ParendID , DoCalcDataPost.Path, DoCalcDataPost.FunctionID,  DoCalcDataPost.Columns);
 
             return Ok(ret);
         }
@@ -156,9 +156,11 @@ namespace Hexagon.Api.Controllers
             return Ok(ret);
         }
         [HttpPost("[action]")]
-        public IActionResult PrepareFile(string ColumnX, string ColumnY,string HexID)
+        public IActionResult PrepareFile(PreparedFileDataPost dataPost ) 
         {
-            FileService.PrepareMap(new string[] { ColumnX, ColumnY }, HexID); ;
+
+             
+            FileService.PrepareMap(new string[] { dataPost.ColumnX , dataPost.ColumnY }, dataPost.HexID, dataPost.ListData.ToList()); ;
 
             var ret = ""; 
                 ;
