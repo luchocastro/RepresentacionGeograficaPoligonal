@@ -25,14 +25,15 @@ namespace Hexagon.Services.Interfaces
         List<HexFileDTO> GetHexFiles(string AnalizedFileID);
         List<AnalizedFileDTO> GetAnalizedFiles(string ProyectID);
         public FunctionDTO SetFunction(string HexagonDetailstID, FunctionDTO Function);
-        public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns = null);
+        public ColumnDTO DoCalc(string HexagonDetailstID, string PathID, string Name, List<string> Columns = null);
         List<PaletteClass> GetPaletteClasses(string Name, string Enum, int Q);
         public string GenerateLayout(LayoutDto layout, string PathFile);
         public  HexFileDTO PutFileAsync(string User, string Project, string NicName, string FileName, string OriginalName);
         public Task<HexFileDTO> PutFileAsync(string User, string Project, string NicName, IFormFile IFormFile);
         public Task<NativeFileDTO> ConvertFileAsync(DataFileConfigurationDTO FileData, string HexFileID);
 
-        public string PrepareMap(string[] ColumnForXY, string HexID);
+        public string PrepareMap(string[] ColumnForXY, string HexID, List <string> LisaForData=null);
+        
 
     }
 }

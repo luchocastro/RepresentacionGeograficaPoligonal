@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json.Serialization;
-
+using Hexagon.IO;
 namespace Hexagon.Model
 {
     public class Column : Base 
@@ -58,6 +58,12 @@ namespace Hexagon.Model
             ret.Index = Pos;
             ret.Value = new GenericPackage(Value).ObjectToString();
             return ret;
+        }
+        public Type ColumnType()
+        {
+            if (this.FieldType != null && this.FieldType.FieldTypeName != null)
+                return Type.GetType(this.FieldType.FieldTypeName);
+            return null;
         }
         public Field ObjectFromString(string Field)
         {

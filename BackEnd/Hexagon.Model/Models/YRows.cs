@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
-
+using Hexagon.IO;
 namespace Hexagon.Model
 {
 
@@ -13,29 +13,25 @@ namespace Hexagon.Model
         {
 
         SortedSet<long> _row = new SortedSet<long> ();
-            public YRows(float val, List<long> row)
-            {
-             _row.UnionWith(row);
-            _value = val;
-            }
-        public YRows(float val, long row)
-        {
-            _row.Add(row);
-            _value = val;
-        }
+        RowValuesList  _RowValues = null;
+            
+
+        
+
+        
+
         public YRows(float val )
         {
-
+            _RowValues = new RowValuesList();
             _value = val;
         }
         public YRows()
         {
             Value = 0;
         }
-        public void Add(long Row)
-        {
-            this.Row.Add(Row);
-        }
+        
+
+        public RowValuesList RowValues { get { return _RowValues; } set { _RowValues = value; } }
         public SortedSet <long> Row { get { return _row; } set { _row= value; } }
         float _value;
             public float Value { get { return _value; }  set { _value = value; } }
@@ -88,6 +84,7 @@ namespace Hexagon.Model
                 Value  = RET.Key;
                 return this;
             }
+
         public KeyValuePair<float, SortedSet<long>>  ToKeyPair()
         {
 
@@ -95,8 +92,14 @@ namespace Hexagon.Model
         }
             public string ObjectToString()
             {
+                
                 return JsonSerializer.Serialize(new KeyValuePair<float, SortedSet<long>>( Value, Row));
             }
-        
+
+            public  object ToDictionay()
+        {
+            var rows = RowValues.ToDictionay();
+            return new KeyValuePair<float, object>(Value, rows);
+                }
     }
 }

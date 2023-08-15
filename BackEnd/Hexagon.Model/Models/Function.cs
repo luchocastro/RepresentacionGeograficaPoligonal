@@ -19,7 +19,8 @@ namespace Hexagon.Model
         }
         public string PathFunctionDLL { get; set; }
         public string FullClassName { get; set; }
-        public string FunctionName { get { return _FunctionName; } set { _FunctionName = value; base.Name = _FunctionName; } }
+        public string FunctionName { get { return _FunctionName; } set { _FunctionName = value; } }
+        public override string Name { get { return base.Name; } set {  base.Name = value; } }
         public Dictionary<string, string> Types { get; set; }
 
     }

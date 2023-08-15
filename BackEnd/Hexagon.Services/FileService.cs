@@ -28,6 +28,7 @@ using System.ComponentModel;
 using System.Text;
 using Hexagon.Model.Helper;
 using Point = Hexagon.Model.Point;
+using Hexagon.IO;
 
 namespace Hexagon.Services
 {
@@ -39,6 +40,9 @@ namespace Hexagon.Services
             public string FullClassName { get; set; }
             public string Layout { get; set; }
         }
+        private IFormulasResumen IFormulasResumen;
+        private IFileServiceOptions IFileServiceOptions;
+        private ISplitOptions ISplitOptions;
         private IConfiguration _Configuration;
         private IMapper _Mapper;
         private readonly IDataRepository<ProyectDataDTO, ProyectData> IDataRepository;
@@ -56,6 +60,13 @@ namespace Hexagon.Services
         private IDataRepository<PaletteClassDTO, PaletteClass> PaletteClassManager;
         private readonly User User = null;
         private readonly FileDataManagerOptions FileDataManagerOptions;
+
+        public string ColumnXName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string ColumnYName { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public int MaxFile { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string MaskSplitFile { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public string TempFile { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+
         public FileService(IConfiguration Configuration, IMapper Mapper,
             IDataRepository<ProyectDataDTO, ProyectData> IDataRepository,
             IDataRepository<HexFileDTO, HexFile> FileRepository,
@@ -71,7 +82,10 @@ namespace Hexagon.Services
 
             IDataRepository<CalculatedHexagonDTO, CalculatedHexagon> CalculatedHexagonManager,
         IDataRepository<ColumnDTO, Column> ColumnManager,
-        IDataRepository<PaletteClassDTO, PaletteClass> PaletteClassManager
+        IDataRepository<PaletteClassDTO, PaletteClass> PaletteClassManager,
+        IFormulasResumen IFormulasResumen,
+        IFileServiceOptions IFileServiceOptions,
+        ISplitOptions ISplitOptions
 
             )
         {
@@ -91,7 +105,9 @@ namespace Hexagon.Services
             this.ColumnManager = ColumnManager;
             this.CalculatedHexagonManager = CalculatedHexagonManager;
             this.PaletteClassManager = PaletteClassManager;
-
+            this.IFileServiceOptions = IFileServiceOptions;
+            this.IFormulasResumen = IFormulasResumen;
+            this.ISplitOptions = ISplitOptions;
         }
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData)
         {
@@ -346,7 +362,7 @@ namespace Hexagon.Services
         
         }
 
-        public string PrepareMap(string [] ColumnForXY, string HexID)
+        public string PrepareMap(string [] ColumnForXY, string HexID, List< string> ColumnForData=null)
         {
              
                 var ColumnXY = new Column();
@@ -377,12 +393,39 @@ namespace Hexagon.Services
                 FieldTypeXY.OwnIndexInData = true;
                 FieldTypeXY.Add(typeof(float).FullName, 0);
                 FieldTypeXY.Add(typeof(float).FullName, 1);
-                ColumnXY.FieldType = FieldType;
+                ColumnXY.FieldType = FieldTypeXY;
                     ColumnXY.ID = ColumnManager.GenerateFullID(ColumnXY);
+                var ColumnsForDataList = new List<Column   >();
+                if (ColumnForData != null && ColumnForData.Length() > 0)
+                {
 
+                    if (ColumnManager.GetColectionFromParent(HexID).Where(x => ColumnForData.Contains(x.Name)).Count() > 0)
+                    {
+
+
+
+                        ColumnsForDataList = ColumnManager.GetColectionFromParent(HexID).Where(x => ColumnForData.Contains(x.Name)).Select(x => _Mapper.Map<Column>(x)).ToList();
+
+
+
+                        //for (int i = 0; i < ColumnsForDataList.Count(); i++)
+                        //{
+                        //    ColumnsForDataList[i].Name += "XY";
+
+                        //    ColumnsForDataList[i].PathFields = Path.Combine(Path.GetDirectoryName(ColumnX.PathFields), ColumnsForDataList[i].Name + FileDataManagerOptions.DefaultExtension);
+
+                        //    ColumnsForDataList[i].ID = ColumnManager.GenerateFullID(ColumnsForDataList[i]);
+                        //    ColumnManager.Add(ColumnsForDataList[i]);
+
+                        //}
+
+
+                    }
+                }
                     ColumnXY.PathFields = Path.Combine(Path.GetDirectoryName(ColumnX.PathFields), ColumnXY.Name + FileDataManagerOptions.DefaultExtension);
                     ColumnManager.Add(ColumnXY);
-                Task.Run(() => GenerateXY(_Mapper.Map<Column>(ColumnX), _Mapper.Map<Column>(ColumnY), ColumnXY, ColumnManager, "."));
+
+                Task.Run(() => GenerateXY(_Mapper.Map<Column>(ColumnX), _Mapper.Map<Column>(ColumnY), ColumnXY, ColumnManager, ".",true,ColumnsForDataList));
                     
 
                 
@@ -390,7 +433,7 @@ namespace Hexagon.Services
 
             return "";
         }
-        public void GenerateXY(Column ColumnX, Column ColumnY, Column ColumnXY, IDataRepository<ColumnDTO, Column> dataRepository, string decimalSepar = ".", bool DeleteIfExist = true)
+        public void GenerateXY(Column ColumnX, Column ColumnY, Column ColumnXY, IDataRepository<ColumnDTO, Column> dataRepository, string decimalSepar = ".", bool DeleteIfExist = true, List<Column > ColumnForData= null)
         {
 
             bool merge = true;
@@ -408,16 +451,22 @@ namespace Hexagon.Services
             var ColXYDistinc = new Column { ParentID = ColumnXY.ParentID, Name = "XYDistinct" };
             ColXYDistinc.ID = dataRepository.GenerateFullID(ColXYDistinc);
             ColXYDistinc.Path = Path.Combine(dataRepository.ClassLocation(ColXYDistinc), ColXYDistinc.Name + ".Hex.Json");
+            ColXYDistinc.FieldType = ColumnXY.FieldType;
             ColXYDistinc.PathFields = Path.Combine(dataRepository.ClassLocation(ColXYDistinc), typeof(Field).Name, ColXYDistinc.Name + ".Hex.Json");
             var ColumnPoints = new Column { ParentID = ColumnXY.ParentID, Name = "Points", ActionToDoWithUncasted = EnumActionToDoWithUncasted.DeleteData };
             ColumnPoints.ID = dataRepository.GenerateFullID(ColumnPoints);
             ColumnPoints.Path = Path.Combine(dataRepository.ClassLocation(ColumnPoints), ColumnPoints.Name + ".Hex.Json"); 
             ColumnPoints.PathFields = Path.Combine(dataRepository.ClassLocation(ColumnPoints), typeof(Field).Name, ColumnPoints.Name + ".Hex.Json");
- 
+            var ColumnPointValues = new Column { ParentID = ColumnXY.ParentID, Name = "PointValues", NumberOfRows = ColumnY.NumberOfRows, ActionToDoWithUncasted = EnumActionToDoWithUncasted.DeleteData };
+            ColumnPointValues.ID = dataRepository.GenerateFullID(ColumnPointValues);
+            ColumnPointValues.Path = Path.Combine(dataRepository.ClassLocation(ColumnPointValues), ColumnPointValues.Name + ".Hex.Json");
+            ColumnPointValues.PathFields = Path.Combine(dataRepository.ClassLocation(ColumnPointValues), typeof(Field).Name, ColumnPointValues.Name + ".Hex.Json");
+            ColumnPointValues.FieldType = new FieldType() { FieldTypeName = typeof(RowValues).FullName, OwnIndexInData = true };
 
             if (File.Exists(ColXYDistinc.PathFields))
                 File.Delete(ColXYDistinc.PathFields);
-
+            if (File.Exists(ColumnPointValues.PathFields))
+                File.Delete(ColumnPointValues.PathFields);
             if (File.Exists(ColumnPointDistance.PathFields))
                 File.Delete(ColumnPointDistance.PathFields);
             if (File.Exists(ColumnPoints.PathFields))
@@ -428,9 +477,7 @@ namespace Hexagon.Services
             
 
 
-            ColumnPoints.RWDataColumn.DeleteFile = true;
-            ;
-            var PointsXY = new Points(ColumnPoints); 
+
             var ColumnsOfPoint = new List<Column>();
             
             var sortedPoit = new List<Point>() ;
@@ -445,6 +492,9 @@ namespace Hexagon.Services
 
                 var MinY = float.MaxValue;
                 var MaxY = float.MinValue;
+                var split = new SplitFile(this.ISplitOptions, Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name ), ColumnXY.Name) ;
+                var Writer = new ChunkWriter(this.ISplitOptions.Get(), Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, this.ISplitOptions.Get().SplitFolder), ColumnXY.Name, this.ISplitOptions.Get().SplitExtension, false);
+                //var splited = split.DoInLines(ColumnXY.PathFields, Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, "Split"), ColumnXY.Name);
 
 
                 while (merge)
@@ -482,41 +532,73 @@ namespace Hexagon.Services
                         var colectionXY = new List<string>();
                         var point = new Model.Point(xNum, yNum);
                         point.Row = fieldY.Index;
-
+                        point.Values = new ColumnValueShortedList();
                         //var fieldXY = ColumnXY.Field ( fieldY.Index, point) ;
-                        
+                        foreach (var item in ColumnForData)
+                        {
+                            var field = item.RWDataColumn.GetNext;
+                            var ColumnValue = new ColumnValue();
+                            ColumnValue.Column = item.Name;
+                            String Val = "";
+                            if (field != null)
+                                Val = field.Value.ToString();
+                            else
+                                Val = "/nan/";
+                            point.Values.Add(item.Name, Val );
+                        } ;
                         ColumnXY.RWDataColumn.Add(point.ObjectToString());
-                        sortedPoit.Add(point);
+                        Writer.WriteChunk(point.ObjectToString());
+                        //split.WriteChunk(Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, "Split"), ColumnXY.Name, point.ObjectToString(), ISplitOptions.Get().SplitExtension);
+                         //ColumnPointValues.RWDataColumn.Add(rv.ObjectToString());
+                         // sortedPoit.Add(point);
                     }
 
                 }
+                Writer.CloseChunkWriter();
                 ColumnXY.RWDataColumn.Writer.Flush();
                 ColumnY.RWDataColumn.CloseReader();
                 ColumnX.RWDataColumn.CloseReader();
                 ColumnXY.RWDataColumn.CloseWriter();
-                ColXYDistinc.FieldType = ColumnXY.FieldType;
-                sortedPoit.Sort(Point.TComparer ()) ;
-                foreach (var item in sortedPoit)
+                foreach (var item in ColumnForData)
                 {
+                    item.RWDataColumn.CloseReader();
+                }
+
+
+                ColXYDistinc.FieldType = ColumnXY.FieldType;
+                ////sortedPoit.Sort(Point.TComparer ()) ;
+                //foreach (var item in sortedPoit)
+                //{
 
                 
 
-                    ColXYDistinc.RWDataColumn.Add(item.ObjectToString()); 
-                }
-                ColXYDistinc.RWDataColumn.CloseWriter();
-                PointsXY.Add(ColXYDistinc);
+                //    ColXYDistinc.RWDataColumn.Add(item.ObjectToString()); 
+                //}
+                //ColXYDistinc.RWDataColumn.CloseWriter();
                 ColumnY.MinValue = MinY.ToString(CultureInfo.InvariantCulture);
                 ColumnX.MaxValue = MaxX.ToString(CultureInfo.InvariantCulture);
                 ColumnY.MaxValue = MaxY.ToString(CultureInfo.InvariantCulture);
-                
+                ColumnX.MinValue = MinX.ToString(CultureInfo.InvariantCulture);
+
                 //using StreamReader StreamReaderXY = new StreamReader(ColumnXY.PathFields);
 
                 var ColumnXMinValue = float.Parse(ColumnX.MinValue.ToString(), CultureInfo.InvariantCulture); ;
                 var ColumnXMaxValue = float.Parse(ColumnX.MaxValue.ToString(), CultureInfo.InvariantCulture);
                 var ColumnYMinValue = float.Parse(ColumnY.MinValue.ToString(), CultureInfo.InvariantCulture);
                 var ColumnYMaxValue = float.Parse(ColumnY.MaxValue.ToString(), CultureInfo.InvariantCulture);
+                //split.SortTheChunks(Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, "Temp"), Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, "Split"), ColumnXY.ColumnType());
+                //var split = new SplitFile(this.ISplitOptions);
+                // var splited= split.DoInLines (ColumnXY.PathFields, Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, "Split"), ColumnXY.Name);
+                var order = new OrderByChunk(this.ISplitOptions.Get(), Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name), ColumnXY.Name, this.ISplitOptions.Get().OrderedExtension);
+                order.Order(ColumnXY.ColumnType());
+//                split.SortTheChunks(Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields ), ColumnXY.Name, "Temp"), ColumnXY.ColumnType()  );
+  //              split.Order(Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, this.ISplitOptions.Get().SplitFolder), Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, this.ISplitOptions.Get().SortedFolder), ColumnXY.Name, ColumnXY.ColumnType());
 
 
+                //split.GetChunkReader(Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, "Ordered"), ColumnXY.Name);
+
+                var PointsXY = new Points(ColumnPoints);
+               ColumnPointValues = PointsXY.Add(ColXYDistinc, ColumnPointValues, ColumnPointValues, Path.Combine(Path.GetDirectoryName(ColumnXY.PathFields), ColumnXY.Name, "InLineWithColumns"), ColumnXY.Name, ref split);
 
                 merge = true;
                 var SUMMAE = 0f;
@@ -559,7 +641,7 @@ namespace Hexagon.Services
                 //            StreamWriterPoints.Close();
 
                 //        }
-
+                    
                 //    }
                 //}
                 //finally { ColumnXY.RWDataColumn.CloseReader(); }
@@ -577,10 +659,9 @@ namespace Hexagon.Services
             dataRepository.Add(ColumnX);
             dataRepository.Add(ColumnXY);
             dataRepository.Add(ColXYDistinc);
-            foreach (var item in ColumnsOfPoint)
-            {
-                dataRepository.Add(item);
-            }
+            dataRepository.Add(ColumnPointValues);
+
+
 
             //GenerateLayout(ColumnXY.ParentID);
 
@@ -771,114 +852,134 @@ namespace Hexagon.Services
 
         }
 
-        public CalculatedHexagonDTO DoCalc(string FunctionID, List<string> Columns = null)
+        public ColumnDTO DoCalc(string HexagonDetailstID, string path , string FunctionName, List<string> Columns = null)
         {
-            var Function = FunctionManager.Get(FunctionID);
-            var columns = ColumnManager.GetColectionFromParent(Function.ParentID).Select(x => _Mapper.Map<Column>(x));
-            var HexaCol = columns.FirstOrDefault(x => x.Name == "HExagonsDist");
+
+
+            var InPath= IFormulasResumen.FormulasDisponibles(path ) ;
+            if(InPath.Count ()==0)
+                return  null;
+
+            var FunctionDTO = InPath.FirstOrDefault(x => x.FunctionName == FunctionName);
+            if (FunctionDTO == default)
+            {
+                return null;
+            }
+
+            FunctionDTO.ParentID = HexagonDetailstID;
+            FunctionDTO.ID = FunctionManager.GenerateFullID(_Mapper.Map<Function>(FunctionDTO ));
+ 
+            if (Columns!= null &&Columns.Count()>0 )
+            {
+ ;
+
+            }
+            var Function = FunctionManager.Get(FunctionDTO.ID );
+            if (Function == null )
+                FunctionDTO = FunctionManager.Add(_Mapper.Map<Function>(FunctionDTO));
+
+           var columns = ColumnManager.GetColectionFromParent(HexagonDetailstID).Where (z=> Columns.Contains( z.Name)).Select(x => _Mapper.Map<Column>(x)).ToList();
+            var ColumnPoints = columns.FirstOrDefault(x => x.Name == "Points");
+            
             var CalculatedHexagon = new CalculatedHexagonDTO();
+            
             var ListaColumns = new List<Column>();
-            if (Columns != null && Columns.Count > 0)
-            {
-                foreach (var OrderCol in Columns)
-                {
-                    ListaColumns.Add(columns.FirstOrDefault(x => x.Name ==  OrderCol ));
-                }
-            }
-            var ColCalculatedHexagon = new Column();
-            ColCalculatedHexagon.ID = "";
-            ColCalculatedHexagon.Name =
-                "CalculatedHexagon";
-            ColCalculatedHexagon.ParentID = HexaCol.ParentID;
-
-
-            ColCalculatedHexagon.ID = ColumnManager.GenerateFullID(ColCalculatedHexagon);
-
-            ColCalculatedHexagon.PathFields = Path.Combine(Path.GetDirectoryName(HexaCol.PathFields), ColCalculatedHexagon.Name + this.FileDataManagerOptions.DefaultExtension);
-
-
-            using StreamReader StreamReader = new StreamReader(HexaCol.PathFields);
-
-            using StreamWriter StreamWriter  = new StreamWriter(ColCalculatedHexagon.PathFields, true);
-            var merge = true;
-            var numRow = 0;
-            while (merge)
-            {
-                var ActualRead = "";
-                ActualRead = StreamReader.ReadLine();
-
-                if (ActualRead == null)
-                    break;
-
-               var fieldX = new Field ().FromString(ActualRead);
-                var Data = System.Text.Json.JsonSerializer.Deserialize<string[]>(fieldX.Value.ToString());
-
-                var DataForFunction = new Dictionary<string, object[]>();
-                var i = 0;
-                var value = 0f;
-                var Hexa = System.Text.Json.JsonSerializer.Deserialize<string[]>(Data[0]);
-                var Points = System.Text.Json.JsonSerializer.Deserialize<string[]>(Data[1]);
-
-                var Rows = System.Text.Json.JsonSerializer.Deserialize<string[]>(Data[2]);
-                if (Columns != null && Columns.Count > 0)
-                {
-                    
-                    foreach (var item in ListaColumns)
-                    {
-                        var ListVal = new List<object>();
-                        using StreamReader StreamReaderVallues = new StreamReader(item.PathFields);
-                        bool mergeCol = true;
-                        while (mergeCol)
-                        {
-                            var ColVAL = "";
-                            ColVAL = StreamReader.ReadLine();
-                            if (ColVAL == null)
-                                break;
-                            i++;
-                            var fieldcol = (Field)new Field().FromString(ColVAL);
-                            if (Rows.Contains( fieldcol.Index.ToString()))
-                            { ListVal.Add(fieldcol.Value); }
-                            if (ListVal.Count() == Rows.Count())
-                                break; 
-                        }
-                        DataForFunction.Add(i.ToString(), ListVal.ToArray());
-                        i++;
-
-                    }
-                    
-                    value = CalcStrategy.DoCalc.Do(new Object[] { DataForFunction }, Function.Path, Function.FullClassName, Function.FunctionName);
-                 }
-                else
-                {
-                    value = 0f;
-                }
-                var ToAdd = System.Text.Json.JsonSerializer.Serialize ( new HexaDetailWithValue { Value = value, HexagonPosition = new HexagonPosition { Q = Utils.FloatFromString(Hexa[0]), R = Utils.FloatFromString(Hexa[1]), S = Utils.FloatFromString(Hexa[2]) } }) ;
-                var field = new Field();
-                field.Index = fieldX.Index;
-                field.Value = ToAdd;
-                StreamWriter.WriteLine(field.ToString());
-                numRow++;
-                
-            //CalculatedHexagon.HexaDetailWithValue.AddRange(lista.HexagonPositionForValues.Select(x => new HexaDetailWithValueDTO { HexagonPosition = x, Value = value }));
-        }
-            ColCalculatedHexagon.NumberOfRows = numRow;
-            ColumnManager.Add(ColCalculatedHexagon);
-            StreamWriter.Close();
-            if (Columns != null && Columns.Count > 0)
-            {
-                CalculatedHexagon.ColumnNamesForFunction = Columns;
-                CalculatedHexagon.Name = String.Join("_", CalculatedHexagon.ColumnNamesForFunction);
-            }
-            else
-            {
-                CalculatedHexagon.Name = "WithoutCol";
-            }
-            CalculatedHexagon.ParentID = Function.ID;
-            //CalculatedHexagon.LayoutID = Layout.ID;
-            CalculatedHexagonManager.Add(_Mapper.Map<CalculatedHexagon>(CalculatedHexagon));
             
 
-            return CalculatedHexagon;
+        //    var ColCalculatedHexagon = new Column();
+        //    ColCalculatedHexagon.ID = "";
+        //    ColCalculatedHexagon.Name =
+        //        "CalculatedHexagon";
+        //    ColCalculatedHexagon.ParentID = HexaCol.ParentID;
+
+
+        //    ColCalculatedHexagon.ID = ColumnManager.GenerateFullID(ColCalculatedHexagon);
+
+        //    ColCalculatedHexagon.PathFields = Path.Combine(Path.GetDirectoryName(HexaCol.PathFields), ColCalculatedHexagon.Name + this.FileDataManagerOptions.DefaultExtension);
+
+
+        //    using StreamReader StreamReader = new StreamReader(HexaCol.PathFields);
+
+        //    using StreamWriter StreamWriter  = new StreamWriter(ColCalculatedHexagon.PathFields, true);
+        //    var merge = true;
+        //    var numRow = 0;
+        //    while (merge)
+        //    {
+        //        var ActualRead = "";
+        //        ActualRead = StreamReader.ReadLine();
+
+        //        if (ActualRead == null)
+        //            break;
+
+        //       var fieldX = new Field ().FromString(ActualRead);
+        //        var Data = System.Text.Json.JsonSerializer.Deserialize<string[]>(fieldX.Value.ToString());
+
+        //        var DataForFunction = new Dictionary<string, object[]>();
+        //        var i = 0;
+        //        var value = 0f;
+        //        var Hexa = System.Text.Json.JsonSerializer.Deserialize<string[]>(Data[0]);
+        //        var Points = System.Text.Json.JsonSerializer.Deserialize<string[]>(Data[1]);
+
+        //        var Rows = System.Text.Json.JsonSerializer.Deserialize<string[]>(Data[2]);
+        //        if (Columns != null && Columns.Count > 0)
+        //        {
+                    
+        //            foreach (var item in ListaColumns)
+        //            {
+        //                var ListVal = new List<object>();
+        //                using StreamReader StreamReaderVallues = new StreamReader(item.PathFields);
+        //                bool mergeCol = true;
+        //                while (mergeCol)
+        //                {
+        //                    var ColVAL = "";
+        //                    ColVAL = StreamReader.ReadLine();
+        //                    if (ColVAL == null)
+        //                        break;
+        //                    i++;
+        //                    var fieldcol = (Field)new Field().FromString(ColVAL);
+        //                    if (Rows.Contains( fieldcol.Index.ToString()))
+        //                    { ListVal.Add(fieldcol.Value); }
+        //                    if (ListVal.Count() == Rows.Count())
+        //                        break; 
+        //                }
+        //                DataForFunction.Add(i.ToString(), ListVal.ToArray());
+        //                i++;
+
+        //            }
+                    
+        //            value = CalcStrategy.DoCalc.Do(new Object[] { DataForFunction }, Function.Path, Function.FullClassName, Function.FunctionName);
+        //         }
+        //        else
+        //        {
+        //            value = 0f;
+        //        }
+        //        var ToAdd = System.Text.Json.JsonSerializer.Serialize ( new HexaDetailWithValue { Value = value, HexagonPosition = new HexagonPosition { Q = Utils.FloatFromString(Hexa[0]), R = Utils.FloatFromString(Hexa[1]), S = Utils.FloatFromString(Hexa[2]) } }) ;
+        //        var field = new Field();
+        //        field.Index = fieldX.Index;
+        //        field.Value = ToAdd;
+        //        StreamWriter.WriteLine(field.ToString());
+        //        numRow++;
+                
+        //    //CalculatedHexagon.HexaDetailWithValue.AddRange(lista.HexagonPositionForValues.Select(x => new HexaDetailWithValueDTO { HexagonPosition = x, Value = value }));
+        //}
+        //    ColCalculatedHexagon.NumberOfRows = numRow;
+        //    ColumnManager.Add(ColCalculatedHexagon);
+        //    StreamWriter.Close();
+        //    if (Columns != null && Columns.Count > 0)
+        //    {
+        //        CalculatedHexagon.ColumnNamesForFunction = Columns;
+        //        CalculatedHexagon.Name = String.Join("_", CalculatedHexagon.ColumnNamesForFunction);
+        //    }
+        //    else
+        //    {
+        //        CalculatedHexagon.Name = "WithoutCol";
+        //    }
+        //    CalculatedHexagon.ParentID = Function.ID;
+        //    //CalculatedHexagon.LayoutID = Layout.ID;
+        //    CalculatedHexagonManager.Add(_Mapper.Map<CalculatedHexagon>(CalculatedHexagon));
+            
+
+            return null;
 
         }
         public List<ProyectDataDTO> GetProyects(string UserID)
@@ -1055,7 +1156,10 @@ namespace Hexagon.Services
 
                 var FunctionExist = FunctionManager.GetColectionFromParent(HexagonDetailstID).Where(x => x == Function).FirstOrDefault();
                 if (FunctionExist != null)
+                {
+                     
                     Function = FunctionExist;
+                }
                 else
                 {
                     Function.ParentID = HexagonDetailstID;
@@ -1076,46 +1180,46 @@ namespace Hexagon.Services
             ;
         }
 
-        public string GenerateImge(string PaletteClassID, string CalculatedHexagonID, float Size = 0)
+        public string GenerateImge(string PaletteClassID, string FunctionID, float Size = 0)
         {
 
-            var paletteClass = PaletteClassManager.Get(PaletteClassID);
+            //var paletteClass = PaletteClassManager.Get(PaletteClassID);
+            //var Function = FunctionManager.Get(FunctionID);
+            //var ColumnXY = ColumnManager.GetColectionFromParent(Function.ParentID).First (x=>x.Name=="ColumnXY");
+            //var Max = ColumnXY.X ;
+            //var Min = CalculatedHexagon.HexaDetailWithValue.Select(x => x.Value).Min();
+            //var Layout = _Mapper.Map<Layout>(LayoutDataManager.Get(CalculatedHexagon.LayoutID));
 
-            var CalculatedHexagon = CalculatedHexagonManager.Get(CalculatedHexagonID);
-            var Max = CalculatedHexagon.HexaDetailWithValue.Select(x => x.Value).Max();
-            var Min = CalculatedHexagon.HexaDetailWithValue.Select(x => x.Value).Min();
-            var Layout = _Mapper.Map<Layout>(LayoutDataManager.Get(CalculatedHexagon.LayoutID));
+            //var dif = Max - Min;
+            //var NumClass = paletteClass.MemberNumber;
+            //var Graf = new string("<svg xmlns='http://www.w3.org/2000/svg' version='1.1'  height='" + Layout.MaxPictureSizeY.ToString() + "' width='" + Layout.MaxPictureSizeX.ToString() + "' >");
+            //var Rango = dif / NumClass;
+            //foreach (var item in CalculatedHexagon.HexaDetailWithValue)
+            //{
+            //    var Hex = new Hex(item.HexagonPosition.Q, item.HexagonPosition.R, item.HexagonPosition.S);
+            //    var Points = Hex.Corners;
 
-            var dif = Max - Min;
-            var NumClass = paletteClass.MemberNumber;
-            var Graf = new string("<svg xmlns='http://www.w3.org/2000/svg' version='1.1'  height='" + Layout.MaxPictureSizeY.ToString() + "' width='" + Layout.MaxPictureSizeX.ToString() + "' >");
-            var Rango = dif / NumClass;
-            foreach (var item in CalculatedHexagon.HexaDetailWithValue)
-            {
-                var Hex = new Hex(item.HexagonPosition.Q, item.HexagonPosition.R, item.HexagonPosition.S);
-                var Points = Hex.Corners;
+            //    Graf += "<polygon points= '";
+            //    foreach (var point in Points)
+            //    {
+            //        Graf += point.X.ToString(CultureInfo.InvariantCulture) + "," + point.Y.ToString(CultureInfo.InvariantCulture);
+            //        Graf += " ";
 
-                Graf += "<polygon points= '";
-                foreach (var point in Points)
-                {
-                    Graf += point.X.ToString(CultureInfo.InvariantCulture) + "," + point.Y.ToString(CultureInfo.InvariantCulture);
-                    Graf += " ";
+            //    }
+            //    Graf += Points[0].X.ToString(CultureInfo.InvariantCulture) + "," + Points[0].Y.ToString(CultureInfo.InvariantCulture);
+            //    var index = ((int)(Math.Floor(item.Value - Min) / Rango)) + 1;
+            //    var Color = paletteClass.RGBS.GetValueOrDefault((NumClass - index) + 1);
+            //    var col = ColorTranslator.ToHtml(Color);
 
-                }
-                Graf += Points[0].X.ToString(CultureInfo.InvariantCulture) + "," + Points[0].Y.ToString(CultureInfo.InvariantCulture);
-                var index = ((int)(Math.Floor(item.Value - Min) / Rango)) + 1;
-                var Color = paletteClass.RGBS.GetValueOrDefault((NumClass - index) + 1);
-                var col = ColorTranslator.ToHtml(Color);
+            //    Graf += "' style = 'fill:" + col + ";stroke:purple;stroke-width:1'/> ";
+            //}
+            //Graf += "</svg>";
 
-                Graf += "' style = 'fill:" + col + ";stroke:purple;stroke-width:1'/> ";
-            }
-            Graf += "</svg>";
-
-            var file = Path.Combine(CalculatedHexagonManager.ParentDirectory(), CalculatedHexagonID) + paletteClass.Palette + "_" + paletteClass.EnumPaletteClass.ToString() + "_" + paletteClass.MemberNumber.ToString() + ".SVG";
-            using (StreamWriter StreamWriter = new StreamWriter(file))
-            {
-                StreamWriter.Write(Graf);
-            }
+            //var file = Path.Combine(CalculatedHexagonManager.ParentDirectory(), CalculatedHexagonID) + paletteClass.Palette + "_" + paletteClass.EnumPaletteClass.ToString() + "_" + paletteClass.MemberNumber.ToString() + ".SVG";
+            //using (StreamWriter StreamWriter = new StreamWriter(file))
+            //{
+            //    StreamWriter.Write(Graf);
+            //}
             return "";
         }
         public List<PaletteClass> GetPaletteClasses(string Name, string Enumj, int Q)
@@ -1168,5 +1272,9 @@ namespace Hexagon.Services
 
         }
 
+        public string PrepareMap(string[] ColumnForXY, string HexID, List<Column> List = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

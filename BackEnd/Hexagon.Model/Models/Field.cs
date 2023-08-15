@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.Json;
-
+using Hexagon.IO;
 using System.Runtime.Serialization.Json  ;
 namespace Hexagon.Model
 {
     [Serializable]
     public class Field  
     {
-        Package Package = new Package(typeof(Field)) ;
+
         List<object> _ValueList = new List<object>();
         public Field()
         {

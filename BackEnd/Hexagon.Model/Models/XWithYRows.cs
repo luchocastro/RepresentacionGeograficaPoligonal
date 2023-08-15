@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text.Json;
-
+using Hexagon.IO;
 namespace Hexagon.Model
 {
 
@@ -14,15 +14,16 @@ namespace Hexagon.Model
 
             SortedSet <YRows> _row = new SortedSet<YRows>();
         float _value;
+        long _Index;
         public XWithYRows(float val, SortedSet<YRows> row)
         {
             _value = val;
             _row = row;
         }
-        public XWithYRows(float val )
+        public XWithYRows(float val, long index  =0)
         {
             _value = val;
-
+            _Index = index;
         }
 
         public XWithYRows( )
@@ -30,38 +31,37 @@ namespace Hexagon.Model
             _value = float.MinValue;
 
         }
-        public void AddYSetOFRow(float val, List<long > row)
+
+        public void AddYRows(YRows YRows)
         {
-            if(_row.Where (x=>x.Value==val).Count()==0)
+            this.Row.Add(YRows);
+        }
+
+        public void AddYSetOFRow(float val,  long row, ColumnValueShortedList RowValues =null)
+        {
+
+            if(_row.Where(x => x.Value == val).Count() == 0)
             {
-                var newY = new YRows(val, row);
+                var newY = new YRows(val );
+                newY.RowValues.Add ( row, RowValues );
                 _row.Add(newY);
             }
             else
             {
                 var yRows = _row.First(x => x.Value == val);
 
-                var newSorted = new SortedSet<long>(row);
-                
-                 yRows.Row.UnionWith(newSorted);
-                _row.RemoveWhere(X=>X.Value==val);
+ 
+
+                _row.RemoveWhere(X => X.Value == val);
+                yRows.RowValues.Add(  row,  RowValues  );
                 _row.Add(yRows);
             }
-        }
-        public void AddYRows(YRows YRows)
-        {
-            this.Row.Add(YRows);
-        }
-
-        public void AddYSetOFRow(float val,  long row)
-        {
-
-            AddYSetOFRow(val, new long[] { row }.ToList());
         }
 
         public SortedSet<YRows> Row { get { return _row; } set { _row= value; } }
 
         public float Value { get { return _value; } set { _value = value; } }
+        public long Index { get { return _Index; } set { _Index = value; } }
 
         public int Compare(object x, object y)
             {
@@ -106,6 +106,7 @@ namespace Hexagon.Model
 
         public object FromString(string ObjectPackaged)
             {
+
                 var RET = JsonSerializer.Deserialize<KeyValuePair<float, SortedSet<YRows>  >>(ObjectPackaged);
 
                 Row = RET.Value;
@@ -115,7 +116,9 @@ namespace Hexagon.Model
         
             public string ObjectToString()
             {
-                return JsonSerializer.Serialize(new KeyValuePair<float, SortedSet<YRows>>( _value, Row));
+            var rows = Row.Select(x => x.ToDictionay()).ToList();
+
+            return JsonSerializer.Serialize(new KeyValuePair<float, List<object>>( _value, rows  ));
             }
 
         public override bool Equals(object obj)
