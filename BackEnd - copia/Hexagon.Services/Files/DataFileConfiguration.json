@@ -1,0 +1,17 @@
+[
+  {
+    "FileType": "DelimitedFile",
+    "FileProperties": {
+      "HasTitle": "Boolean",
+      "Delimiter": "String",
+      "DecimalSeparator": "Char",
+      "StringDelimitator": "Char"
+    }
+  },
+  {
+    "FileType": "GeoJson",
+    "FileProperties": {
+      "DecimalSeparator": "Char"
+    }
+  }
+]
