@@ -36,6 +36,8 @@
     "ngx-spinner": "^6.1.2",
     "rxjs": "~6.5.4",
     "tslib": "^1.10.0",
+    "yarm": "^0.4.0",
+    "yarn": "^1.22.21",
     "zone.js": "~0.11.1"
   },
   "devDependencies": {
