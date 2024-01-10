@@ -37,7 +37,7 @@ namespace Hexagon.Api.Config
             services.Configure<Settings>(configuration);
             services.AddAuthentication("BasicAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuthentication", null);
-            services.AddAuthorization();
+            //services.AddAuthorization();
             services.AddScoped<IDataRepository<UserDTO, User>, UserFileDataManager<UserDTO, User>>();
             services.AddScoped<IDataRepository<ProyectDataDTO, ProyectData>, ProyectDataFileDataManager<ProyectDataDTO, ProyectData>>();
             services.AddScoped<IDataRepository<HexFileDTO, HexFile>, FileDataManager<HexFileDTO, HexFile>>();

@@ -23,6 +23,7 @@ namespace Hexagon.Api.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class UserController : ControllerBase
     {
         private readonly IConfiguration Configuration;
@@ -40,17 +41,30 @@ namespace Hexagon.Api.Controllers
             _authenticationService = authenticationService;
         }
 
-        
+
+
+        [AllowAnonymous]
+        [HttpGet]
+
+        public ActionResult Get()
+        {
+            var userPost = new UserPost { Password = "", Username = "" };
+
+            return new JsonResult(userPost);
+        } 
         [AllowAnonymous]
         [HttpPost("authenticate")]
         public async Task<IActionResult> Authenticate( UserPost userPost)
         {
-            var user = _authenticationService.Authenticate(userPost.Username, userPost.Password);
+            var user = _authenticationService.Authenticate(userPost.Username, userPost.Password).Result;
 
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
+            var Projects = FileService.GetProyects(user.Name).ToArray();
+            var projects = Projects.Select (x=> new { name=x.Name, id = x.ID }).ToArray();
+            var use = new { user = user, projects = projects };
 
-            return Ok(user);
+            return Ok (System.Text.Json.JsonSerializer.Serialize (use));
         }
         //public async Task<IActionResult>  Signin(  UserPost user)
         //{ 

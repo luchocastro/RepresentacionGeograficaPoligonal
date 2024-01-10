@@ -10,7 +10,7 @@ namespace Hexagon.Shared.DTOs
 
 
             public string Password { get; set; }
-
+        
 
     }
 }

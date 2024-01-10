@@ -27,9 +27,10 @@ namespace Hexagon.Api.Controllers
     /// </summary>
     [Route("[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes
-            = "BasicAuthentication")]
-          
+    [AllowAnonymous]
+    /*    [Authorize(AuthenticationSchemes
+                = "BasicAuthentication")]
+      */
     public class FileController : ControllerBase
     {
         string UserName;
@@ -205,12 +206,14 @@ namespace Hexagon.Api.Controllers
             string user = User.Identity.Name;
             return Ok(FileService.GetProyects (user));
         }
+        [Authorize]
+        [AllowAnonymous]
         [HttpGet]
         [Route("DataToAnalize")]
         public IActionResult GetAnalizedFiles(string ProyectID)
         {
             /// ProyectDataDTO ProyectDataDTO = new ProyectDataDTO();
-            return Ok(FileService.GetAnalizedFiles (ProyectID));
+            return Ok( System.Text.Json.JsonSerializer.Serialize(FileService.GetAnalizedFiles (ProyectID)));
         }
         [HttpGet]
         [Route("FilesToGet")]

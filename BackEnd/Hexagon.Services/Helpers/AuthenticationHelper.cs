@@ -31,7 +31,7 @@ namespace Hexagon.Services.Helpers
         {
             _userService = userService;
             
-        }
+       }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
@@ -40,6 +40,17 @@ namespace Hexagon.Services.Helpers
             var a = Thread.CurrentPrincipal;
             try
             {
+                var claims1 = new[] {
+                new Claim(ClaimTypes.Name, "fajsfdkjkl")
+            };
+                var identity1 = new ClaimsIdentity(claims1, Scheme.Name);
+                var principal1 = new ClaimsPrincipal(identity1);
+                var ticket1 = new AuthenticationTicket(principal1, Scheme.Name);
+                
+                return AuthenticateResult.Success(ticket1);
+
+                return AuthenticateResult.Success(null);
+
                 var HeaderAuthorization = Request.Headers["Authorization"]
 ;
                 if (HeaderAuthorization.Count()==0)
