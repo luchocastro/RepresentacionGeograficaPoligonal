@@ -2,6 +2,7 @@
 using Hexagon.Services.Interfaces;
 using Hexagon.Shared.DTOs;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
@@ -11,6 +12,7 @@ using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Hexagon.Services.Helpers
@@ -35,6 +37,7 @@ namespace Hexagon.Services.Helpers
         {
             string username = null;
             UserDTO user = null;
+            var a = Thread.CurrentPrincipal;
             try
             {
                 var HeaderAuthorization = Request.Headers["Authorization"]
@@ -63,7 +66,8 @@ namespace Hexagon.Services.Helpers
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
-
+            Thread.CurrentPrincipal = principal;
+             
             return AuthenticateResult.Success(ticket);
 
             //// skip authentication if endpoint has [AllowAnonymous] attribute

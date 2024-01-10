@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 //https://www.codeproject.com/articles/27340/a-user-friendly-c-descriptive-statistic-class
 namespace Average
 {
     public class Statistics
     {
-         
+        public static float Average2(Dictionary<string, object[]> Values)
+        {
+            var ToCalc = Values.FirstOrDefault().Value;
+
+            var res = ToCalc.Average(x => (float)x);
+            return res;
+        }
         public static float Average(Dictionary<string, object[]> Values)
         {
             var ToCalc = Values.FirstOrDefault().Value;
@@ -16,23 +23,23 @@ namespace Average
         }
         public static float Median(Dictionary<string, object[]> Values)
         {
-            var ToCalc = Values.FirstOrDefault().Value.Select(x=>(float)x );
+            var ToCalc = Values.FirstOrDefault().Value.Select(x=> Convert.ToDouble( x.ToString(), CultureInfo.InvariantCulture));
             int numberCount = ToCalc.Count();
-            int halfIndex = ToCalc.Count() / 2;
-            int halfIndexMinus = halfIndex - 1;
+            double  halfIndex = ToCalc.Count() / 2;
+            double halfIndexMinus = halfIndex - 1;
             var sortedNumbers = ToCalc.OrderBy(n => n);
-            float median;
+            double median;
             if ((numberCount % 2) == 0)
             {
-                median = ((sortedNumbers.ElementAt(halfIndex) +
-                    sortedNumbers.ElementAt(halfIndexMinus)) / 2);
+                median = ((sortedNumbers.ElementAt((int)Math.Floor(halfIndex)) +
+                    sortedNumbers.ElementAt((int)Math.Ceiling(halfIndex))) / 2d);
             }
             else
             {
-                median = sortedNumbers.ElementAt(halfIndex);
+                median = sortedNumbers.ElementAt((int)Math.Floor( halfIndex));
             }
 
-            return median;
+            return (float)median;
         }
         public static float Mode(Dictionary<string, object[]> Values)
         {
@@ -44,6 +51,21 @@ namespace Average
 
             return mode;
         }
-
+        public static float Return0(Dictionary<string, object[]> Values)
+        {
+            return 0;
+        }
+        public static float standardDeviation(Dictionary<string, object[]> Values)
+        {
+            float result = 0;
+            var sequence = Values.FirstOrDefault().Value.Select(x => (float)x);
+            if (sequence.Any())
+            {
+                float average = sequence.Average();
+                float sum = sequence.Sum(d => MathF.Pow(d - average, 2));
+                result = MathF.Sqrt((sum) / sequence.Count());
+            }
+            return result;
+        }
     }
 }

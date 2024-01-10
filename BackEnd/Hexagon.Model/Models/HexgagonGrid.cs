@@ -5,15 +5,17 @@ using System.Drawing;
 using System.Collections;
 using System.Linq;
 using Hexagon.Model.Models;
+using Newtonsoft.Json;
 
 namespace Hexagon.Model
 {
-    public class HexagonGrid: System.Collections.IEnumerable, IModelPersistible
+    public class HexagonGrid :Base,  System.Collections.IEnumerable 
     {
+        private List<EventPoint> _PuntosACalcular = new List<EventPoint>();
         public HexagonGrid(List<EventPoint> PuntosACalcular, Layout  Layout, Function Function)
         {
             this.Layout = Layout;
-            this.Function = Function;
+            //this.Function = Function;
             this.PuntosACalcular = PuntosACalcular;
             
         }
@@ -21,30 +23,27 @@ namespace Hexagon.Model
         {
 
         }
-        public HexagonGrid(HexagonGrid GrillaAnterior, Layout Layout, Function Function)
+        public HexagonGrid(HexagonGrid GrillaAnterior, Layout Layout )
         {
             this.Layout = Layout;
             
-            this.Function = Function;
-            this.PuntosACalcular = GrillaAnterior.PuntosACalcular;
+            //this.Function = Function;
+            this.PuntosACalcular = GrillaAnterior.HexagonMap.SelectMany(x=>x.Values).ToList();
         }
 
-        
+
+        [JsonIgnore]
         public List<Hex> HexagonMap { get; set; }
         public Layout Layout { get;  set; }
-        public List<EventPoint> PuntosACalcular { get; set; }
-        public Function Function { get; set; }
-        public string ID { get ; set ; }
+
+        [JsonIgnore]
+        public List<EventPoint> PuntosACalcular { get { return _PuntosACalcular; } set { _PuntosACalcular = value; } }
+        //public Function Function { get; set; }
 
         public IEnumerator GetEnumerator()
         {
             return HexagonMap.GetEnumerator();
-        }
-        public void GridToFile()
-        {
-
-
-        }
+        } 
 
     }
 }

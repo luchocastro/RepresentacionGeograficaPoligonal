@@ -9,8 +9,16 @@ namespace Hexagon.Api.Controllers.VM
 {
     public class DatosMapaPost
     {
-        [JsonPropertyName("LayoutDto")]
-        public LayoutDto LayoutDto { get; set; }
-        public String PathWithData { get; set; }
+
+         public String HexID { get; set; }
+
+        public int MaxGroupForMetrics { get; set; }
+        public int MaxHexsForALine { get; set; }
+
+
+        public ColumnToPost X { get; set; }
+        public ColumnToPost Y { get; set; }
+
+
     }
 }

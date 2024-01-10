@@ -14,6 +14,7 @@ namespace Hexagon.Core.Configuration
         public ActivititesModules ActivititesModules { get; set; }
         public CorsOptions CorsOptions { get; set; }
         public string ConfigurationFilesName { get; set; }
+        public string DefaultProyectName { get; set; }
 
         public string PathFunctions{ get; set; }
     }

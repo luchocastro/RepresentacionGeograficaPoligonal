@@ -11,15 +11,17 @@
     <PackageReference Include="CliWrap" Version="3.6.0" />
     <PackageReference Include="CSJ2K" Version="3.0.0" />
     <PackageReference Include="GeoJSON.Net" Version="1.2.19" />
+    <PackageReference Include="LanguageExt.Core" Version="4.4.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="5.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Vintasoft.Imaging.Jpeg2000Codec" Version="8.1.5.1" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Hexagon.AsyncIO\Hexagon.IO.csproj" />
     <ProjectReference Include="..\Hexagon.Model\Hexagon.Model.csproj" />
     <ProjectReference Include="..\Hexagon.Shared\Hexagon.Shared.csproj" />
   </ItemGroup>

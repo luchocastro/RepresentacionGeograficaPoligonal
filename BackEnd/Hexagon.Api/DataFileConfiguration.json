@@ -1,22 +1,21 @@
 [
   {
     "FileType": "DelimitedFile",
+	  "DecimalSeparator": "Char",
+    "DatetimeFormart": "Char",
+    "TextDelimiter": "Char",
     "FileProperties": {
       "HasTitle": "Boolean",
-      "Delimiter": "String",
-      "DecimalSeparator": "Char",
-      "StringDelimitator": "Char"
+      "Delimiter": "String"
+    
     }
   },
   {
     "FileType": "GeoJson",
+	  "DecimalSeparator": "Char",
+    "DatetimeFormart": "Char",
+    "TextDelimiter": "Char",
     "FileProperties": {
-      "DecimalSeparator": "Char"
     }
   }
-]
-    
-  
-  
-
 ]

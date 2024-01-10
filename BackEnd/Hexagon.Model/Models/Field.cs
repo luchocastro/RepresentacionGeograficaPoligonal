@@ -1,20 +1,86 @@
-﻿using System;
+﻿using Hexagon.Model.Models;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.Text;
-
+using System.Linq;
+using System.Runtime.Serialization;
+using System.Text.Json;
+using Hexagon.IO;
+using System.Runtime.Serialization.Json  ;
 namespace Hexagon.Model
 {
-    public struct  Field
+    [Serializable]
+    public class Field  
     {
-        public Field(object Value, List<EnumAlowedDataType> DataTypeFinded, int Line)
+
+        List<object> _ValueList = new List<object>();
+        public Field()
         {
 
-            this.Value = Value;
-            this.DataTypeFinded = DataTypeFinded;
-            this.Index = Line;
         }
-        public object Value { get; }
-        public List<EnumAlowedDataType> DataTypeFinded { get;}
-        public int Index { get; set; }
+        public List<Object> ValueList
+        {
+            get { return _ValueList; }
+            set
+            {
+                _ValueList = value;
+                Value = _ValueList;
+            }
+        }
+
+        public Field(Dictionary<string,string> Propeties)
+        {
+            foreach (var item in Propeties)
+            {
+
+
+            }
+
+        }
+        
+
+        [ModelSaveAtributes(InPackage = true, PropertyOrder = 1)]
+        public object Value { get; set; }
+        public String TypeName { get; set; } = "";
+        [JsonIgnore]
+        public List<EnumAlowedDataType> DataTypeFinded { get; }
+
+        
+
+        
+
+        public long Index { get; set; }
+
+
+
+
+
+
+        
+
+
+        public string ObjectToString()
+        {
+
+            
+            return System.Text.Json.JsonSerializer.Serialize(new string[] { Index.ToString(), Value.ToString()});
+
+        }
+        
+        override public string ToString()
+        {
+
+
+            return ObjectToString();
+
+        }
+        public Field FromString(string ObjectPackaged)
+        {
+
+            var Values = System.Text.Json.JsonSerializer.Deserialize<string[]>(ObjectPackaged);
+            this.Value = Values[1];
+            this.Index = long.Parse(Values[0]);
+            return this;
+        }
     }
 }

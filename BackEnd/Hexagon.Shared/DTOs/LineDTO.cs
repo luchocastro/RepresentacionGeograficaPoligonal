@@ -6,13 +6,14 @@ namespace Hexagon.Shared.DTOs
 {
     public struct LineDTO
     {
-        public LineDTO(UInt64 Number,  string[] Fields)
+
+        public LineDTO(long Number,  string[] Fields)
         {
             this.Number = Number;
             this.Fieds = Fields ;
         }
-        public string[] Fieds { get;}
-        public UInt64 Number { get; }
+        public string[] Fieds { get; set; }
+        public long Number { get; set; }
 
     }
 }

@@ -77,7 +77,9 @@ namespace Hexagon.Services.Helpers
                     }
 
 
-                    hex.Value = DoCalc.Do((object[]) hex.Values.Select(x => x.Values.ToArray()), _HexagonGrid.Function.Path, _HexagonGrid.Function.FullClassName, _HexagonGrid.Function.FunctionName);
+                    //hex.Value = DoCalc.Do((object[]) hex.Values.Select(x => x.Values.ToArray()), _HexagonGrid.Layout.MapDefinition.Function.Path, _HexagonGrid.Layout.MapDefinition.Function.FullClassName, _HexagonGrid.Layout.MapDefinition.Function.FunctionName);
+
+                    hex.Value = 0;// DoCalc.Do((object[])hex.Values.Select(x => x.Values.ToArray()), _HexagonGrid.Layout.MapDefinition.Function.Path, _HexagonGrid.Layout.MapDefinition.Function.FullClassName, _HexagonGrid.Layout.MapDefinition.Function.FunctionName);
                     Hexagonos.Add(hex);
                     SiguienteY = SiguienteY + 2f * a;
                 }

@@ -1,15 +1,22 @@
-﻿using System;
+﻿using Hexagon.Model.Repository;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Hexagon.Model.Models
 {
-     public struct AnalizedFile : IModelPersistible
+    public class AnalizedFile :  Equatable<AnalizedFile>  
     {
-        public string FileName { get; set; }
-        public string OriginalFileName { get; set; }
-        public string NicName { get; set; }
-        public string ID { get; set; }
+        string name;
+        string nicname;
+        public AnalizedFile()
+        {
+
+        }
+        public string PathFiles { get; set; }
+
 
     }
 }
+

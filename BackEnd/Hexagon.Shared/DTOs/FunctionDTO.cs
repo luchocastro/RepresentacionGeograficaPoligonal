@@ -4,9 +4,11 @@ using System.Text;
 
 namespace Hexagon.Shared.DTOs
 {
-    public struct FunctionDTO
+    public class FunctionDTO : Base.BaseDto
     {
-
+        public FunctionDTO( )
+        {
+        }
         public FunctionDTO(string Path, string FullClassName, string FunctionName, Dictionary<string, string> Types)
         {
             this.Path = Path;
@@ -15,10 +17,10 @@ namespace Hexagon.Shared.DTOs
             this.Types = Types;
 
         }
-        public string Path { get; }
-        public string FullClassName { get; }
-        public string FunctionName { get; }
-        public Dictionary<string, string> Types { get; }
+        public string Path { get; set; }
+        public string FullClassName { get; set; }
+        public string FunctionName { get; set; }
+        public Dictionary<string, string> Types { get; set; }
 
     }
 }

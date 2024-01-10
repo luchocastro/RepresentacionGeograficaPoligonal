@@ -1,50 +1,18 @@
-﻿using System;
+﻿using Hexagon.Model.Repository;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Hexagon.Model.Models
 {
-    public class MapDefinition : IModelPersistible
+    public class MapDefinition : Equatable<MapDefinition>
     { 
-        public string ColumnNameForX { get; set; }
-        public string ColumnNameForY { get; set; }
-        public string ColumnForMapGroup { get; set; }
-        public List<string> ColumnsNameForFuntion { get; set; }
-        public PaletteClass PaletteClass { get; set; }
-        public string FunctionName { get; set; }
-        
-        public EnumActionToDoWithUncasted ActionToDoWithUncasted { get; set; }
-        public string ID { get  ; set  ; }
+        public Column ColumnForX { get; set; } 
+        public Column ColumnForY { get; set; }
+        public Column ColumnForMapGroup { get; set; }
+        public List<string> ColumnsToDiscard { get; set; }
+        public List<Column> DataTypedColumns { get; set; }
 
-        public MapDefinition( )
-             
-        {
-
-            this.ColumnNameForX = "No Set";
-            this.ColumnNameForY = "No Set";
-            this.ColumnsNameForFuntion = null;  
-            this.ColumnForMapGroup = "No Set";
-            this.FunctionName = "No Set";
-
-            ActionToDoWithUncasted = EnumActionToDoWithUncasted.DeleteData;
-        }
-        public MapDefinition(
-         
-        string _ColumnNameForX,
-        string _ColumnNameForY,
-        string _ColumnForMapGroup,
-        List<string> _ColumnsNameForFuntion,
-        string _FunctionName,
-        EnumActionToDoWithUncasted _ActionToDoWithUncasted)
-        {
-            
-            this.ColumnNameForX = _ColumnNameForX;
-            this.ColumnNameForY = _ColumnNameForY;
-            this.ColumnsNameForFuntion = _ColumnsNameForFuntion;
-            this.ColumnForMapGroup = _ColumnForMapGroup;
-            this.FunctionName = _FunctionName;
-            ActionToDoWithUncasted = _ActionToDoWithUncasted;
-        }
 
     }
 }

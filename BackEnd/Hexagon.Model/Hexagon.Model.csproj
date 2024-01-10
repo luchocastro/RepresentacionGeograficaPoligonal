@@ -15,7 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Hexagon.AsyncIO\Hexagon.IO.csproj" />
+    <ProjectReference Include="..\Hexagon.Core\Hexagon.Core.csproj" />
     <ProjectReference Include="..\Hexagon.Shared\Hexagon.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Helper\NewFolder\" />
   </ItemGroup>
 
 </Project>

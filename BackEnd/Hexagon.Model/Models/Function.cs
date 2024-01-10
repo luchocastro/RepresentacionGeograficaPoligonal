@@ -1,24 +1,27 @@
-﻿using System;
+﻿using Hexagon.Model.Models;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Hexagon.Model
 {
-    public struct Function
+    public class Function : Base
     {
-
-        public Function(string Path, string FullClassName, string FunctionName, Dictionary<string, string> Types)
+        public Function() { }
+        string _FunctionName;
+        public Function(string PathFunctionDLL, string FullClassName, string FunctionName, Dictionary<string, string> Types)
         {
-            this.Path = Path;
+            this.PathFunctionDLL = PathFunctionDLL;
             this.FullClassName = FullClassName;
             this.FunctionName = FunctionName;
             this.Types = Types;
 
         }
-        public string Path { get; }
-        public string FullClassName { get; }
-        public string FunctionName { get; }
-        public Dictionary<string, string> Types { get; }
+        public string PathFunctionDLL { get; set; }
+        public string FullClassName { get; set; }
+        public string FunctionName { get { return _FunctionName; } set { _FunctionName = value; } }
+        public override string Name { get { return base.Name; } set {  base.Name = value; } }
+        public Dictionary<string, string> Types { get; set; }
 
     }
 }

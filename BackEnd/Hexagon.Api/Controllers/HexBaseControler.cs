@@ -9,15 +9,19 @@ namespace Hexagon.Api.Controllers
     public class HexBaseControler : ControllerBase
     {
         public string UserName {get;}
-        public string HexBaseControler(string Name, string Pass)
-        {
-            Request.au
+        public HexBaseControler()
+        {    
             var HeaderAuthorization = Request.Headers["Authorization"];
             if ( HeaderAuthorization.Count >0)
             {
-                UserName =
+                if (HttpContext.User.Identity.IsAuthenticated)
+                {
+                    this.UserName = HttpContext.User.Identity.Name;
+                    return;
+                }
 
             }
+            
         }
         
     }

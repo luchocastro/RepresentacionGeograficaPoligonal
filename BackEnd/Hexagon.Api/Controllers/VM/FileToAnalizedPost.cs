@@ -8,10 +8,8 @@ namespace Hexagon.Api.Controllers.VM
 {
     public class FileToAnalizePost
     {
-        public List<string> FuncionsNameColumns { get; set; }
-        public  string  FuncionName { get; set; }
-        public List<string > ColumnsToKeep { get; set; }
-        public string DataTypeForColumns { get; set; } 
-
+        public DataFileConfigurationDTO DataFileConfiguration { get; set; }
+        public string HexafileID { get; set; }
+        public int NRows { get; set; }
     }
 }
