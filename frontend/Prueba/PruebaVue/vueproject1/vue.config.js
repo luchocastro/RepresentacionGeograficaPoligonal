@@ -26,11 +26,11 @@ module.exports = {
         },
         proxy: {
             '^/User': {
-                target: 'https://localhost:5001/'
+                target: 'http://localhost:5001/'
                 
             },
             '^/File': {
-                target: 'https://localhost:5001/'
+                target: 'http://localhost:5001/'
 
             }
         },

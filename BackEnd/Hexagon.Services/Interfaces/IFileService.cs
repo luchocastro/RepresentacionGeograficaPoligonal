@@ -4,6 +4,7 @@ using Hexagon.Shared.DTOs;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,9 @@ namespace Hexagon.Services.Interfaces
 {
     public interface IFileService
     {
+
+        Task<HexFileDTO> UploadFileAsync(Stream fileStream, string contentType, string ProjectID) ;
+
         public NativeJsonFileDTO ConvertFileBase64(string Base64File, DataFileConfigurationDTO FileData);
         public NativeFileDTO ConvertFile(string AbsolutePathFile, DataFileConfigurationDTO FileData, LayoutDto Layout);
         public NativeFileDTO ConvertFile(DataFileConfigurationDTO DataFileConfiguration, string HexFileID);

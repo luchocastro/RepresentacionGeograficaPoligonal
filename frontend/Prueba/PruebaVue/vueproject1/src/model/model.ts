@@ -11,6 +11,8 @@ interface User {
 interface NamedObject{
     name: string
     id: string
+    key: string
+    parent: string
 }
 interface Column {
     name: string
@@ -18,11 +20,9 @@ interface Column {
     position: number
 }
  
-export default defineComponent({
-    props: {
-        user: {
-            // provide more specific type to `Object`
-            type: Object as PropType<User>,
-            required: true
-        }} 
-})
+export default interface Named {
+        
+            name: string
+            id: string
+            parent: string
+        }

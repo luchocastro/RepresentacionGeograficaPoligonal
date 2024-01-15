@@ -25,22 +25,18 @@
             <input type="text" v-model="name" placeholder="Text">
             <input type="password" v-model="pass" placeholder="Password">
             <button @click="AuthUser">Login</button>
-            <div v-if="vProj" class="content">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="project in post.projects" :key="project.id">
-                            <td>
-                                <button class="content" @click="GetFiles('{{ project.id }}')">Get</button>
-                                <label>{{ project.id }}</label>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div v-if="vProj" class="content" >
+                <ul>
+
+                    <ProjectTemplate v-for="project  in projects"
+                                     :key= project.id
+
+                                     v-bind.item =project
+                                     v-bind:name=project.name
+                                     v-on:GetFiles="GetFiles(project.id)">
+                    </ProjectTemplate>
+                </ul>
+
 
             </div>
         </div>
@@ -52,7 +48,7 @@
 </script>
     <script lang = "ts" >
     import { defineComponent } from 'vue';
-
+        import ProjectTemplate from  './ProjectTemplate.vue'
     type Project = {
         name: string,
         id: string
